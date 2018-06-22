@@ -6,6 +6,8 @@ export interface IUser{
     address?:string,
     role:number,
     status?:number,
-    follow?:string
+    follow?:string,
+    nickname?:string
+    headimgurl?:string
 }
 export default IUser;

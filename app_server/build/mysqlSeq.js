@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // const Sequelize = require('sequelize');
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize('aw_api', 'root', 'dkl20170531', {
+const sequelize = new Sequelize('confide', 'root', 'dkl20170531', {
     host: '47.93.50.205',
     dialect: 'mysql',
     operatorsAliases: false,

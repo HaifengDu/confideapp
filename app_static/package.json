@@ -23,6 +23,7 @@
         "element-ui": "^2.0.10",
         "less": "^2.7.3",
         "less-loader": "^4.0.5",
+        "mint-ui": "^2.2.13",
         "ts-loader": "^3.2.0",
         "typescript": "^2.6.2",
         "vee-validate": "^2.0.9",

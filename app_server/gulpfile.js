@@ -8,7 +8,7 @@
 
     let child;
     //目录常量
-    const folders = ["model", "controller", "routes", "enum"];
+    const folders = ["model", "controller", "routes", "enum", "helper"];
     const tsps = folders.map(item => {
         return ts.createProject('tsconfig.json', { "sourceMap": false });
     });
@@ -16,20 +16,21 @@
         scripts: folders.map(item => `./${item}/**/*.ts`),
         output: './build/**/',
     };
-    //编译ts文件
-    gulp.task('build-ts', function() { //, ['restart']
-        folders.forEach((item, index) => {
-            // gulp.src(`./build/${item}/`).pipe(clean({ force: true }));
+    folders.forEach((item, index) => {
+        gulp.task('build-ts-' + item, function() {
             gulp.src(`./${item}/**/*.ts`)
                 .pipe(tsps[index]())
                 .pipe(gulp.dest(`./build/${item}/`));
         });
-
+        gulp.task('watch-ts-' + item, function() {
+            gulp.watch(`./${item}/**/*.ts`, ['build-ts-' + item]);
+        });
+    });
+    gulp.task('build-ts', function() {
         gulp.src("./*.ts").pipe(tsProject()).pipe(gulp.dest(`./build/`));
     });
-    //监视ts文件变化
     gulp.task('watch-ts', function() {
-        gulp.watch(PATHS.scripts, ['build-ts']);
+        gulp.watch(`./*.ts`, ['build-ts']);
     });
     //自动重启服务器
     gulp.task('restart', function() {
@@ -42,5 +43,5 @@
         });
     });
     //开发任务
-    gulp.task('dev', ['build-ts', 'restart', 'watch-ts']);
-    gulp.task('default', ['build-ts', 'watch-ts']);
+    // gulp.task('dev', ['build-ts', 'restart', 'watch-ts']);
+    gulp.task('default', ['build-ts', 'watch-ts', ...folders.map(item => `build-ts-${item}`), ...folders.map(item => `watch-ts-${item}`)]);

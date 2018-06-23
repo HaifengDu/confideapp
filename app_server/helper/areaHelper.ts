@@ -9,6 +9,9 @@ class AreaHelper {
     private static _instance: AreaHelper;
     private static _arealist:{code:string,name:string}[] = [];
     private constructor() {
+        if(AreaHelper._arealist.length){
+            return;
+        }
         this.analisyArea(data);
     }
 
@@ -33,13 +36,21 @@ class AreaHelper {
         });
     }
 
+    public getArea(){
+        return data;
+    }
+
+    public getNode(code:string){
+        const current = AreaHelper._arealist.find(item=>item.code === code);
+        return current;
+    }
     public getCode(name:string):string{
         const current = AreaHelper._arealist.find(item=>item.name.indexOf(name)>-1)
         return current?current.code:"";
     }
 
     public getName(code:string):string{
-        const current = AreaHelper._arealist.find(item=>item.code === code)
+        const current = this.getNode(code);
         return current?current.name:"";
     }
 

@@ -1,8 +1,6 @@
 import * as express from "express";
 import UserService from "../controller/User";
 import { body,query, validationResult, Result } from 'express-validator/check';
-import { IUser } from "../interface/model/IUser";
-import { ERole } from "../enum/ERole";
 import ErrorMsg from "../model/ErrorMsg";
 const router = express.Router();
 const userContrl = UserService.getInstance();

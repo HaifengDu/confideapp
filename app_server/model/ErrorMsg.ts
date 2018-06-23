@@ -1,4 +1,4 @@
-const errMsg:string = "服务器内部错误,请稍后重试";
+const errMsg = "服务器内部错误,请稍后重试";
 export default class ErrorMsg{
     private static readonly isDebug = true;
     constructor(private success=true,private msg?:string){

@@ -1,6 +1,6 @@
 export interface IUser{
     id?:number,
-    weixinid:string,
+    weixinid?:string,
     sex?:number,
     birthday?:string,
     address?:string,

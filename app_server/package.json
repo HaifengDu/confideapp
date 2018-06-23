@@ -25,5 +25,8 @@
     "sequelize": "^4.37.10",
     "serve-favicon": "~2.4.2",
     "typescript": "^2.9.2"
+  },
+  "devDependencies": {
+    "tslint-eslint-rules": "^5.3.1"
   }
 }

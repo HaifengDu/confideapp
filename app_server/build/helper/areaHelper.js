@@ -5,6 +5,9 @@ const _ = require("lodash");
 const data = require('../../config/area.json');
 class AreaHelper {
     constructor() {
+        if (AreaHelper._arealist.length) {
+            return;
+        }
         this.analisyArea(data);
     }
     analisyArea(data) {
@@ -27,12 +30,19 @@ class AreaHelper {
             }
         });
     }
+    getArea() {
+        return data;
+    }
+    getNode(code) {
+        const current = AreaHelper._arealist.find(item => item.code === code);
+        return current;
+    }
     getCode(name) {
         const current = AreaHelper._arealist.find(item => item.name.indexOf(name) > -1);
         return current ? current.code : "";
     }
     getName(code) {
-        const current = AreaHelper._arealist.find(item => item.code === code);
+        const current = this.getNode(code);
         return current ? current.name : "";
     }
     static createInstance() {

@@ -11,15 +11,11 @@
         ],
         "curly": true,
         "no-eval": true,
-        "no-invalid-this": [
-            "check-function-in-method"
-        ],
+        "no-invalid-this": true,
         "no-switch-case-fall-through": true,
         "no-unused-expression": true,
         "no-var-keyword": true,
-        "interface-name": [
-            "always-prefix"
-        ],
+        "interface-name": true,
         "label-position": true,
         "no-conditional-assignment": true,
         "class-name": true

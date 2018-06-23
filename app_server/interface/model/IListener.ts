@@ -1,4 +1,5 @@
 import { IUser } from "./IUser";
+import { ERoleStatus } from "../../enum/ERoleStatus";
 
 export interface IListener{
     id?:number,
@@ -6,10 +7,11 @@ export interface IListener{
     job?:number,
     family?:number,
     edu?:number,
-    maintitles?:string,
+    labelids?:string,
+    labeldesc?:string,
     recivestatus?:number,
     isopentime?:number,
-    status:number,
+    certificateurls?:string,
     user:IUser
 }
 export default IListener;

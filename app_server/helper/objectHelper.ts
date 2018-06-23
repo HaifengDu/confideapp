@@ -14,6 +14,17 @@ export default class ObjectHelper{
             }
         }
     }
+
+    static serialize<T>(obj:any){
+        let result:T
+        try{
+            result = JSON.parse(JSON.stringify(obj));
+        }catch(e){
+            result = null;
+        }
+        return result;
+    }
+
     static mergeChildToSource(obj:any){
         if(!obj){
             return null;

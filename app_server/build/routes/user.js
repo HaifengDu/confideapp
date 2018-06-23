@@ -16,9 +16,9 @@ router.put("/", [
     userContrl.bindUser(req.body.code).then(data => {
         res.json(Object.assign({ data: data }, new ErrorMsg_1.default(true, "绑定成功")));
     }, err => {
-        res.json(new ErrorMsg_1.default(false, err.message));
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {
-        res.json(new ErrorMsg_1.default(false, err.message));
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
 router.get("/", [
@@ -36,9 +36,51 @@ router.get("/", [
         }
         res.json(Object.assign({ data: result }, new ErrorMsg_1.default(true)));
     }, err => {
-        res.json(new ErrorMsg_1.default(false, err.message));
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {
-        res.json(new ErrorMsg_1.default(false, err.message));
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/getCheckCode", [
+    check_1.query("phone").isMobilePhone("zh-CN").withMessage("非法的手机号"),
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    userContrl.getCheckCode(req.query.phone).then(data => {
+        req.session.bindphoneObj = data;
+        res.json(Object.assign({ code: data.code }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.post("/bindphone", [
+    check_1.body("phone").isMobilePhone("zh-CN").withMessage("非法的手机号"),
+    check_1.body("code").isLength({ min: 6, max: 6 }).withMessage("验证码非法"),
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    const sourceModel = req.session.bindphoneObj;
+    if (!sourceModel) {
+        res.json(new ErrorMsg_1.default(false, "当前手机号未发验证码"));
+        return;
+    }
+    userContrl.bindPhoneCode(sourceModel, {
+        phone: req.body.phone,
+        code: req.body.code,
+    }, req.query.userid).then(response => {
+        res.json(new ErrorMsg_1.default(true));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
 module.exports = router;

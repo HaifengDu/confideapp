@@ -1,5 +1,8 @@
-export enum ELabelType{
+export enum ELabelCType{
     Admin,
-    Custom
+    Custom,
 }
-export default ELabelType;
+export enum ELabelSType{
+    Label,
+    Experience//经历
+}

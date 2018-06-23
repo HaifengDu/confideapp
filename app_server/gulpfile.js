@@ -8,18 +8,17 @@
 
     let child;
     //目录常量
-    const folders = ["model", "controller", "routes", "enum", "helper"];
-    const tsps = folders.map(item => {
-        return ts.createProject('tsconfig.json', { "sourceMap": false });
-    });
+    const folders = ["model", "controller", "routes", "enum", "helper", "biz"];
+
     const PATHS = {
         scripts: folders.map(item => `./${item}/**/*.ts`),
         output: './build/**/',
     };
     folders.forEach((item, index) => {
+        const tsp = ts.createProject('tsconfig.json', { "sourceMap": false });
         gulp.task('build-ts-' + item, function() {
             gulp.src(`./${item}/**/*.ts`)
-                .pipe(tsps[index]())
+                .pipe(tsp())
                 .pipe(gulp.dest(`./build/${item}/`));
         });
         gulp.task('watch-ts-' + item, function() {

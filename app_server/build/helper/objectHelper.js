@@ -16,6 +16,16 @@ class ObjectHelper {
             }
         }
     }
+    static serialize(obj) {
+        let result;
+        try {
+            result = JSON.parse(JSON.stringify(obj));
+        }
+        catch (e) {
+            result = null;
+        }
+        return result;
+    }
     static mergeChildToSource(obj) {
         if (!obj) {
             return null;

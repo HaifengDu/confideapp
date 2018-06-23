@@ -3,23 +3,25 @@ import MainLabelModel from "../model/MainLabel";
 import { IMainLabel } from "../interface/model/IMainLabel";
 import * as Bluebird from "bluebird";
 import { ELabelStatus } from "../enum/ELabelStatus";
-import { ELabelType } from "../enum/ELabelType";
+import { ELabelCType,ELabelSType } from "../enum/ELabelType";
+import ObjectHelper from "../helper/objectHelper";
 
 export default class MainLabelService {
 
     private static _instance: MainLabelService;
-    private _list:IMainLabel[] = [];
+    private _labelList:IMainLabel[] = [];
+    private _expList:IMainLabel[] = [];
 
     private constructor() {
         this.initMainLabel();
     }
 
     public findLabel(ids:Array<number>){
-        return this._list.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1);
+        return this._labelList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1)||[];
     }
 
-    public findLabelByUser(ids:number[],listenerid:number){
-        return this.findLabel(ids).filter(item=>item.type===ELabelType.Admin||item.cuid===listenerid);
+    public findExprience(ids:number[]){
+        return this._expList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1)||[];
     }
 
     public addLabel(model:IMainLabel){
@@ -27,13 +29,31 @@ export default class MainLabelService {
             return Bluebird.reject({message:"标签不能为空"});
         }
         MainLabelModel.create(model).then(res=>{
-            this._list.push(model);
+            let tempModel = ObjectHelper.serialize<IMainLabel>(res);
+            if(tempModel){
+                if(model.stype===ELabelSType.Experience){
+                    this._expList.push(tempModel);
+                }else{
+                    this._labelList.push(tempModel);
+                }
+            }
+            return Promise.resolve(res);
+        });
+    }
+
+    private update(model:IMainLabel){
+        MainLabelModel.update(model,{
+            where:{
+                id:model.id
+            }
         });
     }
 
     private initMainLabel(){
         MainLabelModel.findAll().then(res=>{
-            this._list = JSON.parse(JSON.stringify(res));
+            const list = <IMainLabel[]>JSON.parse(JSON.stringify(res))||[];
+            this._labelList = list.filter(item=>item.stype===ELabelSType.Label);
+            this._expList = list.filter(item=>item.stype===ELabelSType.Experience);
         });
     }
 

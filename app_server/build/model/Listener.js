@@ -13,6 +13,8 @@ const Listener = mysqlSeq_1.default.define('listener', {
     isopentime: { type: Sequelize.STRING, comment: "接单时间" },
     labelids: { type: Sequelize.STRING(500), defaultValue: "[]", comment: "倾听者标签:[1,2,3]" },
     labeldesc: { type: Sequelize.TEXT, defaultValue: "[]", comment: "倾听者描述:[{id:1,desc:'测试'}]" },
+    expids: { type: Sequelize.STRING(500), defaultValue: "[]", comment: "倾听者经历:[1,2,3]" },
+    expdesc: { type: Sequelize.TEXT, defaultValue: "[]", comment: "倾听者经历描述:[{id:1,desc:'测试'}]" },
     certificateurls: { type: Sequelize.STRING, comment: "资质图片" },
     status: { type: Sequelize.TINYINT, defaultValue: 0, comment: "状态" }
 }, {

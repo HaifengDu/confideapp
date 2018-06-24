@@ -9,6 +9,8 @@ export interface IListener{
     edu?:number,
     labelids?:string,
     labeldesc?:string,
+    expids?:string,
+    expdesc?:string,
     recivestatus?:number,
     isopentime?:number,
     certificateurls?:string,

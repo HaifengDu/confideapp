@@ -42,17 +42,24 @@ const upload = multer({
     } 
 })
 
-router.get("/",function(req,res,next){
-    listenCtrl.findByUserid(req.query.userid).then(data=>{
-        res.json({
-            data,...new ErrorMsg(true)
+router.get("/",
+    [query("userid").isNumeric().withMessage("用户编号非法")],
+    function(req,res,next){
+        const errors:Result<{msg:string}> = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+        }
+        listenCtrl.findByUserid(req.query.userid).then(data=>{
+            res.json({
+                data,...new ErrorMsg(true)
+            });
+        },err=>{
+            res.json(new ErrorMsg(false,err.message,err));
+        }).catch(err=>{
+            res.json(new ErrorMsg(false,err||err.message,err));
         });
-    },err=>{
-        res.json(new ErrorMsg(false,err.message,err));
-    }).catch(err=>{
-        res.json(new ErrorMsg(false,err||err.message,err));
-    })
-});
+    }
+);
 router.put("/",
     [query("userid").isNumeric().withMessage("用户编号非法")],
     upload.array("certificatefiles",6),

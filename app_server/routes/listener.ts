@@ -9,11 +9,11 @@ import ErrorMsg from "../model/ErrorMsg";
 import ListenerService from "../controller/Listener";
 const router = express.Router();
 const listenCtrl = ListenerService.getInstance();
-
+const execPath = process.cwd();
 const storage = multer.diskStorage({
     destination: function (req:express.Request, file, cb) {
-        let dir = `../../files/images/${req.query.userid}`;
-        dir = path.resolve(__dirname,dir);
+        let dir = `files/images/${req.query.userid}`;
+        dir = path.resolve(execPath,dir);
         fs.exists(dir,exist=>{
             if(!exist){
                 fs.mkdir(dir,err=>{
@@ -34,7 +34,25 @@ const storage = multer.diskStorage({
     }
   })
   
-const upload = multer({ storage: storage })
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 6
+    } 
+})
+
+router.get("/",function(req,res,next){
+    listenCtrl.findByUserid(req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err||err.message,err));
+    })
+});
 router.put("/",
     [query("userid").isNumeric().withMessage("用户编号非法")],
     upload.array("certificatefiles",6),
@@ -44,6 +62,11 @@ router.put("/",
             return res.json(new ErrorMsg(false,errors.array()[0].msg ));
         }
         req.body.uid = req.query.userid;
+        try{
+            req.body.certificateurls = JSON.stringify((<any[]>(req.files || [])).map(item => item.path).map(item => item.replace(execPath, "")));
+        }catch(e){
+            req.body.certificateurls="[]";
+        }        
         listenCtrl.bindListener(req.body).then(data=>{
             res.json(new ErrorMsg(true,"创建成功"));
         },err=>{

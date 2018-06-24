@@ -59,6 +59,16 @@ Vue.filter("jsonfilter", (value:any)=> {
 //     // do something with response error
 //     return Promise.reject(error);
 //   });
+axios.interceptors.response.use(resp => resp, (error) => {
+    // 当返回错误时
+    if (axios.isCancel(error)) {
+        return Promise.reject(new Error('请求被取消'))
+    }
+    if ('code' in error && error.code === 'ECONNABORTED') {
+        return Promise.reject(new Error('请求超时'))
+    }
+    return Promise.reject(error)
+})
 
 const cacheWraperAxios:(axios:AxiosStatic)=>any = (axios:AxiosStatic)=> {
     let cacheContainer:any = {};

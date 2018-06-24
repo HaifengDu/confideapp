@@ -12,6 +12,8 @@
     "@types/sequelize": "^4.27.23",
     "@types/uuid": "^3.4.3",
     "body-parser": "~1.17.1",
+    "connect": "^3.6.6",
+    "connect-multiparty": "^2.1.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",

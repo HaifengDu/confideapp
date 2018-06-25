@@ -1,5 +1,6 @@
 
 import Vue,{VNode} from "vue"
+import { AxiosInstance } from "axios";
 
 declare module '*';
 
@@ -12,5 +13,7 @@ declare interface AxiosRequestConfig {
 }
 declare module "vue/types/vue" {
     interface Vue {
+      axios: AxiosInstance;
+      $http: AxiosInstance;
     }
 }

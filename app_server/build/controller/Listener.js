@@ -77,7 +77,7 @@ class ListenerService {
                     where: { id: id }
                 }]
         }).then(res => {
-            if (!res.user) {
+            if (!res || !res.user) {
                 Bluebird.reject({ message: "未查到对应的用户" });
                 return;
             }

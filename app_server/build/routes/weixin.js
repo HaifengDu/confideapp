@@ -3,6 +3,7 @@ const express = require("express");
 const crypto = require('crypto');
 const check_1 = require("express-validator/check");
 const weixinHelper_1 = require("../helper/weixinHelper");
+const ErrorMsg_1 = require("../model/ErrorMsg");
 const router = express.Router();
 router.get("/", function (req, res, next) {
     const signature = req.query.signature, //微信加密签名
@@ -55,17 +56,11 @@ router.get("/getUserinfo", [
         return res.json({ success: false, msg: errors.array()[0].msg });
     }
     weixinHelper_1.default.getUserinfoByCode(req.query.code).then(response => {
-        res.json(response);
+        res.json(Object.assign({ data: response }, new ErrorMsg_1.default(true)));
     }, err => {
-        res.json({
-            success: false,
-            msg: "服务器内部错误，请稍后重试"
-        });
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {
-        res.json({
-            success: false,
-            msg: "服务器内部错误，请稍后重试"
-        });
+        res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
 module.exports = router;

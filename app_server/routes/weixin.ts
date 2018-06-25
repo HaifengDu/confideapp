@@ -2,6 +2,7 @@ import * as express from "express";
 const crypto = require('crypto');
 import { body, query, validationResult, Result } from 'express-validator/check';
 import WeixinHelper from "../helper/weixinHelper";
+import ErrorMsg from "../model/ErrorMsg";
 
 const router = express.Router();
 
@@ -59,17 +60,11 @@ router.get("/getUserinfo",[
         return res.json({ success:false,msg: errors.array()[0].msg });
     }
     WeixinHelper.getUserinfoByCode(req.query.code).then(response=>{
-        res.json(response);
+        res.json({data:response,...new ErrorMsg(true)});
     },err=>{
-        res.json({
-            success:false,
-            msg:"服务器内部错误，请稍后重试"
-        })
+        res.json(new ErrorMsg(false,err.message,err));
     }).catch(err=>{
-        res.json({
-            success:false,
-            msg:"服务器内部错误，请稍后重试"
-        })
+        res.json(new ErrorMsg(false,err.message,err))
     });
 });
 export = router;

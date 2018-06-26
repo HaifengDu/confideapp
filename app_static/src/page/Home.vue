@@ -1,5 +1,15 @@
 <template>
-  <div>测试</div>
+<div class="home-container">
+  <div class="search">
+    <div class="input">
+     <input type="text">
+    </div>
+    <div class="button">快速匹配</div>
+  </div>
+  <div class="banner"></div>
+  <div class="content"></div>
+</div>
+
 </template>
 <script lang="ts">
 import Vue from 'vue';

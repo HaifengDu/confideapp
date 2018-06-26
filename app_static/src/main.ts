@@ -7,9 +7,9 @@ import "./assets/style.less";
 import MyService from "./api/my";
 Vue.use(MintUI);
 MyService.getInstance()
-  .getUserInfobyWXid("oRtVK09SoIKSYUYqP3RHV2aOyHr8")
+  .getUserInfobyWXid("oRtVK06i1JN_GkUA5NPk7pXzOJ3s")
   .then(res => {
-    // alert(JSON.stringify(res.data));
+    alert(JSON.stringify(res.data));
   });
 // function GetRequest() {
 //   var url = location.search; //获取url中"?"符后的字串

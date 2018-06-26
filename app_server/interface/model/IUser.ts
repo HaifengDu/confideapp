@@ -1,5 +1,6 @@
 import { ERoleStatus } from "../../enum/ERoleStatus";
 import { EBindPhoneStatus } from "../../enum/EBindPhoneStatus";
+import { ERole } from "../../enum/ERole";
 
 export interface IUser{
     id?:number,
@@ -7,7 +8,7 @@ export interface IUser{
     sex?:number,
     birthday?:string,
     address?:string,
-    role?:number,
+    role?:ERole,
     status?:ERoleStatus,
     follow?:string,
     nickname?:string

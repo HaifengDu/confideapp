@@ -70,7 +70,7 @@ export default class ListenerBiz {
         if(!listener.labelids){
             return new ErrorMsg(false,"擅长话题不能为空");
         }
-        const labelids = ObjectHelper.parseJSON(listener.labelids);
+        const labelids = ObjectHelper.parseJSON(<string>listener.labelids);
         if(!labelids||!(_.isArray(labelids))||!labelids.length){
             return new ErrorMsg(false,"擅长话题不能为空");
         }

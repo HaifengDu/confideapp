@@ -5,6 +5,7 @@ import * as Bluebird from "bluebird";
 import { ELabelStatus } from "../enum/ELabelStatus";
 import { ELabelCType,ELabelSType } from "../enum/ELabelType";
 import ObjectHelper from "../helper/objectHelper";
+import _ = require("lodash");
 
 export default class MainLabelService {
 
@@ -14,6 +15,10 @@ export default class MainLabelService {
 
     private constructor() {
         this.initMainLabel();
+    }
+
+    public findSystemLabel(){
+        return this._labelList.filter(item=>item.ctype===ELabelCType.Admin&&item.status===ELabelStatus.正常)||[];
     }
 
     public findLabel(ids:Array<number>){
@@ -41,12 +46,25 @@ export default class MainLabelService {
         });
     }
 
-    private update(model:IMainLabel){
-        MainLabelModel.update(model,{
+    public update(model:IMainLabel){
+        const promise = MainLabelModel.update(model,{
             where:{
                 id:model.id
             }
         });
+        promise.then(res=>{
+            let current:IMainLabel;
+            if(model.stype===ELabelSType.Label){
+                current = this._labelList.find(item=>item.id===model.id);
+            }else{
+                current = this._expList.find(item=>item.id===model.id);
+            }
+            
+            if(current){
+                _.extend(current,model);
+            }
+        });;
+        return promise;
     }
 
     private initMainLabel(){

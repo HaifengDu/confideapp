@@ -98,7 +98,7 @@ export default class ListenerService {
                 Bluebird.reject({ message: "未查到对应的用户" });
                 return;
             }
-            const labels = this.parseLabels(res.labelids,res.labeldesc);
+            const labels = this.parseLabels(res.labelids,<string>res.labeldesc);
             ObjectHelper.merge(res,{
                 labels:labels
             });
@@ -106,6 +106,27 @@ export default class ListenerService {
                 ObjectHelper.mergeChildToSource(res);
             }
             return Promise.resolve(res);
+        });
+    }
+
+    public findInUserids(ids:number[]){
+        return ListenerModel.findAll({
+            include: [{
+                model: User,
+                as: 'user',
+                where: { id:{[Op.in] :ids}}
+            }]
+        }).then(res=>{
+            res.forEach(item=>{
+                const labels = this.parseLabels(item.labelids,<string>item.labeldesc);
+                ObjectHelper.merge(item,{
+                    labels:labels
+                });
+                if(item){
+                    ObjectHelper.mergeChildToSource(item);
+                }
+            });
+            return Bluebird.resolve(res);
         });
     }
 

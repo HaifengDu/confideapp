@@ -3,10 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const EBaseDataType_1 = require("../enum/EBaseDataType");
 const baseDataHelper_1 = require("../helper/baseDataHelper");
 const areaHelper_1 = require("../helper/areaHelper");
-const area = require("../../config/area.json");
-const edu = require("../../config/edu.json");
-const family = require("../../config/family.json");
-const job = require("../../config/job.json");
 class BaseDataService {
     constructor() {
         this.baseDataHelper = baseDataHelper_1.default.getInstance();

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Listener_1 = require("../model/Listener");
 const Bluebird = require("bluebird");
 const User_1 = require("../model/User");
+const sequelize_1 = require("sequelize");
 const objectHelper_1 = require("../helper/objectHelper");
 const MainLabel_1 = require("./MainLabel");
 const ListenerBiz_1 = require("../biz/ListenerBiz");
@@ -89,6 +90,26 @@ class ListenerService {
                 objectHelper_1.default.mergeChildToSource(res);
             }
             return Promise.resolve(res);
+        });
+    }
+    findInUserids(ids) {
+        return Listener_1.default.findAll({
+            include: [{
+                    model: User_1.default,
+                    as: 'user',
+                    where: { id: { [sequelize_1.Op.in]: ids } }
+                }]
+        }).then(res => {
+            res.forEach(item => {
+                const labels = this.parseLabels(item.labelids, item.labeldesc);
+                objectHelper_1.default.merge(item, {
+                    labels: labels
+                });
+                if (item) {
+                    objectHelper_1.default.mergeChildToSource(item);
+                }
+            });
+            return Bluebird.resolve(res);
         });
     }
     static createInstance() {

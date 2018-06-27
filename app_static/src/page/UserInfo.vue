@@ -11,7 +11,7 @@
                 <span class="lab">果号</span>4361490
             </div>
         </div>
-        <div class="body" :class="{'close-height':!isExpended}">
+        <div class="body" :class="{'close-state':!isExpended}">
             <div class="listen-info">
                 <div class="info">
                     <div>
@@ -192,7 +192,7 @@ export default class UserInfo extends Vue{
             }
         }
     }   
-    .close-height{
+    .close-state{
         height:~'calc(100vh - 185px)';
     }
 </style>

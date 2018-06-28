@@ -184,6 +184,11 @@ export default class UserInfo extends Vue{
         height:@height;
         line-height:@height;
     }
+    .circle(@length){
+        width:@length;
+        height:@length;
+        border-radius:50%;
+    }
     div.mint-popup{
         border-radius:10px;
         width:250px;
@@ -221,8 +226,7 @@ export default class UserInfo extends Vue{
             .image{
                 padding-bottom:10px;
                 img{
-                    width:80px;
-                    border-radius:50%;
+                    .circle(80px);
                 }
             }
             .nickname{
@@ -249,15 +253,13 @@ export default class UserInfo extends Vue{
                     width:40px;
                     text-align:center;
                     .icon{
-                        width:24px;
-                        height:24px;
-                        border-radius:12px;
-                        background:#8a8a8a;
+                        .circle(30px);
+                        background:rgb(120,107,182);
                         margin: 0 auto 5px auto;
                         img{
                             width: 16px;
                             .p-rl;
-                            top: 4px;
+                            top: 7px;
                         }
                     }
                 }
@@ -269,14 +271,12 @@ export default class UserInfo extends Vue{
                 }
             }
             .phone{
-                width:50px;
-                height:50px;
+                .circle(50px);
                 .p-ab;
                 right:20px;
                 bottom:-10px;
                 z-index:10;
                 background:rgb(253,51,104);
-                border-radius:50%;
                 img{
                     .p-rl;
                     top: 9px;
@@ -360,11 +360,9 @@ export default class UserInfo extends Vue{
                 padding:20px 0;
                 .attents,.fans{
                     display:inline-block;
-                    width:40px;
-                    height:40px;
+                    .circle(40px);
                     background:rgb(130,146,202);
                     color:#fff;
-                    border-radius:50%;
                     .title,.lab{
                         height:20px;
                         font-size:10px;

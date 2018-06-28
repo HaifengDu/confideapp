@@ -12,12 +12,12 @@
                 <span class="lab">果号</span>4361490
             </div>
             <div v-if="!isSelf" class="option">
-                <div class="concern" style="margin-right:10px;">
+                <div class="concern">
                     <div @click="addConcern" class="icon">
                         <img :src="concernSrc">
                     </div>
                     <div class="text">
-                        <span>关注</span>
+                        <span>{{isConcern?'已关注':'关注'}}</span>
                     </div>
                 </div>
                 <div class="share">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div v-if="!isSelf&&isListener" class="phone">
+            <div v-if="!isSelf&&isListener" class="phone" @click="contact">
                 <img src="static/images/userInfo/phone-handle.png">
             </div>
         </div>
@@ -60,8 +60,8 @@
             <div v-if="isListener" class="person-info">
                 <div class="title">我的标签</div>
                 <div>
-                    <span class="tags" v-for="(tag,index) in tags" :key="index">
-                        {{tag.name}}
+                    <span class="tags tag-default" v-for="(tag,index) in tags" :key="index" @click="tag.hasSub&&showScribe(tag)">
+                        {{tag.name}}<span v-if="tag.hasSub">></span>
                     </span>
                 </div>
             </div>
@@ -87,6 +87,12 @@
                 <span>2018.05.28注册</span>
             </div>
         </div>
+        <mt-popup
+            v-model="popupVisible">
+            <div class="title">{{tag.name}}</div>
+            <div class="content">{{tag.scribe}}</div>
+            <div class="btn" @click="contact">和TA聊聊</div>
+        </mt-popup>
     </div>
 </template>
 
@@ -114,13 +120,16 @@ export default class UserInfo extends Vue{
     //是否已关注该用户
     private isConcern = false;
 
+    private popupVisible = false;
+    private tag:any = {};
+
     private concernSrc = 'static/images/userInfo/add.png';
     private tags = [
-        {name:'情感挽回'},
+        {name:'情感挽回',hasSub:true,scribe:'拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高，拥有多年的情感挽回经验，成功率高，拥有多年的情感挽回经验，成功率高'},
         {name:'婚姻关系'},
         {name:'人际关系'},
         {name:'个人成长'},
-        {name:'情绪疏导'},
+        {name:'情绪疏导',hasSub:true,scribe:'极其擅长情绪疏导，经验丰富'},
         {name:'心理负担'},
         {name:'帮我分析问题'}
     ]
@@ -136,6 +145,16 @@ export default class UserInfo extends Vue{
         this.isConcern = !this.isConcern;
         this.concernSrc = this.isConcern?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
     }
+
+    showScribe(tag:any){
+        this.tag = tag;
+        this.popupVisible = !this.popupVisible;
+    }
+
+    contact(){
+        this.popupVisible&&(this.popupVisible = false);
+        console.log('talk with me');
+    }
 }
 </script>
 
@@ -144,11 +163,52 @@ export default class UserInfo extends Vue{
     .f-sm{
         font-size:12px;
     }
+    .f-lg{
+        font-size:18px;
+    }
     .p-rl{
         position:relative;
     }
     .p-ab{
         position:absolute;
+    }
+    .t-ellipsis(@lines){
+        overflow:hidden;
+        text-overflow: ellipsis;
+        display: box;
+        display: -webkit-box;
+        -webkit-line-clamp: @lines;
+        -webkit-box-orient: vertical;
+    }
+    .v-middle(@height){
+        height:@height;
+        line-height:@height;
+    }
+    div.mint-popup{
+        border-radius:10px;
+        width:250px;
+        height:250px;
+        background:rgb(48,186,180);
+        color:#fff;
+        .title{
+            .v-middle(30px);
+            margin:40px 0 20px 0;
+            .f-lg;
+        }
+        .content{
+            padding:0 10px;
+            .t-ellipsis(4);
+        }
+        .btn{
+            width: 100%;
+            .v-middle(40px);
+            .p-ab;
+            bottom:0;
+            left:0;
+            color:#fff;
+            background:rgb(21,211,197);
+            border-radius:0 0 10px 10px;
+        }
     }
     .container{
         .header{
@@ -162,7 +222,7 @@ export default class UserInfo extends Vue{
                 padding-bottom:10px;
                 img{
                     width:80px;
-                    border-radius:40px;
+                    border-radius:50%;
                 }
             }
             .nickname{
@@ -186,14 +246,14 @@ export default class UserInfo extends Vue{
                 top:20px;
                 right:20px;
                 .concern,.share{
-                    width:24px;
+                    width:40px;
                     text-align:center;
                     .icon{
                         width:24px;
                         height:24px;
                         border-radius:12px;
                         background:#8a8a8a;
-                        margin-bottom:5px;
+                        margin: 0 auto 5px auto;
                         img{
                             width: 16px;
                             .p-rl;
@@ -209,17 +269,17 @@ export default class UserInfo extends Vue{
                 }
             }
             .phone{
-                width:40px;
-                height:40px;
+                width:50px;
+                height:50px;
                 .p-ab;
                 right:20px;
                 bottom:-10px;
                 z-index:10;
                 background:rgb(253,51,104);
-                border-radius:20px;
+                border-radius:50%;
                 img{
                     .p-rl;
-                    top: 4px;
+                    top: 9px;
                 }
             }
         }
@@ -248,8 +308,7 @@ export default class UserInfo extends Vue{
                     }
                 }
                 .evaluate{
-                    height: 35px;
-                    line-height: 35px;
+                    .v-middle(35px);
                     background: rgb(247,248,252);
                     border-radius:5px;
                     .arrow{
@@ -273,12 +332,14 @@ export default class UserInfo extends Vue{
                 }
                 .tags{
                     display:inline-block;
-                    border: 1px solid @light-blue;
-                    color: @light-blue;
                     border-radius: 5px;
                     padding:0px 3px 2px 3px;
                     .f-sm;
                     margin:5px 5px 0 0;
+                }
+                .tag-default{
+                    border: 1px solid @light-blue;
+                    color: @light-blue;
                 }
                 .information{
                     padding-right:30px;
@@ -286,12 +347,7 @@ export default class UserInfo extends Vue{
                     text-align: justify;
                 }
                 .close{
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    display: box;
-                    display: -webkit-box;
-                    -webkit-line-clamp: 3;
-                    -webkit-box-orient: vertical;
+                    .t-ellipsis(3);
                 }
                 .expend-btn{
                     .p-ab;
@@ -308,7 +364,7 @@ export default class UserInfo extends Vue{
                     height:40px;
                     background:rgb(130,146,202);
                     color:#fff;
-                    border-radius:20px;
+                    border-radius:50%;
                     .title,.lab{
                         height:20px;
                         font-size:10px;

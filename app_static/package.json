@@ -5,7 +5,7 @@
     "author": "dhf@acewill.cn <dhf@acewill.cn>",
     "private": true,
     "scripts": {
-        "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 192.168.1.10",
+        "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 192.168.1.8",
         "start": "npm run dev",
         "unit": "jest --config test/unit/jest.conf.js --coverage",
         "startunit": "karma start test/unit/karma.conf.js",

@@ -8,7 +8,7 @@ import axios from 'axios'
 import VeeValidate, { Validator } from 'vee-validate';
 import zh_CN from 'vee-validate/dist/locale/zh_CN';
 import './main.ts';
-
+import store from './store'
 Vue.config.productionTip = false
 Vue.use(VueAxios, axios);
 Validator.localize('zh_CN', zh_CN);
@@ -19,6 +19,7 @@ Vue.use(VeeValidate, {
 new Vue({
     el: '#app',
     router,
+    store,
     components: { App },
     template: '<App/>'
 })

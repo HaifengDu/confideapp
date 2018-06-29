@@ -9,7 +9,7 @@
       </div>
       <div class="list" @click="showName=true">
         <mt-cell title="名字" is-link>
-          <span>尚小牛</span>
+          <span>{{nickName}}</span>
           <i class="mint-cell-allow-right"></i>
         </mt-cell>
       </div>
@@ -51,7 +51,10 @@
       <p>个人简介</p>
       <textarea name="" id="" cols="30" rows="10" placeholder="请输入个人介绍" v-model="resume"></textarea>
     </div>
-    <update-name :name="nickName" v-if="showName" @changeName="updateName"></update-name>
+    <div class="button">
+     <div class="next" @click="goExperience">下一步</div>
+    </div>
+    <update-name :name="nickName" v-if="showName" @changeName="updatedName"></update-name>
   </div>
 </template>
 
@@ -77,6 +80,7 @@ export default class BaseInfo extends Vue{
   private nickName:string = '尚小牛'
   private showName:boolean = false
   created(){
+    document.title = "基础信息"
     this.service.getArea(EBaseDataType.Area).then(res=>{
       let data = res.data.data;
       for(var key in data){
@@ -93,15 +97,20 @@ export default class BaseInfo extends Vue{
   handleConfirm(data:string){
     this.birthday = (<any>new Date(data)).format("yyyy-MM-dd");
   }
-  updateName(name:string){
+  updatedName(name:string){
     this.nickName = name;
     this.showName = false;
+  }
+  goExperience(){
+    console.log(this)
+    this.$router.push({path:'/exprience'})
   }
 }
 </script>
 
 <style lang="less" scoped>
 @bg:#f5f5f5;
+@mainColor:#00D1CF;
 .base-info-container{
   padding-top:1.6rem;
   background:@bg;
@@ -125,6 +134,13 @@ export default class BaseInfo extends Vue{
         font-size:1.4rem;
         direction: rtl;
       }
+      .mint-cell-value.is-link {
+        img{
+          height:4.2rem;
+          width:4.2rem;
+          border-radius:1.6rem;
+        }
+      }
     }
   }
   .introduce{
@@ -147,6 +163,21 @@ export default class BaseInfo extends Vue{
       padding:1rem;
     }
   }
-
+  .button{
+    display: flex;
+    justify-content: center;
+    background:#fff;
+    width:100%;
+    position: fixed;
+    bottom:80px;
+    .next{
+      width:12rem;
+      height:4rem;
+      line-height: 4rem;
+      color:#fff;
+      background:@mainColor;
+      border-radius:.3rem;
+    }
+  }
 }
 </style>

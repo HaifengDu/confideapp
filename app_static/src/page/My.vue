@@ -5,9 +5,9 @@
       <div class="detail"></div>
       <div class="main">
         <div class="icon">
-          <img src="static/images/my/xiaoniu.jpg" alt="">
+          <img :src="user.headimgurl" alt="">
         </div>
-        <div class="nick-name">尚小牛Lucky</div>
+        <div class="nick-name">{{user.nickname}}</div>
         <div class="follows">
           <div class="follow">收藏<span class="num">10w+</span></div>
           <div class="like">关注<span class="num">666</span></div>
@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="lists">
-      <div class="list">
+      <div class="list" @click="applyListener">
         <mt-cell title="申请倾听者">
           <i class="mint-cell-allow-right"></i>
           <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
@@ -67,8 +67,20 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-
-@Component
+import MyService from "../api/my";
+import { mapActions, mapGetters } from 'vuex';
+@Component({
+  methods:{
+    ...mapActions({
+      getUserInfo:'getUserInfo'
+    })
+  },
+  computed:{
+    ...mapGetters({
+      user:'user'
+    })
+  }
+})
 export default class My extends Vue{
   private entranceArr:any[] = [
     {
@@ -87,12 +99,12 @@ export default class My extends Vue{
           imgUrl:'static/images/my/order.png',
           text:'订单',
           id:'order'
-        },
-        {
-          imgUrl:'static/images/my/card.png',
-          text:'优惠券',
-          id:'card'
         }
+        // {
+        //   imgUrl:'static/images/my/card.png',
+        //   text:'优惠券',
+        //   id:'card'
+        // }
         ]
     },{
         children:[
@@ -110,15 +122,24 @@ export default class My extends Vue{
             imgUrl:'static/images/my/encourage.png',
             text:'评价',
             id:'encourage'
-          },
-          {
-            imgUrl:'static/images/my/activity.png',
-            text:'活动',
-            id:'activity'
           }
+          // {
+          //   imgUrl:'static/images/my/activity.png',
+          //   text:'活动',
+          //   id:'activity'
+          // }
         ]
     }
   ];
+  private service = MyService.getInstance();
+  applyListener(){
+    //TODO:要改为中间页
+    this.$router.push({path:'/bindPhone'})
+  }
+  created(){
+    document.title = "我的";
+    (<any>this).getUserInfo('oRtVK09SoIKSYUYqP3RHV2aOyHr8')
+  }
 }
 
 </script>

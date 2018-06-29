@@ -6,11 +6,7 @@ import "mint-ui/lib/style.css";
 import "./assets/style.less";
 import MyService from "./api/my";
 Vue.use(MintUI);
-MyService.getInstance()
-  .getUserInfobyWXid("oRtVK09SoIKSYUYqP3RHV2aOyHr8")
-  .then(res => {
-    // alert(JSON.stringify(res.data));
-  });
+
 // function GetRequest() {
 //   var url = location.search; //获取url中"?"符后的字串
 //   var theRequest:any = new Object();

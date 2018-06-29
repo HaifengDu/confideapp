@@ -1,29 +1,31 @@
 <template>
 <div class="update-name-container">
   <div class="input">
-    <input type="text" v-model="nickName" maxlength="15">
+    <input type="text" v-model="content" :maxlength="maxlength">
     <div class="close" @click="deleteAll"></div>
-    <div class="confirm" @close="confirm"></div>
+    <div class="confirm" @click="confirm"></div>
   </div>
 </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import {Component, Prop} from 'vue-property-decorator';
+import {Component, Prop, Watch} from 'vue-property-decorator';
 
 @Component
 export default class UpdateName extends Vue{
   @Prop({type:String,default:''})
   private name:string
-  private nickName:string = ""
+  @Prop({type:Number,default:15})
+  private maxlength:number
+  private content:string = ""
   deleteAll(){
-    this.nickName = '';
+    this.content = '';
   }
   confirm(){
-    this.$emit('changeName',this.nickName)
+    this.$emit('changeContent',this.content)
   }
-  created(){
-    this.nickName = name
+  mounted(){
+    this.content = this.name
   }
 }
 </script>

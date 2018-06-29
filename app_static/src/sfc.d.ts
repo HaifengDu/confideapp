@@ -1,6 +1,7 @@
 
 import Vue,{VNode} from "vue"
 import { AxiosInstance } from "axios";
+import VueRouter, { Route, RawLocation, NavigationGuard } from "vue-router";
 
 declare module '*';
 
@@ -15,5 +16,7 @@ declare module "vue/types/vue" {
     interface Vue {
       axios: AxiosInstance;
       $http: AxiosInstance;
+      $router: VueRouter;
+      $route: Route;
     }
 }

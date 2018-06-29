@@ -11,8 +11,9 @@ import "./assets/style.less";
 import './main.ts';
 import App from './App';
 import router from './router';
+import store from './store';
+Vue.config.productionTip = false;
 
-Vue.config.productionTip = false
 Vue.use(VueAxios, axios);
 Validator.localize('zh_CN', zh_CN);
 Vue.use(VeeValidate, {
@@ -23,6 +24,7 @@ Vue.use(MintUI);
 new Vue({
     el: '#app',
     router,
+    store,
     components: { App },
     template: '<App/>'
 });

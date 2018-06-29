@@ -7,11 +7,11 @@ import httpIntercept from "./util/httpIntercept";
 import cacheWraperAxios from "./util/extendAxios";
 httpIntercept(Axios);
 cacheWraperAxios(Axios);
-MyService.getInstance()
-  .getUserInfobyWXid("oRtVK06i1JN_GkUA5NPk7pXzOJ3s")
-  .then(res => {
-    alert(JSON.stringify(res.data));
-  });
+// MyService.getInstance()
+//   .getUserInfobyWXid("oRtVK06i1JN_GkUA5NPk7pXzOJ3s")
+//   .then(res => {
+//     alert(JSON.stringify(res.data));
+//   });
 // function GetRequest() {
 //   var url = location.search; //获取url中"?"符后的字串
 //   var theRequest:any = new Object();

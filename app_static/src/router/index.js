@@ -5,7 +5,8 @@ import My from "@/page/My.vue";
 import ApplyListener from "@/page/ApplyListener.vue";
 import BindPhone from "@/page/BindPhone.vue";
 import BaseInfo from "@/page/BaseInfo.vue";
-
+import UserInfo from "@/page/UserInfo.vue";
+import ListenerSettings from "@/page/ListenerSettings.vue";
 
 Vue.use(Router)
 
@@ -35,6 +36,16 @@ export default new Router({
       path: "/baseInfo",
       name: "BaseInfo",
       component: BaseInfo
+    },
+    {
+      path: "/userInfo",
+      name: "UserInfo",
+      component: UserInfo
+    },
+    {
+      path: "/listenerSettings",
+      name: "ListenerSettings",
+      component: ListenerSettings
     }
   ]
 });

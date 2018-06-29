@@ -13,6 +13,7 @@ var weixin = require("./build/routes/weixin");
 var basedata = require("./build/routes/basedata");
 var listener = require("./build/routes/listener");
 var chat = require("./build/routes/chat");
+var recommend = require("./build/routes/recommend");
 require("./build/helper/mongoHelper");
 var app = express();
 
@@ -68,6 +69,7 @@ app.use("/wx", weixin);
 app.use("/base", basedata);
 app.use("/listener", listener);
 app.use("/chat", chat);
+app.use("/recommend", recommend);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

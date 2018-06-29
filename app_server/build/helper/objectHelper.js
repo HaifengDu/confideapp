@@ -46,6 +46,13 @@ class ObjectHelper {
         }
     }
     static parseJSON(str) {
+        if (!str) {
+            return null;
+        }
+        //非字符串直接返回
+        if (typeof str !== "string" || Object.prototype.toString.call(str) !== '[object String]') {
+            return str;
+        }
         let result = null;
         try {
             result = JSON.parse(str);

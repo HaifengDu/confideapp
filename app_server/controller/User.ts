@@ -122,6 +122,7 @@ export default class UserService {
     }
 
     public bindPhoneCode(source:IMailCode,checkModel:IMailCode,userid:number){
+        
         const result = this._mailHelper.checkCode(source,checkModel);
         if(!result.success){
             return Bluebird.reject(result);

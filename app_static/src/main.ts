@@ -6,7 +6,6 @@ import "mint-ui/lib/style.css";
 import "./assets/style.less";
 import MyService from "./api/my";
 Vue.use(MintUI);
-
 // function GetRequest() {
 //   var url = location.search; //获取url中"?"符后的字串
 //   var theRequest:any = new Object();

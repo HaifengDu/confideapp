@@ -41,7 +41,11 @@ const upload = multer({
         files: 6
     }
 });
-router.get("/", function (req, res, next) {
+router.get("/", [check_1.query("userid").isNumeric().withMessage("用户编号非法")], function (req, res, next) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     listenCtrl.findByUserid(req.query.userid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {

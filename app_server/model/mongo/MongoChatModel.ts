@@ -1,6 +1,6 @@
 import * as Mongoose from "mongoose";
 import { IChatRecord } from "../../interface/mongomodel/IChatRecord";
-const MongoCheckModel = new Mongoose.Schema({
+const MongoChatModel = new Mongoose.Schema({
     senduid:Number,
     touid:Number,
     roomid:String,
@@ -8,5 +8,5 @@ const MongoCheckModel = new Mongoose.Schema({
     date:Date,
     status:Number
 });
-const MongoCheckRecord = Mongoose.model<IChatRecord>('chatrecord', MongoCheckModel);
-export default MongoCheckRecord;
+const MongoChatRecord = Mongoose.model<IChatRecord>('chatrecord', MongoChatModel);
+export default MongoChatRecord;

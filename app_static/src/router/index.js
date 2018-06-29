@@ -8,6 +8,8 @@ import BindPhone from "@/page/BindPhone.vue";
 import BaseInfo from "@/page/BaseInfo.vue";
 import Exprience from "@/page/Exprience.vue";
 import Tags from "@/page/Tags.vue";
+import UserInfo from "@/page/UserInfo.vue";
+import ListenerSettings from "@/page/ListenerSettings.vue";
 
 Vue.use(Router)
 
@@ -53,6 +55,16 @@ export default new Router({
       path: "/tag",
       name: "Tag",
       component: Tags
+    },
+    {
+      path: "/userInfo",
+      name: "UserInfo",
+      component: UserInfo
+    },
+    {
+      path: "/listenerSettings",
+      name: "ListenerSettings",
+      component: ListenerSettings
     }
   ]
 });

@@ -1,5 +1,6 @@
 import { IUser } from "./IUser";
-import { ERoleStatus } from "../../enum/ERoleStatus";
+import { EAuthStatus } from "../../enum/EAuthStatus";
+import { ERecieveStatus } from "../../enum/ERecieveStatus";
 
 export interface IListener{
     id?:number,
@@ -7,11 +8,16 @@ export interface IListener{
     job?:number,
     family?:number,
     edu?:number,
-    labelids?:string,
-    labeldesc?:string,
-    recivestatus?:number,
+    labelids?:string|any[],
+    labeldesc?:string|any[],
+    expids?:string|any[],
+    expdesc?:string|any[],
+    recievestatus?:ERecieveStatus,
     isopentime?:number,
     certificateurls?:string,
-    user:IUser
+    authstatus:EAuthStatus,
+    phoneprice?:number,
+    wordprice?:number,
+    user:IUser,
 }
 export default IListener;

@@ -1,12 +1,6 @@
 import { EBaseDataType } from "../enum/EBaseDataType";
 import BaseDataHelper from "../helper/baseDataHelper";
 import AreaHelper from "../helper/areaHelper";
-import _ = require("lodash");
-
-const area = require("../../config/area.json");
-const edu = require("../../config/edu.json");
-const family = require("../../config/family.json");
-const job = require("../../config/job.json");
 
 export default class BaseDataService {
 

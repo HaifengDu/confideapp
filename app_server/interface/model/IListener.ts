@@ -16,6 +16,8 @@ export interface IListener{
     isopentime?:number,
     certificateurls?:string,
     authstatus:EAuthStatus,
+    phoneprice?:number,
+    wordprice?:number,
     user:IUser,
 }
 export default IListener;

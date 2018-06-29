@@ -23,12 +23,12 @@ class RecommendService {
             //可接单状态
             return GeneralSetting_1.default.findAll({
                 include: [{
-                    model: Listener_1.default,
-                    where: {
-                        recievestatus: ERecieveStatus_1.ERecieveStatus.可接单
-                    },
-                    as: 'listener'
-                }],
+                        model: Listener_1.default,
+                        where: {
+                            recievestatus: ERecieveStatus_1.ERecieveStatus.可接单
+                        },
+                        as: 'listener'
+                    }],
                 where: {
                     status: EGeneralStatus_1.EGeneralStatus.Enable
                 }
@@ -73,7 +73,7 @@ class RecommendService {
                     randomArr = randomArr.concat(getArrayItems(obj[2] || [], randomKeys[95]));
                     randomArr = randomArr.concat(getArrayItems(obj[3] || [], randomKeys[100]));
                     //查找相同的
-                    const same = _.intersectionBy(randomArr, existids, function(item) {
+                    const same = _.intersectionBy(randomArr, existids, function (item) {
                         if (typeof item === "number") {
                             return item;
                         }
@@ -84,7 +84,7 @@ class RecommendService {
                         const sameuids = same.map(item => item.uid);
                         _.remove(randomArr, item => sameuids.indexOf(item.uid) > -1);
                     }
-                    if (randomArr.length < this.Count && obj[1] && obj[1].length) {
+                    if (randomArr.length < this.Count) {
                         //从第一级补齐
                         obj[1].forEach(item => {
                             if (randomArr.length >= this.Count) {
@@ -112,7 +112,6 @@ class RecommendService {
     }
 }
 exports.default = RecommendService;
-
 function getArrayItems(arr, num) {
     //新建一个数组,将传入的数组复制过来,用于运算,而不要直接操作传入的数组;
     let temp_array = new Array();
@@ -130,7 +129,8 @@ function getArrayItems(arr, num) {
             return_array[i] = temp_array[arrIndex];
             //然后删掉此索引的数组元素,这时候temp_array变为新的数组
             temp_array.splice(arrIndex, 1);
-        } else {
+        }
+        else {
             //数组中数据项取完后,退出循环,比如数组本来只有10项,但要求取出20项.
             break;
         }

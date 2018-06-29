@@ -63,6 +63,9 @@ class ListService {
             return this.listenerService.findInUserids(res.map(item => item.uid));
         });
     }
+    getSearch(name, page) {
+        return this.listenerService.findByName(name, page);
+    }
     static createInstance() {
         ListService.getInstance();
     }

@@ -6,6 +6,7 @@ import ErrorMsg from "../model/ErrorMsg";
 import ListenerService from "./Listener";
 import { IListener } from "../interface/model/IListener";
 import { ERecieveStatus } from "../enum/ERecieveStatus";
+import { IPager } from "../interface/IPager";
 
 export default class ListService {
 
@@ -72,6 +73,10 @@ export default class ListService {
         return <any>query.skip(start).limit(pageSize).then(res=>{
             return this.listenerService.findInUserids(res.map(item=>item.uid));
         }) as Bluebird<IListener[]>;
+    }
+
+    public getSearch(name:string,page:IPager){
+        return this.listenerService.findByName(name,page);
     }
 
     static createInstance() {

@@ -19,6 +19,13 @@ class MainLabelService {
     findLabel(ids) {
         return this._labelList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > 1) || [];
     }
+    /**
+     * 查找自己的标签（包含审核中）
+     * @param ids
+     */
+    findLabelByMyself(ids) {
+        return this._labelList.filter(item => (item.status === ELabelStatus_1.ELabelStatus.正常 || item.status === ELabelStatus_1.ELabelStatus.审核中) && ids.indexOf(item.id) > -1) || [];
+    }
     findExprience(ids) {
         return this._expList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > 1) || [];
     }

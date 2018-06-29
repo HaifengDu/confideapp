@@ -5,7 +5,6 @@ const MongoSortFilterModelSchema = new Mongoose.Schema({
     generalprice:Number,
     auth:Boolean,
     praisepercent:Number,
-    minprice:Number,
     sex:Number,
     family:Number,
     birthday:Date,

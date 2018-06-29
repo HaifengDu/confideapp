@@ -7,10 +7,7 @@
             <div class="nickname">
                 星空下的嗳
             </div>
-            <div class="user-id">
-                <span>北京市</span>
-                <span class="lab">果号</span>4361490
-            </div>
+            <div class="user-id">北京市</div>
             <div v-if="!isSelf" class="option">
                 <div class="concern">
                     <div @click="addConcern" class="icon">
@@ -32,6 +29,7 @@
             <div v-if="!isSelf&&isListener" class="phone" @click="contact">
                 <img src="static/images/userInfo/phone-handle.png">
             </div>
+            <div class="back" @click="back"></div>
         </div>
         <div class="body">
             <div v-if="isListener" class="listen-info">
@@ -65,7 +63,7 @@
                     </span>
                 </div>
             </div>
-            <div class="person-info">
+            <div class="person-info" :class="{'p-top':!isListener}">
                 <div class="title">个人信息</div>
                 <div class="information" :class="{'close':!isExpended}">
                     松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。
@@ -114,9 +112,9 @@ export default class UserInfo extends Vue{
 
     //TODO:测试数据
     //是否是倾听者
-    private isListener = true;
+    private isListener = false;
     //当前用户信息页面是否是自己
-    private isSelf = false;
+    private isSelf = true;
     //是否已关注该用户
     private isConcern = false;
 
@@ -154,6 +152,10 @@ export default class UserInfo extends Vue{
     contact(){
         this.popupVisible&&(this.popupVisible = false);
         console.log('talk with me');
+    }
+
+    back(){
+        (<any>this).$router.go(-1);
     }
 }
 </script>
@@ -233,7 +235,6 @@ export default class UserInfo extends Vue{
                 color:#eee;
             }
             .user-id{
-                font-size:12px;
                 padding:10px 0;
                 color:#aaa;
                 .lab{
@@ -281,6 +282,14 @@ export default class UserInfo extends Vue{
                     .p-rl;
                     top: 9px;
                 }
+            }
+            .back{
+                width:20px;
+                height:20px;
+                .p-ab;
+                top:20px;
+                left:20px;
+                background:url(../../static/images/userInfo/arrow-left.png) no-repeat center center;
             }
         }
         .body{
@@ -355,6 +364,9 @@ export default class UserInfo extends Vue{
                     bottom:18px;
                     color:@light-blue;
                 }
+            }
+            .person-info.p-top{
+                padding-top:30px;
             }
             .attentions{
                 padding:20px 0;

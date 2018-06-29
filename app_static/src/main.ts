@@ -1,11 +1,12 @@
-import Vue from "vue";
-import "./axiosConfig"
-import "./extend"
-import MintUI from "mint-ui";
-import "mint-ui/lib/style.css";
-import "./assets/style.less";
+import Axios from "axios";
+import "./util/axiosConfig";
+import "./util/extend";
+import "./util/filter";
 import MyService from "./api/my";
-Vue.use(MintUI);
+import httpIntercept from "./util/httpIntercept";
+import cacheWraperAxios from "./util/extendAxios";
+httpIntercept(Axios);
+cacheWraperAxios(Axios);
 MyService.getInstance()
   .getUserInfobyWXid("oRtVK06i1JN_GkUA5NPk7pXzOJ3s")
   .then(res => {

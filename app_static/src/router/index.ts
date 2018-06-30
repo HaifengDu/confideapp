@@ -12,6 +12,8 @@ import Exprience from "@/page/my/Exprience.vue";
 import Tags from "@/page/my/Tags.vue";
 import UserInfo from "@/page/userInfo/UserInfo.vue";
 import ListenerSettings from "@/page/settings/ListenerSettings.vue";
+import MyTags from "@/page/settings/MyTags.vue";
+import OtherInfo from "@/page/settings/OtherInfo.vue";
 
 Vue.use(Router)
 
@@ -74,6 +76,15 @@ const router = new Router({
       path: "/listenerSettings",
       name: "ListenerSettings",
       component: ListenerSettings
+    },
+    {
+      path:'/myTags',
+      name:"MyTags",
+      component:MyTags
+    },{
+      path:"/otherInfo",
+      name:"OtherInfo",
+      component:OtherInfo
     }
   ]
 });

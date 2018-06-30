@@ -13,23 +13,30 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import AddTag from '@/components/UpdateName'
+import AddTag from '@/components/UpdateName';
+import IMainLabel from "@/interface/model/IMainLabel";
+import LabelService from "../../api/LabelService.ts"
 import {Component} from 'vue-property-decorator';
-
+const labelService = LabelService.getInstance();
 @Component({
   components:{
     AddTag
   }
 })
-export default class BindPhone extends Vue{
-  private tags:Array<{id:number,name:string}> = []
+export default class Tags extends Vue{
+  private static readonly MAX_COUNT = 21;
+  private tags:Array<IMainLabel> = [];
   private selectedTags:Array<{id:number,name:string}> = []
   private showAddTag = false
   created(){
-    document.title="选择标签"
-    for(var i=0;i<10;i++){
-      this.tags.push({id:i,name:`情感挽回${i}`})
-    }
+    document.title="选择标签";
+    debugger;
+    labelService.getSystemLabel().then(res=>{
+      const data =res.data;
+      if(data.success){
+        this.tags = data.data;
+      }
+    });
   }
   selectTag(item:any){
     let index = this.selectedTags.findIndex(ele=>ele.id==item.id)
@@ -50,9 +57,16 @@ export default class BindPhone extends Vue{
   updatedTags(tag:any){
     this.showAddTag = false
     //TODO:创建标签 调接口  放在最后
-    if(this.selectedTags.length<21){
-      this.tags.push({name:tag,id:this.tags.length})
-      this.selectedTags.push({name:tag,id:this.tags.length})
+    if(this.selectedTags.length<Tags.MAX_COUNT){
+      labelService.addLabel({
+        name:tag
+      }).then(res=>{
+        const data = res.data;
+        if(data.success&&data.data){
+          this.tags.push(<any>{name:tag,id:data.data.id});
+          this.selectedTags.push(<any>{name:tag,id:data.data.id});
+        }
+      });
     }
   }
 }

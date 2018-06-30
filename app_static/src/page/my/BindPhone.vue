@@ -24,7 +24,7 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
 import { mapActions, mapGetters } from 'vuex';
-import Service from '../../api/BaseInfoService'
+// import Service from '../../api/BaseInfoService'
 @Component({
   methods:{
     ...mapActions({
@@ -43,7 +43,7 @@ export default class BindPhone extends Vue{
   private bind = false
   private phone = ''
   private code = ''
-  private BaseInfoService = Service.getInstance()
+  // private BaseInfoService = Service.getInstance()
   goBaseInfo(){
     if(this.phone&&this.code){
       (<any>this).bindPhone({code:this.code,phone:this.phone}).then((res:any) => {

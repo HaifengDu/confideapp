@@ -3,19 +3,19 @@
     <div class="lists">
       <div class="list head-image">
         <mt-cell title="头像" is-link>
-          <img src="static/images/my/listener.png" width="24" height="24">
+          <img :src="baseInfo.headimgurl" width="24" height="24">
           <i class="mint-cell-allow-right"></i>
         </mt-cell>
       </div>
       <div class="list" @click="showName=true">
         <mt-cell title="名字" is-link>
-          <span>{{nickName}}</span>
+          <span>{{baseInfo.nickname}}</span>
           <i class="mint-cell-allow-right"></i>
         </mt-cell>
       </div>
       <div class="list">
         <mt-cell title="地区">
-          <select v-model="area">
+          <select v-model="baseInfo.address">
               <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
           </select>
           <i class="mint-cell-allow-right"></i>
@@ -23,15 +23,15 @@
       </div>
       <div class="list" @click="selectDate">
         <mt-cell title="生日" is-link>
-          <span>{{birthday}}</span>
+          <span>{{baseInfo.birthday}}</span>
           <i class="mint-cell-allow-right"></i>
         </mt-cell>
       </div>
       <div class="list">
         <mt-radio
           title="性别"
-          v-model="sex"
-          :options="['男', '女']">
+          v-model="baseInfo.sex"
+          :options="['1', '2']">
         </mt-radio>
       </div>
       <mt-datetime-picker
@@ -47,12 +47,12 @@
     </div>
     <div class="introduce">
       <p>个人简介</p>
-      <textarea name="" id="" cols="30" rows="10" placeholder="请输入个人介绍" v-model="resume"></textarea>
+      <textarea name="" id="" cols="30" rows="10" placeholder="请输入个人介绍" v-model="baseInfo.resume"></textarea>
     </div>
     <div class="button">
      <div class="next" @click="goExperience">下一步</div>
     </div>
-    <update-name :name="nickName" v-if="showName" @changeContent="updatedName"></update-name>
+    <update-name :name="baseInfo.nickname" v-if="showName" @changeContent="updatedName"></update-name>
   </div>
 </template>
 
@@ -60,26 +60,44 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
 import UpdateName from '@/components/UpdateName'
-import BaseInfoService from "../../api/BaseInfoService";
+import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
+import { mapActions, mapGetters } from 'vuex';
+import {INoop} from "../../util/methods"
 
 @Component({
   components:{
     UpdateName
+  },
+  methods:{
+    ...mapActions({
+      setBaseInfo:'my/setBaseInfo',
+    })
+  },
+  computed:{
+    ...mapGetters({
+      user:'user'
+    })
   }
 })
 export default class BaseInfo extends Vue{
-  private birthday:any='';
-  private sex:any = '男';
-  private area = '110000';
+  private service = UserService.getInstance();
   private areas:Array<{code:string,name:string}> = []
-  private service = BaseInfoService.getInstance();
-  private resume:string = '此处是个人简介'
-  private nickName:string = '尚小牛'
-  private showName:boolean = false
+  private showName = false
+  private setBaseInfo:INoop;
+  private baseInfo = {
+    headimgurl:'',
+    birthday:'',
+    sex:'1',
+    address:'',
+    resume:'',
+    nickname: '',
+  }
   created(){
     document.title = "基础信息"
-    this.service.getArea(EBaseDataType.Area).then(res=>{
+    Object.assign(this.baseInfo,(<any>this).user)
+    this.baseInfo.sex = this.baseInfo.sex.toString()
+    this.service.getBase(EBaseDataType.Area).then(res=>{
       let data = res.data.data;
       for(var key in data){
         this.areas.push({
@@ -93,14 +111,14 @@ export default class BaseInfo extends Vue{
     (<any>this.$refs.picker).open();
   }
   handleConfirm(data:string){
-    this.birthday = (<any>new Date(data)).format("yyyy-MM-dd");
+    this.baseInfo.birthday = (<any>new Date(data)).format("yyyy-MM-dd");
   }
   updatedName(name:string){
-    this.nickName = name;
+    this.baseInfo.nickname = name;
     this.showName = false;
   }
   goExperience(){
-    console.log(this)
+    this.setBaseInfo(this.baseInfo)
     this.$router.push({path:'/exprience'})
   }
 }

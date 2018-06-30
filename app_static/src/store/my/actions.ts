@@ -28,3 +28,16 @@ export const updatePhone: Action<IMyState, IRootState> = (
 ) => {
   commit(mutation_type.UPDATE_PHONE, phone);
 };
+export const setBaseInfo: Action<IMyState, IRootState> = (
+  {dispatch,commit},
+  baseInfo
+) => {
+  commit(mutation_type.UPDATE_BASE_INFO, baseInfo);
+};
+export const setExprience: Action<IMyState, IRootState> = (
+  { dispatch, commit },
+  exprience
+) => {
+  commit(mutation_type.UPDATE_EXPRIENCE, exprience);
+};
+

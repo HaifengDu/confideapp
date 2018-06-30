@@ -11,7 +11,7 @@ import { IUser } from '../interface/model/IUser';
 import config from "../config";
 
 @Component({
-    computed:{
+    methods:{
         ...mapActions(["checkCode"])
     }
 })

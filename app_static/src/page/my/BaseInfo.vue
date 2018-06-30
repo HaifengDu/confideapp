@@ -60,8 +60,8 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
 import UpdateName from '@/components/UpdateName'
-import BaseInfoService from "../../api/baseInfo";
-import { EBaseDataType } from '../enum/EBaseDataType';
+import BaseInfoService from "../../api/BaseInfoService";
+import { EBaseDataType } from '../../enum/EBaseDataType';
 
 @Component({
   components:{

@@ -24,7 +24,7 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
 import { mapActions, mapGetters } from 'vuex';
-import Service from '../api/baseInfo'
+import Service from '../../api/BaseInfoService'
 @Component({
   methods:{
     ...mapActions({
@@ -81,7 +81,7 @@ export default class BindPhone extends Vue{
     margin-top:5rem;
     border:2px solid #666;
     border-radius:50%;
-    background:url(../../static/images/bindPhone/phone.png) no-repeat center;
+    background:url(/static/images/bindPhone/phone.png) no-repeat center;
     background-size:6rem;
   }
   .already{
@@ -113,11 +113,11 @@ export default class BindPhone extends Vue{
         width:2.2rem;
         height:4rem;
         &.num{
-          background:url(../../static/images/bindPhone/num.png) no-repeat center;
+          background:url(/static/images/bindPhone/num.png) no-repeat center;
           background-size:1.8rem;
         }
         &.code{
-          background:url(../../static/images/bindPhone/code.png) no-repeat center;
+          background:url(/static/images/bindPhone/code.png) no-repeat center;
           background-size:2.5rem;
         }
       }
@@ -151,7 +151,7 @@ export default class BindPhone extends Vue{
     height:5rem;
     line-height:5rem;
     .fs(1.2rem);
-    background:url(../../static/images/bindPhone/tip.png) no-repeat left;
+    background:url(/static/images/bindPhone/tip.png) no-repeat left;
     background-size: 1.5rem;
     color:#aaa;
     background-position: .3rem;

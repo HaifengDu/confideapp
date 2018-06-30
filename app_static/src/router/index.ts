@@ -4,12 +4,12 @@ import Router from 'vue-router';
 import Login from "@/page/Login.vue";
 import Index from "@/page/Index.vue";
 import Home from "@/page/Home.vue";
-import My from "@/page/My.vue";
+import My from "@/page/my/My.vue";
 import ApplyListener from "@/page/ApplyListener.vue";
-import BindPhone from "@/page/BindPhone.vue";
-import BaseInfo from "@/page/BaseInfo.vue";
-import Exprience from "@/page/Exprience.vue";
-import Tags from "@/page/Tags.vue";
+import BindPhone from "@/page/my/BindPhone.vue";
+import BaseInfo from "@/page/my/BaseInfo.vue";
+import Exprience from "@/page/my/Exprience.vue";
+import Tags from "@/page/my/Tags.vue";
 import UserInfo from "@/page/UserInfo.vue";
 import ListenerSettings from "@/page/ListenerSettings.vue";
 

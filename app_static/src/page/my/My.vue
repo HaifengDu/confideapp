@@ -67,7 +67,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import MyService from "../api/my";
+import MyService from "../../api/UserService";
 import { mapActions, mapGetters } from 'vuex';
 @Component({
   methods:{
@@ -174,7 +174,7 @@ export default class My extends Vue{
       position: absolute;
       top:1rem;
       right:15%;
-      background:url(../../static/images/my/detail.png) no-repeat center;
+      background:url(/static/images/my/detail.png) no-repeat center;
       background-size: 3rem;
       z-index:2;
     }

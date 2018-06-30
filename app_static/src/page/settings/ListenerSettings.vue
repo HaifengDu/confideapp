@@ -109,7 +109,7 @@ export default class ListenerSettings extends Vue{
         .p-ab;
         top:15px;
         left:20px;
-        background:url(../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
+        background:url(../../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
     }
     .body{
         .title{

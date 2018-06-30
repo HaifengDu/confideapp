@@ -17,7 +17,7 @@
             <div @click="toPage('info')" class="cell-box">
                 <mt-cell title="个人信息" is-link class="cell-con"></mt-cell>
             </div>
-            <div @click="toPage('other')" class="cell-box">
+            <div @click="toPage('otherInfo')" class="cell-box">
                 <mt-cell title="其他资料" is-link class="cell-con">
                     <!-- <span class="cell-text">已婚,本科</span> -->
                 </mt-cell>
@@ -36,7 +36,7 @@
                 </mt-cell>
             </div>
             <div class="title"></div>
-            <mt-button type="primary" size="large" style="border-radius:0;">取消倾听者身份</mt-button>
+            <mt-button type="primary" size="large" class="cancel-btn">取消倾听者身份</mt-button>
         </div>
         <div class="back" @click="back"></div>
     </div>
@@ -67,9 +67,15 @@ export default class ListenerSettings extends Vue{
 </script>
 
 <style lang="less" scoped>
+    *{
+        .f-nm;
+    }
     @light-blue:#11b7f3;
     .f-sm{
         font-size:12px;
+    }
+    .f-nm{
+        font-size:14px;
     }
     .f-lg{
         font-size:18px;
@@ -129,5 +135,10 @@ export default class ListenerSettings extends Vue{
         a.cell-con{
             padding-left:0;
         }
+    }
+    .cancel-btn{
+        border-radius:0;
+        position:fixed;
+        bottom:0;
     }
 </style>

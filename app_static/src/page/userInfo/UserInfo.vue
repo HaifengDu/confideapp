@@ -2,45 +2,31 @@
     <div class="container">
         <div class="header">
             <div class="image">
-                <img src="http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIkkg9icSGleYN53EtQiaOuxCkTnicpibicOgRicZS2iaGzCYOh2TLA4Wh86mFDCbmamZ9c7WibGXiaveK47Og/132"/>
+                <img :src="user.headimgurl"/>
             </div>
-            <div class="nickname">
-                星空下的嗳
-            </div>
-            <div class="user-lab" v-if="isListener">已婚 | 本科 | 巨蟹座 | 男 28</div>
+            <div class="nickname">{{user.nickname}}</div>
             <div class="user-lab">北京市</div>
+            <div class="user-lab" v-if="isListener">已婚 | 本科 | 巨蟹座 | 男 28</div>
             <div v-if="!isSelf" class="option">
                 <div class="action">
                     <div class="icon">
                         <img src="static/images/userInfo/share.png">
                     </div>
-                    <div class="text">
-                        <span>分享</span>
-                    </div>
+                    <div class="text">分享</div>
                 </div>
                 <div class="action">
                     <div @click="addConcern" class="icon">
                         <img :src="concernSrc">
                     </div>
-                    <div class="text">
-                        <span>{{isConcern?'已关注':'关注'}}</span>
-                    </div>
+                    <div class="text">{{isConcern?'已关注':'关注'}}</div>
                 </div>
-                <!-- <div class="action" @click="contact" v-if="!isSelf&&isListener">
-                    <div class="icon">
-                        <img src="static/images/userInfo/order.png">
-                    </div>
-                    <div class="text">
-                        <span>下单</span>
-                    </div>
-                </div> -->
             </div>
             <div v-if="!isSelf&&isListener" class="order" @click="order">
                 <img src="static/images/userInfo/order.png">
             </div>
             <div class="back" @click="back"></div>
             <div class="register">
-                <span>2018.05.28注册</span>
+                2018.05.28注册
             </div>
         </div>
         <div class="body">
@@ -71,7 +57,7 @@
                 <div class="title">我的标签</div>
                 <div>
                     <span class="tags tag-default" v-for="(tag,index) in tags" :key="index" @click="tag.hasSub&&showScribe(tag)">
-                        {{tag.name}}<span v-if="tag.hasSub">></span>
+                        {{tag.name}}<span v-if="tag.hasSub" class="f-nm">></span>
                     </span>
                 </div>
             </div>
@@ -101,7 +87,7 @@
             <div class="btn" @click="contact">和TA聊聊</div>
         </mt-popup>
         <message :visible="msgVisible" position="top"></message>
-        <mt-button @click="contact" type="primary" size="large" style="border-radius:0;position:fixed;bottom:0;">进入聊天</mt-button>
+        <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
     </div>
 </template>
 
@@ -109,9 +95,20 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import Message from './Message';
+import { mapActions, mapGetters } from 'vuex';
 
 const SHOW_MSG_TIME = 2000;
 @Component({
+    methods:{
+        ...mapActions({
+            getUserInfo:'getUserInfo'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    },
     components:{
         "message":Message
     }
@@ -149,10 +146,12 @@ export default class UserInfo extends Vue{
     ]
     created(){
         console.log(666);
+        (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s');
     }
 
     expend(){
         this.isExpended = !this.isExpended;
+        console.log((<any>this));
     }
 
     addConcern(){
@@ -185,35 +184,9 @@ export default class UserInfo extends Vue{
 </script>
 
 <style lang="less" scoped>
-    @light-blue:#11b7f3;
-    .f-sm{
-        font-size:12px;
-    }
-    .f-lg{
-        font-size:18px;
-    }
-    .p-rl{
-        position:relative;
-    }
-    .p-ab{
-        position:absolute;
-    }
-    .t-ellipsis(@lines){
-        overflow:hidden;
-        tex-overflow: ellipsis;
-        display: box;
-        display: -webkit-box;
-        -webkit-line-clamp: @lines;
-        -webkit-box-orient: vertical;
-    }
-    .v-middle(@height){
-        height:@height;
-        line-height:@height;
-    }
-    .circle(@length){
-        width:@length;
-        height:@length;
-        border-radius:50%;
+    @import '../../assets/style.less';
+    *{
+        .f-nm;
     }
     div.mint-popup.custom{
         border-radius:10px;
@@ -242,6 +215,7 @@ export default class UserInfo extends Vue{
         }
     }
     .container{
+        padding-bottom: 41px;
         .header{
             width:100%;
             height:170px;
@@ -257,6 +231,7 @@ export default class UserInfo extends Vue{
                 }
             }
             .nickname{
+                .f-lg;
                 color:#eee;
             }
             .user-lab{
@@ -274,21 +249,22 @@ export default class UserInfo extends Vue{
                     text-align:center;
                     margin-bottom:10px;
                     .icon{
+                        .p-rl;
                         .circle(30px);
                         background:@light-blue;
                         margin: 0 auto 5px auto;
                         img{
                             width: 18px;
-                            .p-rl;
-                            top: 6px;
+                            .p-ab;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
                         }
                     }
                 }
                 .text{
                     color:#fff;
-                    span{
-                        .f-sm;
-                    }
+                    .f-sm;
                 }
             }
             .order{
@@ -313,6 +289,7 @@ export default class UserInfo extends Vue{
                 background:url(../../../static/images/userInfo/arrow-left.png) no-repeat center center;
             }
              .register{
+                height:16px;
                 background:@light-blue;
                 color:#fff;
                 .p-ab;
@@ -320,9 +297,7 @@ export default class UserInfo extends Vue{
                 left:20px;
                 padding:5px 3px;
                 border-radius:5px;
-                span{
-                    .f-sm;
-                }
+                .f-sm;
             }
         }
         .body{
@@ -425,4 +400,9 @@ export default class UserInfo extends Vue{
             }
         }
     }   
+    .contact-btn{
+        border-radius:0;
+        position:fixed;
+        bottom:0;
+    }
 </style>

@@ -47,34 +47,9 @@ export default class Message extends Vue{
 </script>
 
 <style lang="less" scoped>
-    @light-blue:#11b7f3;
-    .f-sm{
-        font-size:12px;
-    }
-    .f-lg{
-        font-size:18px;
-    }
-    .p-rl{
-        position:relative;
-    }
-    .p-ab{
-        position:absolute;
-    }
-    .t-ellipsis(@lines){
-        overflow:hidden;
-        text-overflow: ellipsis;
-        display: box;
-        display: -webkit-box;
-        -webkit-line-clamp: @lines;
-        -webkit-box-orient: vertical;
-    }
-    .cell-text{
-        max-width:250px;
-        .t-ellipsis(1);
-    }
-    .v-middle(@height){
-        height:@height;
-        line-height:@height;
+    @import '../../assets/style.less';
+    *{
+        .f-nm;
     }
     .container{
         .p-rl;
@@ -89,7 +64,6 @@ export default class Message extends Vue{
         border-radius:5px;
         margin-top:10px;
         .msg-box{
-            // width:100%;
             padding:10px;
             text-align: left;
             .p-rl;
@@ -102,6 +76,7 @@ export default class Message extends Vue{
                 }
             }
             .content{
+                .t-ellipsis(1);
                 color:rgb(50,50,50);
             }
             .time{

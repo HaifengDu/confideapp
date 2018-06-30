@@ -51,3 +51,40 @@ input,textarea{appearance: none;}
     }
   }
 }
+@light-blue:#00D1CF;
+.mint-button{
+  max-width:425px;
+}
+
+.f-sm{
+  font-size:12px;
+}
+.f-nm{
+  font-size:14px;
+}
+.f-lg{
+  font-size:18px;
+}
+.p-rl{
+  position:relative;
+}
+.p-ab{
+  position:absolute;
+}
+.t-ellipsis(@lines){
+  overflow:hidden;
+  tex-overflow: ellipsis;
+  display: box;
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+}
+.v-middle(@height){
+  height:@height;
+  line-height:@height;
+}
+.circle(@length){
+  width:@length;
+  height:@length;
+  border-radius:50%;
+}

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="wrap">
     <router-view/>
     <tabbar></tabbar>
   </div>
@@ -15,5 +15,7 @@ export default {
 </script>
 
 <style lang="less">
-
+.wrap{
+  margin-bottom: 56px;
+}
 </style>

@@ -161,6 +161,7 @@ export default class My extends Vue{
     height:18rem;
     width:100%;
     background:#fff;
+    position:relative;
     .bg{
       height:11rem;
       width:100%;

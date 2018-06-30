@@ -8,8 +8,8 @@
   <div class="unbind" v-else>
     <div class="input">
       <div class="icon num"></div>
-      <input type="text" placeholder="输入手机号码">
-      <div class="code-button" @click="getCode">获取验证码</div>
+      <input type="text" placeholder="输入手机号码" v-model="phone">
+      <div class="code-button" @click="getCodeMethod">获取验证码</div>
     </div>
     <div class="input">
       <div class="icon code"></div>
@@ -28,7 +28,8 @@ import Service from '../../api/BaseInfoService'
 @Component({
   methods:{
     ...mapActions({
-      getCheckCode:'getCheckCode'
+      getCheckCode:'getCheckCode',
+      getCode:'getCode'
     })
   },
   computed:{
@@ -39,6 +40,7 @@ import Service from '../../api/BaseInfoService'
 })
 export default class BindPhone extends Vue{
   private bind = false
+  private phone = ''
   private BaseInfoService = Service.getInstance()
   goBaseInfo(){
     if((<any>this).user&&(<any>this).user.phone){
@@ -52,11 +54,11 @@ export default class BindPhone extends Vue{
       this.bind = true
     }
   }
-  getCode(){
-    // BaseInfoService.
+  getCodeMethod(){
+    (<any>this).getCode(this.phone)
   }
   updateNum(){
-    this.bind = true
+    this.bind = false
   }
 }
 </script>

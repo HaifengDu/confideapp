@@ -52,7 +52,7 @@
     <div class="button">
      <div class="next" @click="goExperience">下一步</div>
     </div>
-    <update-name :name="nickName" v-if="showName" @changeName="updatedName"></update-name>
+    <update-name :name="nickName" v-if="showName" @changeContent="updatedName"></update-name>
   </div>
 </template>
 
@@ -166,8 +166,8 @@ export default class BaseInfo extends Vue{
     justify-content: center;
     background:#fff;
     width:100%;
-    position: fixed;
     bottom:80px;
+    padding-top:20px;
     .next{
       width:12rem;
       height:4rem;

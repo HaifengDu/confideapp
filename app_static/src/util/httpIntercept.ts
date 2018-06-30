@@ -1,16 +1,20 @@
-import { AxiosStatic } from "axios";
-
+import { AxiosStatic, AxiosRequestConfig } from "axios";
+import store from '../store'
 export default function(axios:AxiosStatic){
 
     // // add a request interceptor
-    // axios.interceptors.request.use((config:AxiosRequestConfig)=> {
-    //     // do something before request is sent
-    //     return config;
-    //   // tslint:disable-next-line:typedef
-    //   }, function (error:Error) {
-    //     // do something with request error
-    //     return Promise.reject(error);
-    //   });
+    axios.interceptors.request.use((config:AxiosRequestConfig)=> {
+        // do something before request is sent
+        if(!config.params){
+          config.params = {};
+        }
+        config.params.userid = store.getters.user.id;
+        return config;
+      // tslint:disable-next-line:typedef
+      }, function (error:Error) {
+        // do something with request error
+        return Promise.reject(error);
+      });
     axios.interceptors.response.use(resp=>{
         const data = resp.data;
         if(!data.success){

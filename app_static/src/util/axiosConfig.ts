@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-const host = "http://confide.top:3001/";
+const host = "https://www.confide.com:3001/";
 _.extend(axios.defaults,{
     baseURL: host,
     timeout: 300000,

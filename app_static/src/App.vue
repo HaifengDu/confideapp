@@ -17,8 +17,9 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  width:100%;
-  margin-bottom:56px;
+  max-width:620px;
+  min-width:320px;
+  margin:0 auto;
   -webkit-overflow-scrolling: touch;
 }
 </style>

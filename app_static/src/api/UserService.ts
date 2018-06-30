@@ -19,7 +19,12 @@ export default class MyService {
         params: { weixinid }
       });
     }
-
+    /**
+    * 获取验证码
+    */
+    public getCode(phone:string):AxiosPromise<any>{
+      return Axios.get("/user/getCheckCode", { params: { phone } });
+    }
     private constructor() {}
 
     public static getInstance() {

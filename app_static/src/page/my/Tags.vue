@@ -4,7 +4,7 @@
       选择标签
     </div>
     <div class="tags">
-      <span v-for="item in tags" :class="['tag',{'active':filterTag(item)},{'first-active':firstActive(item)}]" @click="selectTag(item)">{{item.name}}</span>
+      <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':filterTag(item)},{'first-active':firstActive(item)}]" @click="selectTag(item)">{{item.name}}</span>
       <span class="add" @click="showAddTag=true">+</span>
     </div>
     <add-tag  v-if="showAddTag" @changeContent="updatedTags" :maxlength="4"></add-tag>

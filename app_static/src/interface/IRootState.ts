@@ -1,4 +1,6 @@
+import IUser from "./model/IUser";
+
 export interface IRootState{
-  user:any
+  user:IUser
 }
 export default IRootState;

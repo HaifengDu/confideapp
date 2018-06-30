@@ -3,9 +3,7 @@
   <div class="list">
     <mt-cell title="职业">
       <select v-model="area">
-        <template v-for="item in areas">
-          <option :value="item.code">{{item.name}}</option>
-        </template>
+          <option :key="index" :value="item.code" v-for="(item,index) in areas">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
@@ -13,9 +11,7 @@
   <div class="list">
     <mt-cell title="家庭状况">
       <select v-model="area">
-        <template v-for="item in areas">
-          <option :value="item.code">{{item.name}}</option>
-        </template>
+          <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
@@ -23,9 +19,7 @@
   <div class="list">
     <mt-cell title="最高学历">
       <select v-model="area">
-        <template v-for="item in areas">
-          <option :value="item.code">{{item.name}}</option>
-        </template>
+          <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>

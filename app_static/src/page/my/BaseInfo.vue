@@ -16,9 +16,7 @@
       <div class="list">
         <mt-cell title="地区">
           <select v-model="area">
-            <template v-for="item in areas">
-              <option :value="item.code">{{item.name}}</option>
-            </template>
+              <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
           </select>
           <i class="mint-cell-allow-right"></i>
         </mt-cell>
@@ -62,7 +60,7 @@
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
 import UpdateName from '@/components/UpdateName'
-import BaseInfoService from "../api/baseInfo";
+import BaseInfoService from "../../api/baseInfo";
 import { EBaseDataType } from '../enum/EBaseDataType';
 
 @Component({

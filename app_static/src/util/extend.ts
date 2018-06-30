@@ -24,16 +24,3 @@ interface Date {
             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
     return fmt;
 };
-
-Vue.filter("datefilter", (value:any)=> {
-  // 返回处理后的值
-  let tempDate:any = new Date(value);
-  return (<any>tempDate).format("yyyy-MM-dd hh:mm:ss");
-});
-Vue.filter("jsonfilter", (value:any)=> {
-  // 返回处理后的值
-  if(value&&value.split) {
-    return value;
-  }
-  return JSON.stringify(value||{});
-});

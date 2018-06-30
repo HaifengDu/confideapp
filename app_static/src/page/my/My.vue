@@ -15,8 +15,8 @@
       </div>
     </div>
     <div class="entrance">
-      <div class="ul" v-for="ele in entranceArr">
-        <div class="li" v-for="(item,index) in ele.children">
+      <div class="ul" v-bind:key="index" v-for="(ele,index) in entranceArr">
+        <div class="li" v-bind:key="index" v-for="(item,index) in ele.children">
           <div class="icon"><img :src="item.imgUrl" alt=""></div>
           <div class="text">{{item.text}}</div>
         </div>

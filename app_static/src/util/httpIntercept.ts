@@ -11,7 +11,13 @@ export default function(axios:AxiosStatic){
     //     // do something with request error
     //     return Promise.reject(error);
     //   });
-    axios.interceptors.response.use(resp => resp, (error) => {
+    axios.interceptors.response.use(resp=>{
+        const data = resp.data;
+        if(!data.success){
+            //提示错误
+        }
+        return resp;
+    }, (error) => {
         // 当返回错误时
         if (axios.isCancel(error)) {
             return Promise.reject(new Error('请求被取消'))

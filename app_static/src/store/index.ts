@@ -1,8 +1,8 @@
 import Vuex ,{Store} from 'vuex';
 import Vue from 'vue';
 import { IRootState } from '../interface/IRootState';
-import My from '../api/my'
-const myService = My.getInstance();
+import MType from "./mutation_type";
+import * as actions from "./action";
 Vue.use(Vuex);
 
 
@@ -14,14 +14,10 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
     user:state=>state.user
   },
   actions:{
-    getUserInfo({dispatch,commit},WXid){
-      myService.getUserInfobyWXid(WXid).then(res => {
-        commit("updateUser", res);
-      });
-    }
+    ...actions
   },
   mutations:{
-    "updateUser"(state,user:any){
+    [MType.UPDATE_USER](state,user:any){
       state.user = user.data.data;
     }
   }

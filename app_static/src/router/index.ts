@@ -1,5 +1,7 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { interceptRouter } from './intercept';
+import Vue from 'vue';
+import Router from 'vue-router';
+import Login from "@/page/Login.vue";
 import Index from "@/page/Index.vue";
 import Home from "@/page/Home.vue";
 import My from "@/page/My.vue";
@@ -13,14 +15,21 @@ import ListenerSettings from "@/page/ListenerSettings.vue";
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
-      path: "/tab",
+      path:"/login",
+      component:Login,
+      meta:{
+        noRequireAuth:true
+      }
+    },
+    {
+      path: "/",
       component: Index,
       children: [
         {
-          path: "home",
+          path: "/",
           name: "Home",
           component: Home
         },
@@ -68,3 +77,6 @@ export default new Router({
     }
   ]
 });
+
+interceptRouter(router);
+export default router;

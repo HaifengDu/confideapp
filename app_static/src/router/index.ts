@@ -10,8 +10,8 @@ import BindPhone from "@/page/my/BindPhone.vue";
 import BaseInfo from "@/page/my/BaseInfo.vue";
 import Exprience from "@/page/my/Exprience.vue";
 import Tags from "@/page/my/Tags.vue";
-import UserInfo from "@/page/UserInfo.vue";
-import ListenerSettings from "@/page/ListenerSettings.vue";
+import UserInfo from "@/page/userInfo/UserInfo.vue";
+import ListenerSettings from "@/page/settings/ListenerSettings.vue";
 
 Vue.use(Router)
 
@@ -78,5 +78,5 @@ const router = new Router({
   ]
 });
 
-interceptRouter(router);
+// interceptRouter(router);
 export default router;

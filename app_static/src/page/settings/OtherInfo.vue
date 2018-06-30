@@ -37,20 +37,20 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import BaseInfoService from "../../api/BaseInfoService";
+import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
 
 @Component({
- 
+
 })
 export default class OtherInfo extends Vue{
-    private service = BaseInfoService.getInstance();
+    private service = UserService.getInstance();
     private jobs:Array<any> = [];
     private familyDatas:Array<any> = [];
     private educateDatas:Array<any> = [];
     private informations:any = {};
     created(){
-        this.service.getArea(EBaseDataType.Job).then(res=>{
+        this.service.getBase(EBaseDataType.Job).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.jobs.push({
@@ -59,7 +59,7 @@ export default class OtherInfo extends Vue{
                 });
             }
         });
-        this.service.getArea(EBaseDataType.Family).then(res=>{
+        this.service.getBase(EBaseDataType.Family).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.familyDatas.push({
@@ -68,7 +68,7 @@ export default class OtherInfo extends Vue{
                 });
             }
         });
-        this.service.getArea(EBaseDataType.Edu).then(res=>{
+        this.service.getBase(EBaseDataType.Edu).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.educateDatas.push({

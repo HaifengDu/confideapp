@@ -53,7 +53,6 @@ export default class Exprience extends Vue{
   private edu = '';
   private Edus:Array<{code:string,name:string}> = []
   goSelectTag(){
-    debugger
     if(this.job&&this.family&&this.edu){
       let expirence = {
         job:this.job,

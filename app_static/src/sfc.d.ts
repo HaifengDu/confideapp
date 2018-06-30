@@ -9,6 +9,10 @@ declare module "*.vue" {
     export default Vue
 }
 
+// tslint:disable-next-line:interface-name
+declare interface Date {
+    format ?: (fmt: string)=>string;
+}
 declare interface AxiosRequestConfig {
     cache?:boolean;
 }

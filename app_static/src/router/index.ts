@@ -78,5 +78,5 @@ const router = new Router({
   ]
 });
 
-interceptRouter(router);
+// interceptRouter(router);
 export default router;

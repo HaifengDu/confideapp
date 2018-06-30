@@ -1,8 +1,4 @@
 import Vue from "vue";
-// tslint:disable-next-line:interface-name
-interface Date {
-    format ?: (fmt: string)=>string;
-}
 (<any>Date.prototype).format = function (fmt: string): string {
     var o: any = {
         "M+": this.getMonth() + 1,

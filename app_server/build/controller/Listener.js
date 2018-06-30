@@ -50,9 +50,6 @@ class ListenerService {
             });
         });
     }
-    create(user) {
-        return Listener_1.default.create(user);
-    }
     find(id) {
         return Listener_1.default.findById(id);
     }
@@ -139,9 +136,9 @@ class ListenerService {
             objectHelper_1.default.merge(res, {
                 labels: labels
             });
-            if (res) {
-                objectHelper_1.default.mergeChildToSource(res);
-            }
+            // if(res){
+            //     ObjectHelper.mergeChildToSource(res);
+            // }
             return Promise.resolve(res);
         });
     }
@@ -158,9 +155,9 @@ class ListenerService {
                 objectHelper_1.default.merge(item, {
                     labels: labels
                 });
-                if (item) {
-                    objectHelper_1.default.mergeChildToSource(item);
-                }
+                // if(item){
+                //     ObjectHelper.mergeChildToSource(item);
+                // }
             });
             return Bluebird.resolve(res);
         });
@@ -196,9 +193,9 @@ class ListenerService {
                 objectHelper_1.default.merge(item, {
                     labels: labels
                 });
-                if (item) {
-                    objectHelper_1.default.mergeChildToSource(item);
-                }
+                // if(item){
+                //     ObjectHelper.mergeChildToSource(item);
+                // }
             });
             return Bluebird.resolve(res);
         });

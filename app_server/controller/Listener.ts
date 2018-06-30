@@ -64,10 +64,6 @@ export default class ListenerService {
         });
     }
 
-    private create(user:IListener){
-        return ListenerModel.create(user);
-    }
-
     public find(id:number){
         return ListenerModel.findById(id);
     }
@@ -161,9 +157,9 @@ export default class ListenerService {
             ObjectHelper.merge(res,{
                 labels:labels
             });
-            if(res){
-                ObjectHelper.mergeChildToSource(res);
-            }
+            // if(res){
+            //     ObjectHelper.mergeChildToSource(res);
+            // }
             return Promise.resolve(res);
         });
     }
@@ -181,9 +177,9 @@ export default class ListenerService {
                 ObjectHelper.merge(item,{
                     labels:labels
                 });
-                if(item){
-                    ObjectHelper.mergeChildToSource(item);
-                }
+                // if(item){
+                //     ObjectHelper.mergeChildToSource(item);
+                // }
             });
             return Bluebird.resolve(res);
         });
@@ -220,9 +216,9 @@ export default class ListenerService {
                 ObjectHelper.merge(item,{
                     labels:labels
                 });
-                if(item){
-                    ObjectHelper.mergeChildToSource(item);
-                }
+                // if(item){
+                //     ObjectHelper.mergeChildToSource(item);
+                // }
             });
             return Bluebird.resolve(res);
         });

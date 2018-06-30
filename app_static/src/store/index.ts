@@ -5,6 +5,12 @@ import MType from "./mutation_type";
 import * as actions from "./action";
 Vue.use(Vuex);
 
+import help from "./help";
+import home from "./home";
+import list from "./list";
+import my from "./my";
+import order from "./order";
+import payment from "./payment";
 
 const rootStore:Store<IRootState> = new Store<IRootState>({
   state:{
@@ -21,6 +27,14 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
       user.data.phone = true
       state.user = user.data;
     }
+  },
+  modules:{
+    help,
+    home,
+    list,
+    my,
+    order,
+    payment
   }
 });
 export default rootStore;

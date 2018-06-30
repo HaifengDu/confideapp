@@ -1,9 +1,10 @@
 import {Module} from 'vuex';
-import { IHelpState } from '../../interface/IHelpState';
+import { IListState } from '../../interface/IListState';
 import Mtype from "./mutation_type";
 import * as actions from "./actions";
-import { IRootState } from '../../interface/IRootState';
-export const store:Module<IHelpState,IRootState> = {
+import IRootState from '../../interface/IRootState';
+export const store:Module<IListState,IRootState> = {
+    namespaced:true,
     state:{
 
     },
@@ -17,4 +18,5 @@ export const store:Module<IHelpState,IRootState> = {
 
     }
 };
+
 export default store;

@@ -1,16 +1,15 @@
 <template>
     <div class="container">
+        <router-view/>
         <div class="header">
           倾听者设置
         </div>
         <div class="body">
-            <div class="title">
-                个人设置
-            </div>
+            <div class="title">个人设置</div>
             <div @click="toPage('basic')">
                 <mt-cell title="基本资料" is-link class="cell-con"></mt-cell>
             </div>
-            <div @click="toPage('mytags')" class="cell-box">
+            <div @click="toPage('myTags')" class="cell-box">
                 <mt-cell title="我的标签" is-link class="cell-con">
                     <!-- <span class="cell-text">情感挽回,婚姻关系,人际关系,个人成长,情绪疏导</span> -->
                 </mt-cell>
@@ -62,6 +61,7 @@ export default class ListenerSettings extends Vue{
 
     toPage(route:string){
         console.log(route);
+        this.$router.push('/'+route);
     }
 }
 </script>
@@ -128,9 +128,6 @@ export default class ListenerSettings extends Vue{
         // }
         a.cell-con{
             padding-left:0;
-        }
-        div.mint-cell-wrapper{
-            padding-left:20px;
         }
     }
 </style>

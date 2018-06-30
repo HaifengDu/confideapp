@@ -95,11 +95,12 @@
             </div>
         </div>
         <mt-popup
-            v-model="popupVisible">
+            v-model="popupVisible" class="custom">
             <div class="title">{{tag.name}}</div>
             <div class="content">{{tag.scribe}}</div>
             <div class="btn" @click="contact">和TA聊聊</div>
         </mt-popup>
+        <message :visible="msgVisible" position="top"></message>
         <mt-button @click="contact" type="primary" size="large" style="border-radius:0;position:fixed;bottom:0;">进入聊天</mt-button>
     </div>
 </template>
@@ -107,9 +108,13 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import Message from './Message';
 
+const SHOW_MSG_TIME = 2000;
 @Component({
- 
+    components:{
+        "message":Message
+    }
 })
 export default class UserInfo extends Vue{
     private stepPrice = 9.9;
@@ -129,6 +134,7 @@ export default class UserInfo extends Vue{
     private isConcern = false;
 
     private popupVisible = false;
+    private msgVisible = false;
     private tag:any = {};
 
     private concernSrc = 'static/images/userInfo/add.png';
@@ -165,6 +171,10 @@ export default class UserInfo extends Vue{
 
     contact(){
         this.popupVisible&&(this.popupVisible = false);
+        this.msgVisible = true;
+        setTimeout(()=>{
+            this.msgVisible = false;
+        },SHOW_MSG_TIME);
         console.log('to talk');
     }
 
@@ -205,7 +215,7 @@ export default class UserInfo extends Vue{
         height:@length;
         border-radius:50%;
     }
-    div.mint-popup{
+    div.mint-popup.custom{
         border-radius:10px;
         width:250px;
         height:250px;
@@ -234,8 +244,9 @@ export default class UserInfo extends Vue{
     .container{
         .header{
             width:100%;
+            height:170px;
             padding:30px 0 20px 0;
-            background-image: url(../../static/images/userInfo/user_info_bg.jpg);  
+            background-image: url(../../../static/images/userInfo/user_info_bg.jpg);  
             background-repeat: no-repeat;  
             background-size: 100% 100%; 
             .p-rl;
@@ -299,7 +310,7 @@ export default class UserInfo extends Vue{
                 .p-ab;
                 top:20px;
                 left:20px;
-                background:url(../../static/images/userInfo/arrow-left.png) no-repeat center center;
+                background:url(../../../static/images/userInfo/arrow-left.png) no-repeat center center;
             }
              .register{
                 background:@light-blue;
@@ -344,12 +355,12 @@ export default class UserInfo extends Vue{
                     border-radius:5px;
                     .arrow{
                         display:inline-block;
-                        width:16px;
+                        width:20px;
                         height:16px;
                         position:relative;
                         top:4px;
                         background-size: 100% 100%; 
-                        background: url(../../static/images/userInfo/arrow-right.png) no-repeat center center;  
+                        background: url(../../../static/images/userInfo/arrow-right.png) no-repeat center center;  
                     }
                 }
             }

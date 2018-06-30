@@ -19,6 +19,9 @@ class MainLabelService {
     findLabel(ids) {
         return this._labelList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > 1) || [];
     }
+    findSystemUnionUser(uid) {
+        return this._labelList.filter(item => (item.ctype === ELabelType_1.ELabelCType.Admin || item.cuid === uid) && item.status === ELabelStatus_1.ELabelStatus.正常) || [];
+    }
     /**
      * 查找自己的标签（包含审核中）
      * @param ids

@@ -25,6 +25,11 @@ export default class MainLabelService {
         return this._labelList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1)||[];
     }
 
+
+    public findSystemUnionUser(uid:number){
+        return this._labelList.filter(item=>(item.ctype===ELabelCType.Admin||item.cuid===uid)&&item.status===ELabelStatus.正常)||[];
+    }
+
     /**
      * 查找自己的标签（包含审核中）
      * @param ids 

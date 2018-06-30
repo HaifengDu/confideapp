@@ -13,7 +13,7 @@
     </div>
     <div class="input">
       <div class="icon code"></div>
-      <input type="text" placeholder="输入验证码">
+      <input type="text" placeholder="输入验证码" v-model="code">
     </div>
   </div>
   <div class="tip">您的手机号将受到隐私保护</div>
@@ -28,8 +28,9 @@ import Service from '../../api/BaseInfoService'
 @Component({
   methods:{
     ...mapActions({
-      getCheckCode:'getCheckCode',
-      getCode:'getCode'
+      getCode:'my/getCode',
+      bindPhone:'my/bindPhone',
+      updatePhone:'my/updatePhone'
     })
   },
   computed:{
@@ -41,9 +42,15 @@ import Service from '../../api/BaseInfoService'
 export default class BindPhone extends Vue{
   private bind = false
   private phone = ''
+  private code = ''
   private BaseInfoService = Service.getInstance()
   goBaseInfo(){
-    if((<any>this).user&&(<any>this).user.phone){
+    if(this.phone&&this.code){
+      (<any>this).bindPhone({code:this.code,phone:this.phone}).then((res:any) => {
+        if(res.data.success){
+        (<any>this).updatePhone(this.phone)
+        }
+      })
       this.bind = true
     }
     this.$router.push({path:'/baseInfo'})

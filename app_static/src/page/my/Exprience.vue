@@ -36,7 +36,6 @@ export default class Exprience extends Vue{
   private area = '110000';
   private areas:Array<{code:string,name:string}> = []
   goSelectTag(){
-    debugger
     this.$router.push({path:'/tag'})
   }
   created(){

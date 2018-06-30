@@ -25,6 +25,12 @@ export default class MyService {
     public getCode(phone:string):AxiosPromise<any>{
       return Axios.get("/user/getCheckCode", { params: { phone } });
     }
+    /**
+    * 绑定手机号
+    */
+    public bindPhone(code:string,phone:string):AxiosPromise<any>{
+      return Axios.post("/user/bindphone",  { code,phone });
+    }
     private constructor() {}
 
     public static getInstance() {

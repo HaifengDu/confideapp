@@ -25,12 +25,3 @@ export const checkCode:Action<IRootState,IRootState> = ({dispatch,commit})=>{
     }
     return dispatch("bindUser",code);
 }
-export const getCode: Action<IRootState, IRootState> = ({
-  dispatch,
-  commit
-},phone) => {
-  return myService.getCode(phone).then(res=>{
-    // commit(mutation_type.UPDATE_PHONE,phone)
-    return res
-  })
-};

@@ -8,6 +8,7 @@ export default function(axios:AxiosStatic){
         if(!config.params){
           config.params = {};
         }
+        const test = store;
         config.params.userid = store.getters.user.id;
         return config;
       // tslint:disable-next-line:typedef

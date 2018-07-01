@@ -134,7 +134,7 @@ export default class My extends Vue{
   // private service = MyService.getInstance();
   applyListener(){
     //TODO:要改为中间页
-    this.$router.push({path:'/bindPhone'})
+    this.$router.replace({path:'/bindPhone'})
   }
   created(){
     document.title = "我的";

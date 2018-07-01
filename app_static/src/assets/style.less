@@ -1,6 +1,5 @@
 @import "./font-awesome-4.7.0/less/font-awesome.less";
 @mainColor:#00D1CF;
-@activeMainColor:#09c7c4;
 *{
   padding:0;
   margin:0;
@@ -14,7 +13,6 @@ input,textarea{appearance: none;}
 .mint-tabbar{position:fixed;max-width:620px;margin:0 auto;}
 .mint-tabbar > .mint-tab-item.is-selected{color:@mainColor;}
 .mint-button.mint-button--primary{background:@mainColor !important;}
-.mint-button.mint-button--primary:active{background:@activeMainColor !important;}
 .mint-button:not(.is-disabled):active::after {
     opacity: .2;
 }
@@ -66,8 +64,11 @@ input,textarea{appearance: none;}
   }
 }
 @light-blue:#00D1CF;
+.m-width{
+  max-width:620px;
+}
 .mint-button{
-  max-width:425px;
+  .m-width;
 }
 
 .f-sm{
@@ -101,4 +102,19 @@ input,textarea{appearance: none;}
   width:@length;
   height:@length;
   border-radius:50%;
+}
+.cell-con{
+  color: #adadad;
+  text-align: left;
+}
+.button-box{
+  .m-width;
+  width: 100%;
+  text-align:center;
+  position:fixed;
+  bottom:0;
+  padding:15px 0;
+  button{
+      padding:0 12px;
+  }
 }

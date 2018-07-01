@@ -21,7 +21,7 @@
             <div class="title">
                 费用设置
             </div>
-            <div @click="toPage('text')" class="cell-box">
+            <div @click="toPage('textService')" class="cell-box">
                 <mt-cell title="文字服务" is-link class="cell-con">
                     <span class="cell-text">0.1元/条</span>
                 </mt-cell>
@@ -31,7 +31,10 @@
                     <span class="cell-text">9.8元/15分钟</span>
                 </mt-cell>
             </div>
-            <mt-button type="primary" size="large" class="cancel-btn">取消倾听者身份</mt-button>
+            <div class="button-box">
+                <mt-button size="normal" type="primary" @click.native="cancelListener">取消倾听者身份</mt-button>
+            </div>
+            <!-- <mt-button type="primary" size="large" class="cancel-btn">取消倾听者身份</mt-button> -->
         </div>
     </div>
 </template>
@@ -49,8 +52,8 @@ export default class ListenerSettings extends Vue{
         console.log(666);
     }
 
-    back(){
-        (<any>this).$router.go(-1);
+    cancelListener(){
+
     }
 
     toPage(route:string){
@@ -61,40 +64,9 @@ export default class ListenerSettings extends Vue{
 </script>
 
 <style lang="less" scoped>
+    @import '../../assets/style.less';
     *{
         .f-nm;
-    }
-    @light-blue:#11b7f3;
-    .f-sm{
-        font-size:12px;
-    }
-    .f-nm{
-        font-size:14px;
-    }
-    .f-lg{
-        font-size:18px;
-    }
-    .p-rl{
-        position:relative;
-    }
-    .p-ab{
-        position:absolute;
-    }
-    .t-ellipsis(@lines){
-        overflow:hidden;
-        text-overflow: ellipsis;
-        display: box;
-        display: -webkit-box;
-        -webkit-line-clamp: @lines;
-        -webkit-box-orient: vertical;
-    }
-    .cell-text{
-        max-width:250px;
-        .t-ellipsis(1);
-    }
-    .v-middle(@height){
-        height:@height;
-        line-height:@height;
     }
     .container{
         .p-rl;
@@ -107,20 +79,13 @@ export default class ListenerSettings extends Vue{
             text-align:left;
             padding-left:10px;
         }
-        .cell-con{
-            text-align: left;
-            color:rgb(173,173,173);
-        }
-        // .cell-box{
-        //     margin-top:-1px;
-        // }
         a.cell-con{
             padding-left:0;
         }
     }
-    .cancel-btn{
-        border-radius:0;
-        position:fixed;
-        bottom:0;
-    }
+    // .cancel-btn{
+    //     border-radius:0;
+    //     position:fixed;
+    //     bottom:0;
+    // }
 </style>

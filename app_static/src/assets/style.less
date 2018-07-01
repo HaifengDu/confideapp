@@ -21,10 +21,14 @@ input,textarea{appearance: none;}
 .mint-button:not(.is-disabled):active::after {
     opacity: .2;
 }
-.my-container .mint-cell-wrapper{
-  background-image: none;
+.mint-radio-input:checked + .mint-radio-core{
+  background-color: @mainColor;
+  border-color: @mainColor;
 }
-.my-container .list:last-child .mint-cell{background-image: none;}
+// .my-container .mint-cell-wrapper{
+//   background-image: none;
+// }
+// .my-container .list:last-child .mint-cell{background-image: none;}
 .base-info-container{
   .list{
     &:last-child .mint-cell{

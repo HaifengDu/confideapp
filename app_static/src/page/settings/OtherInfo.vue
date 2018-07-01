@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <div class="header">
-          其他资料
-        </div>
         <div class="body">
             <div class="list">
                 <mt-cell title="职业信息">
@@ -37,20 +34,20 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import BaseInfoService from "../../api/BaseInfoService";
+import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
 
 @Component({
- 
+
 })
 export default class OtherInfo extends Vue{
-    private service = BaseInfoService.getInstance();
+    private service = UserService.getInstance();
     private jobs:Array<any> = [];
     private familyDatas:Array<any> = [];
     private educateDatas:Array<any> = [];
     private informations:any = {};
     created(){
-        this.service.getArea(EBaseDataType.Job).then(res=>{
+        this.service.getBase(EBaseDataType.Job).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.jobs.push({
@@ -59,7 +56,7 @@ export default class OtherInfo extends Vue{
                 });
             }
         });
-        this.service.getArea(EBaseDataType.Family).then(res=>{
+        this.service.getBase(EBaseDataType.Family).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.familyDatas.push({
@@ -68,7 +65,7 @@ export default class OtherInfo extends Vue{
                 });
             }
         });
-        this.service.getArea(EBaseDataType.Edu).then(res=>{
+        this.service.getBase(EBaseDataType.Edu).then(res=>{
             let data = res.data.data;
             for(var key in data){
                 this.educateDatas.push({
@@ -96,10 +93,6 @@ export default class OtherInfo extends Vue{
     .container{
         .p-rl;
     }
-    .header{
-        .v-middle(50px);
-        .f-lg;
-    }
     .body{
         .list{
             text-align:left;
@@ -125,14 +118,6 @@ export default class OtherInfo extends Vue{
                 }
             }
         }
-    }
-    .back{
-        width:20px;
-        height:20px;
-        .p-ab;
-        top:15px;
-        left:20px;
-        background:url(../../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
     }
     .submit-btn{
         border-radius:0;

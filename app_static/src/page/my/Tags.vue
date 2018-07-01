@@ -7,7 +7,10 @@
       <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':filterTag(item)},{'first-active':firstActive(item)}]" @click="selectTag(item)">{{item.name}}</span>
       <span class="add" @click="showAddTag=true">+</span>
     </div>
-    <add-tag  v-if="showAddTag" @changeContent="updatedTags" :maxlength="4"></add-tag>
+    <add-tag  v-if="showAddTag" @changeContent="updatedTags" @cancel="cancel" :maxlength="4"></add-tag>
+    <div class="next" style="text-algin:center;width:100%;">
+      <mt-button @click="submit" size="normal" type="primary">提交审核</mt-button>
+    </div>
   </div>
 </template>
 
@@ -30,7 +33,6 @@ export default class Tags extends Vue{
   private showAddTag = false
   created(){
     document.title="选择标签";
-    debugger;
     labelService.getSystemLabel().then(res=>{
       const data =res.data;
       if(data.success){
@@ -54,6 +56,9 @@ export default class Tags extends Vue{
   filterTag(item:any){
     return this.selectedTags.findIndex(ele=>ele.id==item.id)>-1
   }
+  cancel(){
+    this.showAddTag = false;
+  }
   updatedTags(tag:any){
     this.showAddTag = false
     //TODO:创建标签 调接口  放在最后
@@ -69,6 +74,9 @@ export default class Tags extends Vue{
       });
     }
   }
+  submit(){
+    console.log("提交");
+  }
 }
 </script>
 
@@ -76,6 +84,12 @@ export default class Tags extends Vue{
 @mainColor:#00D1CF;
   .tags-container{
     font-size:1.4rem;
+    .next{
+      position:fixed;
+      bottom:2rem;
+      // left:50%;
+      // margin-left:-6rem;
+    }
     .title{
       text-align:left;
       padding-left:1.8rem;
@@ -109,6 +123,7 @@ export default class Tags extends Vue{
       .add{
         display: inline-block;
         height:3rem;
+        margin: 0 .5rem;
         line-height: 3rem;
         text-align: center;
         width:3rem;

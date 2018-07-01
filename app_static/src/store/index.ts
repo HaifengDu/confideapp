@@ -24,7 +24,6 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
   },
   mutations:{
     [MType.UPDATE_USER](state,user:any){
-      user.data.phone = true
       state.user = user.data;
     }
   },

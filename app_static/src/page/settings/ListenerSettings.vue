@@ -1,9 +1,5 @@
 <template>
     <div class="container">
-        <router-view/>
-        <div class="header">
-          倾听者设置
-        </div>
         <div class="body">
             <div class="title">个人设置</div>
             <div @click="toPage('basic')">
@@ -35,10 +31,8 @@
                     <span class="cell-text">9.8元/15分钟</span>
                 </mt-cell>
             </div>
-            <div class="title"></div>
             <mt-button type="primary" size="large" class="cancel-btn">取消倾听者身份</mt-button>
         </div>
-        <div class="back" @click="back"></div>
     </div>
 </template>
 
@@ -104,18 +98,6 @@ export default class ListenerSettings extends Vue{
     }
     .container{
         .p-rl;
-    }
-    .header{
-        .v-middle(50px);
-        .f-lg;
-    }
-    .back{
-        width:20px;
-        height:20px;
-        .p-ab;
-        top:15px;
-        left:20px;
-        background:url(../../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
     }
     .body{
         .title{

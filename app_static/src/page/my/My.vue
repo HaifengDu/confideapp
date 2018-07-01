@@ -67,7 +67,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import MyService from "../../api/UserService";
+// import MyService from "../../api/UserService";
 import { mapActions, mapGetters } from 'vuex';
 @Component({
   methods:{
@@ -131,7 +131,7 @@ export default class My extends Vue{
         ]
     }
   ];
-  private service = MyService.getInstance();
+  // private service = MyService.getInstance();
   applyListener(){
     //TODO:要改为中间页
     this.$router.push({path:'/bindPhone'})

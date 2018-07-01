@@ -2,44 +2,85 @@
 <div class="expirence-container">
   <div class="list">
     <mt-cell title="职业">
-      <select v-model="area">
-          <option :key="index" :value="item.code" v-for="(item,index) in areas">{{item.name}}</option>
+      <select v-model="job">
+          <option :key="index" :value="item.code" v-for="(item,index) in Jobs">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
   <div class="list">
     <mt-cell title="家庭状况">
-      <select v-model="area">
-          <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
+      <select v-model="family">
+          <option :value="item.code" :key="index" v-for="(item,index) in Familys">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
   <div class="list">
     <mt-cell title="最高学历">
-      <select v-model="area">
-          <option :value="item.code" :key="index" v-for="(item,index) in areas">{{item.name}}</option>
+      <select v-model="edu">
+          <option :value="item.code" :key="index" v-for="(item,index) in Edus">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
-  <div class="next" @click="goSelectTag">下一步</div>
+  <mt-button class="next" @click="goSelectTag" size="normal" type="primary">下一步</mt-button>
 </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
-@Component
+import { EBaseDataType } from '../../enum/EBaseDataType';
+import UserService from "../../api/UserService";
+import { mapActions } from 'vuex';
+import {INoop} from "../../util/methods"
+
+@Component({
+  methods:{
+    ...mapActions({
+      setExprience:'my/setExprience'
+    })
+  }
+})
 export default class Exprience extends Vue{
-  private area = '110000';
-  private areas:Array<{code:string,name:string}> = []
+  private service = UserService.getInstance()
+  private setExprience:INoop
+  private job = '';
+  private Jobs:Array<{code:string,name:string}> = [];
+  private family = '';
+  private Familys:Array<{code:string,name:string}> = []
+  private edu = '';
+  private Edus:Array<{code:string,name:string}> = []
   goSelectTag(){
-    this.$router.push({path:'/tag'})
+    if(this.job&&this.family&&this.edu){
+      let expirence = {
+        job:this.job,
+        family:this.family,
+        edu:this.edu
+      }
+      this.setExprience(expirence)
+      this.$router.push({path:'/tag'})
+    }else{
+      this.$toast("信息不能为空");
+    }
   }
   created(){
     document.title = "经历"
+    this.filterFunc('Job')
+    this.filterFunc('Family')
+    this.filterFunc('Edu')
+  }
+  filterFunc(type:string){
+    this.service.getBase(EBaseDataType[type]).then(res=>{
+      let data = res.data.data;
+      for(var key in data){
+        this[type+'s'].push({
+          code:key,
+          name:data[key].name
+        })
+      }
+    })
   }
 }
 </script>

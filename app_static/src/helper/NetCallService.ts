@@ -61,10 +61,10 @@ class NetImService {
                 WindowsPhone: '手机版'
               };
               var str = error.from;
-              new Date().format()
+              (<any>new Date()).format()
               console.warn(
                 '你的帐号于' +
-                new Date().format("yyyy-MM-dd hh:mm:ss") +
+                (<any>new Date()).format("yyyy-MM-dd hh:mm:ss") +
                   '被' +
                   (map[str] || '其他端') +
                   '踢出下线，请确定帐号信息安全!'
@@ -237,7 +237,7 @@ export default class NetCallService{
             });
         }.bind(this));
     };
-    
+
     private startDeviceAudioOut(){
         return this.netcall.startDevice({
             type: this.Netcall.DEVICE_TYPE_AUDIO_OUT_CHAT

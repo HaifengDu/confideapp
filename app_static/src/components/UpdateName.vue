@@ -3,13 +3,16 @@
   <div class="input">
     <input type="text" v-model="content" :maxlength="maxlength">
     <div class="close" @click="deleteAll"></div>
-    <div class="confirm" @click="confirm"></div>
+  </div>
+  <div>
+    <mt-button style="margin-left:-5px;" class="button" type="primary" size="normal" @click="cancel">取消</mt-button>
+    <mt-button style="margin-left:20px" class="button" type="primary" size="normal" @click="confirm">保存</mt-button>
   </div>
 </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import {Component, Prop, Watch} from 'vue-property-decorator';
+import {Component, Prop, Watch, Emit} from 'vue-property-decorator';
 
 @Component
 export default class UpdateName extends Vue{
@@ -22,8 +25,15 @@ export default class UpdateName extends Vue{
     this.content = '';
   }
   confirm(){
-    this.$emit('changeContent',this.content)
+    if(this.content.trim()){
+      this.$emit('changeContent',this.content)
+    } else {
+      this.$toast({message:'信息不能为空'})
+    }
   }
+  @Emit("cancel")
+  cancel(){}
+
   mounted(){
     this.content = this.name
   }
@@ -67,6 +77,13 @@ export default class UpdateName extends Vue{
       background:url(../../static/images/baseInfo/confirm.png) no-repeat center;
       background-size:2rem;
     }
+  }
+  .button{
+    width:8rem;
+    height:3rem;
+    line-height: 3rem;
+    background:@mainColor;
+    color:#fff;
   }
 }
 </style>

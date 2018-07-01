@@ -2,14 +2,14 @@
 <div class="bind-container">
   <div class="phone"></div>
   <div class="already" v-if="bind">
-    <div class="text">您已绑定手机：15366666666</div>
+    <div class="text">您已绑定手机：{{phone}}</div>
     <div class="update" @click="updateNum">更换手机号</div>
   </div>
   <div class="unbind" v-else>
     <div class="input">
       <div class="icon num"></div>
       <input type="text" placeholder="输入手机号码" v-model="phone">
-      <div class="code-button" @click="getCodeMethod">获取验证码</div>
+      <div class="code-button" @click="getCodeMethod">{{checkText}}</div>
     </div>
     <div class="input">
       <div class="icon code"></div>
@@ -17,14 +17,15 @@
     </div>
   </div>
   <div class="tip">您的手机号将受到隐私保护</div>
-  <div class="button" @click="goBaseInfo">下一步</div>
+  <mt-button class="button" type="primary" size="large" @click="goBaseInfo">下一步</mt-button>
 </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
 import {Component} from 'vue-property-decorator';
+import {INoopPromise} from '@/util/methods';
 import { mapActions, mapGetters } from 'vuex';
-import Service from '../../api/BaseInfoService'
+// import Service from '../../api/BaseInfoService'
 @Component({
   methods:{
     ...mapActions({
@@ -43,26 +44,64 @@ export default class BindPhone extends Vue{
   private bind = false
   private phone = ''
   private code = ''
-  private BaseInfoService = Service.getInstance()
+  private checkText = "输入验证码";
+  private ispendding = false;
+  // private BaseInfoService = Service.getInstance()
   goBaseInfo(){
+    if(this.bind){
+      this.$router.push({path:'/baseInfo'});
+    }
     if(this.phone&&this.code){
       (<any>this).bindPhone({code:this.code,phone:this.phone}).then((res:any) => {
         if(res.data.success){
-        (<any>this).updatePhone(this.phone)
+          (<any>this).updatePhone(this.phone);
+          this.$router.push({path:'/baseInfo'});
         }
-      })
-      this.bind = true
+      });
     }
-    this.$router.push({path:'/baseInfo'})
   }
   created(){
     document.title = "手机号绑定"
     if((<any>this).user&&(<any>this).user.phone){
-      this.bind = true
+      this.bind = true;
+      this.phone = (<any>this).user.phone;
     }
   }
+  private getCode:INoopPromise;
+  private changeText(num:number){
+    if(num>=60){
+      this.checkText = "输入验证码";
+      return;
+    }
+    this.checkText = `剩余${60-num}秒`;
+  }
   getCodeMethod(){
-    (<any>this).getCode(this.phone)
+    if(this.ispendding){
+      return;
+    }
+    this.ispendding = true;
+    this.getCode(this.phone).then(res=>{
+      const data = res.data;
+      debugger;
+      if(data.success){
+        let num = 0;
+        const timer = setInterval(()=>{
+          if(num>60){
+            clearInterval(timer);
+            this.ispendding = false;
+            return;
+          }
+          num++;
+          this.changeText(num);
+        },1000);
+      }else{
+        this.ispendding = false;
+      }
+    },err=>{
+      this.ispendding = false;
+    }).catch(()=>{
+      this.ispendding = false;
+    })
   }
   updateNum(){
     this.bind = false
@@ -105,7 +144,7 @@ export default class BindPhone extends Vue{
       text-align: left;
     }
     .update{
-      width:10rem;
+      width:7rem;
       color:@mainColor;
     }
   }
@@ -147,10 +186,6 @@ export default class BindPhone extends Vue{
   }
   .button{
     width:80%;
-    height:4rem;
-    line-height: 4rem;
-    border-radius:.5rem;
-    background:@mainColor;
     color:#fff;
   }
   .tip{

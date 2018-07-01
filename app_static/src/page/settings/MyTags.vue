@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <div class="header">
-          我的标签
-        </div>
         <div class="body">
             <div class="topic">擅长话题<span>7/24</span></div>
             <div class="tag" v-for="(tag,index) in tags" :key="index">
@@ -13,7 +10,6 @@
                 <span class="add" @click="addTag">+</span>
             </div>
         </div>
-        <div class="back" @click="back"></div>
     </div>
 </template>
 
@@ -35,12 +31,6 @@ export default class MyTags extends Vue{
             text:'暂无个性宣言'
         },
         {
-            title:'人际关系',
-            text:'暂无个性宣言'
-        },{
-            title:'个人成长',
-            text:'暂无个性宣言'
-        },{
             title:'情绪疏导',
             text:'特别擅长情绪疏导'
         },{
@@ -73,10 +63,6 @@ export default class MyTags extends Vue{
     }
     .container{
         .p-rl;
-    }
-    .header{
-        .v-middle(50px);
-        .f-lg;
     }
     .body{
         .topic{
@@ -122,13 +108,5 @@ export default class MyTags extends Vue{
                 color:@light-blue;
             }
         }
-    }
-    .back{
-        width:20px;
-        height:20px;
-        .p-ab;
-        top:15px;
-        left:20px;
-        background:url(../../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
     }
 </style>

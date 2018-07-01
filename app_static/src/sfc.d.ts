@@ -22,5 +22,6 @@ declare module "vue/types/vue" {
       $http: AxiosInstance;
       $router: VueRouter;
       $route: Route;
+      $toast:any;
     }
 }

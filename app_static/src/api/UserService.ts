@@ -1,4 +1,5 @@
 import Axios, { AxiosPromise } from "axios";
+import { EBaseDataType } from "../enum/EBaseDataType";
 
 export default class MyService {
     private static _instance: MyService;
@@ -30,6 +31,16 @@ export default class MyService {
     */
     public bindPhone(code:string,phone:string):AxiosPromise<any>{
       return Axios.post("/user/bindphone",  { code,phone });
+    }
+    /**
+    * 获取经历
+    */
+    public getBase(type: EBaseDataType): AxiosPromise<any> {
+      return Axios.get("base", {
+        params: {
+          type
+        }
+      });
     }
     private constructor() {}
 

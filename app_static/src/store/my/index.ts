@@ -6,7 +6,9 @@ import IRootState from '../../interface/IRootState';
 export const store:Module<IMyState,IRootState> = {
     namespaced:true,
     state:{
-      phone:''
+      phone:'',
+      baseInfo:{},
+      exprience:{}
     },
     getters:{
 
@@ -17,6 +19,12 @@ export const store:Module<IMyState,IRootState> = {
     mutations:{
       [Mtype.UPDATE_PHONE](state,phone){
         state.phone = phone
+      },
+      [Mtype.UPDATE_BASE_INFO](state,data){
+        state.baseInfo = data
+      },
+      [Mtype.UPDATE_EXPRIENCE](state,data){
+        state.exprience = data
       }
     }
 };

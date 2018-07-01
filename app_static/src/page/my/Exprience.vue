@@ -24,7 +24,7 @@
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
-  <div class="next" @click="goSelectTag">下一步</div>
+  <mt-button class="next" @click="goSelectTag" size="normal" type="primary">下一步</mt-button>
 </div>
 </template>
 
@@ -62,7 +62,7 @@ export default class Exprience extends Vue{
       this.setExprience(expirence)
       this.$router.push({path:'/tag'})
     }else{
-
+      this.$toast("信息不能为空");
     }
   }
   created(){

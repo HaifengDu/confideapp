@@ -20,6 +20,7 @@ Vue.use(VeeValidate, {
     locale: 'zh_CN'
 });
 Vue.use(MintUI);
+Vue.prototype.$toast = MintUI.Toast;
 /* eslint-disable no-new */
 new Vue({
     el: '#app',

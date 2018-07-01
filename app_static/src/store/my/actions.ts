@@ -10,9 +10,7 @@ export const getCode: Action<IMyState, IRootState> = (
   { dispatch, commit },
   phone
 ) => {
-  return myService.getCode(phone).then(res => {
-    return res;
-  });
+  return myService.getCode(phone);
 };
 export const bindPhone: Action<IMyState, IRootState> = (
   { dispatch, commit },

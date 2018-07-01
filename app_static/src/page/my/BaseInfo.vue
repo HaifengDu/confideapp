@@ -31,13 +31,13 @@
         <mt-radio
           title="性别"
           v-model="baseInfo.sex"
-          :options="['1', '2']">
+          :options="sexOptions">
         </mt-radio>
       </div>
       <mt-datetime-picker
         type="date"
         ref="picker"
-        :start-date="new Date(1900,1,1)"
+        :start-date="new Date(1950,1,1)"
         :end-date="new Date()"
         year-format="{value} 年"
         month-format="{value} 月"
@@ -50,9 +50,9 @@
       <textarea name="" id="" cols="30" rows="10" placeholder="请输入个人介绍" v-model="baseInfo.resume"></textarea>
     </div>
     <div class="button">
-     <div class="next" @click="goExperience">下一步</div>
+      <mt-button class="next" @click="goExperience" size="normal" type="primary">下一步</mt-button>
     </div>
-    <update-name :name="baseInfo.nickname" v-if="showName" @changeContent="updatedName"></update-name>
+    <update-name :name="baseInfo.nickname" v-if="showName" @cancel="cancel" @changeContent="updatedName"></update-name>
   </div>
 </template>
 
@@ -85,6 +85,13 @@ export default class BaseInfo extends Vue{
   private areas:Array<{code:string,name:string}> = []
   private showName = false
   private setBaseInfo:INoop;
+  private sexOptions = [{
+      label: '男',
+      value: 1
+  },{
+      label: '女',
+      value: 2
+  }]
   private baseInfo = {
     headimgurl:'',
     birthday:'',
@@ -113,11 +120,23 @@ export default class BaseInfo extends Vue{
   handleConfirm(data:string){
     this.baseInfo.birthday = (<any>new Date(data)).format("yyyy-MM-dd");
   }
+  cancel(){
+    this.showName = false;
+  }
   updatedName(name:string){
     this.baseInfo.nickname = name;
     this.showName = false;
   }
   goExperience(){
+    //验证
+    if(!this.baseInfo.address){
+      this.$toast("请选择地址");
+      return;
+    }
+    if(!this.baseInfo.birthday){
+      this.$toast("请选择生日");
+      return;
+    }
     this.setBaseInfo(this.baseInfo)
     this.$router.push({path:'/exprience'})
   }

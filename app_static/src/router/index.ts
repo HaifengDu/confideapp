@@ -14,6 +14,7 @@ import UserInfo from "@/page/userInfo/UserInfo.vue";
 import ListenerSettings from "@/page/settings/ListenerSettings.vue";
 import MyTags from "@/page/settings/MyTags.vue";
 import OtherInfo from "@/page/settings/OtherInfo.vue";
+import TextService from "@/page/settings/TextService.vue";
 
 Vue.use(Router)
 
@@ -78,13 +79,17 @@ const router = new Router({
       component: ListenerSettings
     },
     {
-      path:'/myTags',
+      path:"/myTags",
       name:"MyTags",
       component:MyTags
     },{
       path:"/otherInfo",
       name:"OtherInfo",
       component:OtherInfo
+    },{
+      path:"/textService",
+      name:"TextService",
+      component:TextService
     }
   ]
 });

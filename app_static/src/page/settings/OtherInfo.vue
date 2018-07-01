@@ -2,32 +2,34 @@
     <div class="container">
         <div class="body">
             <div class="list">
-                <mt-cell title="职业信息">
-                <select v-model="informations.job">
-                    <option :value="item.code" :key="index" v-for="(item,index) in jobs">{{item.name}}</option>
-                </select>
-                <i class="mint-cell-allow-right"></i>
+                <mt-cell title="职业信息" class="cell-con">
+                    <select v-model="informations.job">
+                        <option :value="item.code" :key="index" v-for="(item,index) in jobs">{{item.name}}</option>
+                    </select>
+                    <i class="mint-cell-allow-right"></i>
                 </mt-cell>
             </div>
             <div class="list">
-                <mt-cell title="家庭状况">
-                <select v-model="informations.family">
-                    <option :value="item.code" :key="index" v-for="(item,index) in familyDatas">{{item.name}}</option>
-                </select>
-                <i class="mint-cell-allow-right"></i>
+                <mt-cell title="家庭状况"  class="cell-con">
+                    <select v-model="informations.family">
+                        <option :value="item.code" :key="index" v-for="(item,index) in familyDatas">{{item.name}}</option>
+                    </select>
+                    <i class="mint-cell-allow-right"></i>
                 </mt-cell>
             </div>
             <div class="list">
-                <mt-cell title="教育水平">
-                <select v-model="informations.educate">
-                    <option :value="item.code" :key="index" v-for="(item,index) in educateDatas">{{item.name}}</option>
-                </select>
-                <i class="mint-cell-allow-right"></i>
+                <mt-cell title="教育水平"  class="cell-con">
+                    <select v-model="informations.educate">
+                        <option :value="item.code" :key="index" v-for="(item,index) in educateDatas">{{item.name}}</option>
+                    </select>
+                    <i class="mint-cell-allow-right"></i>
                 </mt-cell>
             </div>
         </div>
-        <div class="back" @click="back"></div>
-        <mt-button type="primary" size="large" class="submit-btn" @click.native="submitInfo">提交资料</mt-button>
+        <div class="button-box">
+            <mt-button size="normal" type="primary" @click.native="submitInfo">提交资料</mt-button>
+        </div>
+        <!-- <mt-button type="primary" size="large" class="submit-btn" >提交资料</mt-button> -->
     </div>
 </template>
 
@@ -76,9 +78,6 @@ export default class OtherInfo extends Vue{
         });
     }
 
-    back(){
-        (<any>this).$router.go(-1);
-    }
     submitInfo(){
         console.log(this.informations);
     }
@@ -119,9 +118,9 @@ export default class OtherInfo extends Vue{
             }
         }
     }
-    .submit-btn{
-        border-radius:0;
-        position:fixed;
-        bottom:0;
-    }
+    // .submit-btn{
+    //     border-radius:0;
+    //     position:fixed;
+    //     bottom:0;
+    // }
 </style>

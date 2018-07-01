@@ -60,6 +60,7 @@ export default class Message extends Vue{
     }
     .mint-popup.message{
         width:95%;
+        max-width:600px;
         height:60px;
         border-radius:5px;
         margin-top:10px;

@@ -49,10 +49,6 @@ export default class MyTags extends Vue{
         (<any>this).$router.push('/tag');
     }
 
-    back(){
-        (<any>this).$router.go(-1);
-    }
-
 }
 </script>
 

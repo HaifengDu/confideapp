@@ -46,7 +46,7 @@ export default class MainLabelService {
         if(!model){
             return Bluebird.reject({message:"标签不能为空"});
         }
-        MainLabelModel.create(model).then(res=>{
+        return MainLabelModel.create(model).then(res=>{
             let tempModel = ObjectHelper.serialize<IMainLabel>(res);
             if(tempModel){
                 if(model.stype===ELabelSType.Experience){

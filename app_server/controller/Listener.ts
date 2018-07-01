@@ -17,8 +17,6 @@ import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
 import { IUser } from "../interface/model/IUser";
 import IPager from "../interface/IPager";
 
-const edu = require("../../config/edu.json");
-
 export default class ListenerService {
 
     private static _instance: ListenerService;
@@ -55,6 +53,7 @@ export default class ListenerService {
         return Bluebird.all([findUserPromise,findUserBindPromise]).then(res=>{
             return sequelize.transaction(tran=>{
                 listener.user.status = ERoleStatus.审核中;
+                listener.user.id = listener.uid;
                 const updateUserPromise = this.userService.update(listener.user,tran);
                 // listener.uid = listener.user.id;
                 // delete listener.user;

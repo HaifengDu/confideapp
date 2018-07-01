@@ -2,10 +2,10 @@
 <div class="expirence-container">
   <div class="list">
     <mt-cell title="职业">
-      <div @click="showPopup" style="width:200px;height:20px;"></div>
-      <!-- <select v-model="job">
+      <!-- <div @click="showPopup" style="width:200px;height:20px;"></div> -->
+      <select v-model="job">
           <option :key="index" :value="item.code" v-for="(item,index) in Jobs">{{item.name}}</option>
-      </select> -->
+      </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>

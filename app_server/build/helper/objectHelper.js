@@ -19,7 +19,12 @@ class ObjectHelper {
     static serialize(obj) {
         let result;
         try {
-            result = JSON.parse(JSON.stringify(obj));
+            if (typeof obj === "string") {
+                result = JSON.parse(obj);
+            }
+            else {
+                result = JSON.parse(JSON.stringify(obj));
+            }
         }
         catch (e) {
             result = null;

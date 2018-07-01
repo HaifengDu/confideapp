@@ -18,7 +18,11 @@ export default class ObjectHelper{
     static serialize<T>(obj:any){
         let result:T
         try{
-            result = JSON.parse(JSON.stringify(obj));
+            if(typeof obj==="string"){
+                result = JSON.parse(obj);
+            }else{
+                result = JSON.parse(JSON.stringify(obj));
+            }
         }catch(e){
             result = null;
         }

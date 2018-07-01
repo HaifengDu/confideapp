@@ -15,7 +15,7 @@ class MailHelper {
         this.maxTime = 5 * 60 * 1000;
     }
     checkCode(source, checkModel) {
-        if (!source || !source.code || !source.date || !checkModel || !checkModel.code || !checkModel.date) {
+        if (!source || !source.code || !source.date || !checkModel || !checkModel.code) {
             return new ErrorMsg_1.default(false, "参数非法");
         }
         if (Date.now() > source.date + this.maxTime) {

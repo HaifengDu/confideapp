@@ -8,6 +8,24 @@
       <span class="add" @click="showAddTag=true">+</span>
     </div>
     <add-tag  v-if="showAddTag" @changeContent="updatedTags" @cancel="cancel" :maxlength="4"></add-tag>
+    
+    <div class="title">上传证书</div>
+    <div class="cert-container">
+      <div>
+        <div class="cert-upload" :key="index" v-for="(item,index) in imageList">
+          <img :src="item"/>
+        </div>
+        <div class="cert-upload" @click="uploadClick">
+          <div>+</div>
+          <div>添加凭证</div>
+        </div>
+        <div style="clear:both;"></div>
+      </div>
+      <div class="cert-explain">
+        上传身份证正反面（必须）及证书照片（最多八张）
+      </div>
+      <input style="display:none;" multiple accept="image/png,image/jpeg,image/gif" maxlength="8" type="file" name="certs" @change="fileChange" ref="certsfile"/>
+    </div>
     <div class="next" style="text-algin:center;width:100%;">
       <mt-button @click="submit" size="normal" type="primary">提交审核</mt-button>
     </div>
@@ -20,17 +38,29 @@ import AddTag from '@/components/UpdateName';
 import IMainLabel from "@/interface/model/IMainLabel";
 import LabelService from "../../api/LabelService.ts"
 import {Component} from 'vue-property-decorator';
+import FileReaderHelper from "../../helper/FileReaderHelper.ts";
+import {INoopPromise} from "../../util/methods";
+import { mapActions } from 'vuex';
+import { Indicator } from 'mint-ui';
 const labelService = LabelService.getInstance();
 @Component({
   components:{
     AddTag
+  },
+  methods:{
+    ...mapActions({
+      "actionSumbit":"my/submit"
+    })
   }
 })
 export default class Tags extends Vue{
   private static readonly MAX_COUNT = 21;
+  private static readonly MAX_FILE_COUNT = 6;
   private tags:Array<IMainLabel> = [];
   private selectedTags:Array<{id:number,name:string}> = []
-  private showAddTag = false
+  private showAddTag = false;
+  private imageList:any[] = [];
+  private files:Blob[];
   created(){
     document.title="选择标签";
     labelService.getSystemLabel().then(res=>{
@@ -74,18 +104,75 @@ export default class Tags extends Vue{
       });
     }
   }
+
+  fileChange(){
+    if((<any>this.$refs.certsfile).files.length>Tags.MAX_FILE_COUNT){
+      this.$toast("最多上传8张图片");
+      (<any>this.$refs.certsfile).value = "";
+      return;
+    }
+    const files = this.files = Array.prototype.slice.call((<any>this.$refs.certsfile).files);
+    FileReaderHelper.readFiles(files).then(res=>{
+        this.imageList = res;
+    });
+  }
+  uploadClick(){
+    (<any>this.$refs.certsfile).click();
+  }
   submit(){
     if(!this.selectedTags.length){
       this.$toast("请选择标签");
       return;
     }
-    console.log("提交");
+    Indicator.open('提交中...');
+    this.actionSumbit({labelids:this.selectedTags.map(item=>item.id),files:this.files||[]}).then(res=>{
+      Indicator.close();
+      const data = res.data;
+      if(data.success){
+        this.$toast("申请成功，等待审核");
+      }else{
+        this.$toast(data.message);
+      }
+    },err=>{
+      Indicator.close();
+    }).catch(()=>{
+      Indicator.close();
+    });
   }
+  private actionSumbit:INoopPromise
 }
 </script>
 
 <style lang="less">
 @mainColor:#00D1CF;
+  .cert-container{
+    text-align: left;
+    padding: 5px;
+    .cert-explain{
+      font-size: 1rem;
+      color: #f00;
+    }
+    .cert-upload{
+      color:#fff;
+      background-color: @mainColor;
+      text-align: center;
+      width:7rem;
+      height: 8.5rem;
+      margin-bottom:5px;
+      float: left;
+      margin:2px 4px;
+      &:first-child{
+        margin-left: 0;
+      }
+      div:first-child{
+        font-size: 6rem;
+      }
+      img{
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
   .tags-container{
     font-size:1.4rem;
     .next{

@@ -13,7 +13,6 @@ const User_2 = require("./User");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
 const MongoSortFilterModel_1 = require("../model/mongo/MongoSortFilterModel");
-const edu = require("../../config/edu.json");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
@@ -42,6 +41,7 @@ class ListenerService {
         return Bluebird.all([findUserPromise, findUserBindPromise]).then(res => {
             return mysqlSeq_1.default.transaction(tran => {
                 listener.user.status = ERoleStatus_1.ERoleStatus.审核中;
+                listener.user.id = listener.uid;
                 const updateUserPromise = this.userService.update(listener.user, tran);
                 // listener.uid = listener.user.id;
                 // delete listener.user;

@@ -7,6 +7,8 @@ import * as path from "path";
 import * as uuid from "uuid";
 import ErrorMsg from "../model/ErrorMsg";
 import ListenerService from "../controller/Listener";
+import ObjectHelper from "../helper/objectHelper";
+import { IListener } from "../interface/model/IListener";
 const router = express.Router();
 const listenCtrl = ListenerService.getInstance();
 const execPath = process.cwd();
@@ -60,21 +62,24 @@ router.get("/",
         });
     }
 );
-router.put("/",
+router.post("/",
     [query("userid").isNumeric().withMessage("用户编号非法")],
-    upload.array("certificatefiles",6),
+    [body("data").isEmpty().withMessage("提交数据不能为空")],
+    upload.array("files",6),
     function(req:express.Request,res:express.Response,next){
         const errors:Result<{msg:string}> = validationResult(req);
         if (!errors.isEmpty()) {
             return res.json(new ErrorMsg(false,errors.array()[0].msg ));
         }
-        req.body.uid = req.query.userid;
+        const listener = ObjectHelper.serialize<IListener>(req.body.data);
+        listener.uid = req.query.userid;
         try{
-            req.body.certificateurls = JSON.stringify((<any[]>(req.files || [])).map(item => item.path).map(item => item.replace(execPath, "")));
+            listener.certificateurls = JSON.stringify((<any[]>(req.files || [])).map(item => item.path).map(item => item.replace(execPath, "")));
         }catch(e){
-            req.body.certificateurls="[]";
-        }        
-        listenCtrl.bindListener(req.body).then(data=>{
+            listener.certificateurls="[]";
+        } 
+        
+        listenCtrl.bindListener(listener).then(data=>{
             res.json(new ErrorMsg(true,"创建成功"));
         },err=>{
             res.json(new ErrorMsg(false,err.message));

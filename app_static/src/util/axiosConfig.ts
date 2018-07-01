@@ -16,6 +16,9 @@ _.extend(axios.defaults,{
         status >= 200 && status < 300, // default
     // 请求数据预处理
     transformRequest: [(data:any, headers:any) => {
+        if(headers&&headers["Content-Type"]==="multipart/form-data"){
+            return data;
+        }
         // 请求对象转换成jon字符串
         /**
          * The workhorse; converts an object to x-www-form-urlencoded serialization.

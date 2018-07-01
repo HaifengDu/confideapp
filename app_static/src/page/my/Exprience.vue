@@ -85,9 +85,12 @@ export default class Exprience extends Vue{
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 @bg:#f5f5f5;
 @mainColor:#00D1CF;
+.expirence-container .mint-cell-value{
+  flex:2 !important;
+}
 .expirence-container{
   background:@bg;
   font-size:1.4rem;
@@ -97,7 +100,13 @@ export default class Exprience extends Vue{
     text-align:left;
     padding-left:1rem;
     background:#fff;
+    &:last-child{
+      .mint-cell{
+        border:none;
+      }
+    }
     select{
+      width:100%;
       border:none;
       height:48px;
       appearance:none;

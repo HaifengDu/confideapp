@@ -41,6 +41,33 @@ router.get("/", [
         res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
+router.post("/", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("nickname").isEmpty().withMessage("用户名称不能为空"),
+    check_1.body("sex").isNumeric().withMessage("性别不正确"),
+    check_1.body("address").isNumeric().withMessage("地址不能为空"),
+    check_1.body("birthday").isEmpty().withMessage("生日不能为空")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    const user = {
+        id: req.query.userid,
+        nickname: req.body.nickname,
+        sex: req.body.sex,
+        address: req.body.address,
+        birthday: req.body.birthday,
+        resume: req.body.resume || ""
+    };
+    userContrl.update(user).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
 router.get("/getCheckCode", [
     check_1.query("phone").isMobilePhone("zh-CN").withMessage("非法的手机号"),
     check_1.query("userid").isNumeric().withMessage("用户id不能为空")

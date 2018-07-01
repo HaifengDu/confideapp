@@ -13,6 +13,7 @@ const User_2 = require("./User");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
 const MongoSortFilterModel_1 = require("../model/mongo/MongoSortFilterModel");
+const PriceSetting_1 = require("../model/PriceSetting");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
@@ -126,6 +127,9 @@ class ListenerService {
                     model: User_1.default,
                     as: 'user',
                     where: { id: id }
+                }, {
+                    model: PriceSetting_1.default,
+                    as: "price"
                 }]
         }).then(res => {
             if (!res || !res.user) {
@@ -148,6 +152,9 @@ class ListenerService {
                     model: User_1.default,
                     as: 'user',
                     where: { id: { [sequelize_1.Op.in]: ids } }
+                }, {
+                    model: PriceSetting_1.default,
+                    as: "price"
                 }]
         }).then(res => {
             res.forEach(item => {

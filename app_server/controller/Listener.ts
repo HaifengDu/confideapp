@@ -16,6 +16,7 @@ import { ERoleStatus } from "../enum/ERoleStatus";
 import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
 import { IUser } from "../interface/model/IUser";
 import IPager from "../interface/IPager";
+import PriceSetting from "../model/PriceSetting";
 
 export default class ListenerService {
 
@@ -146,6 +147,9 @@ export default class ListenerService {
                 model: User,
                 as: 'user',
                 where: { id:id }
+            },{
+                model:PriceSetting,
+                as:"price"
             }]
         }).then(res=>{
             if(!res||!res.user){
@@ -169,6 +173,9 @@ export default class ListenerService {
                 model: User,
                 as: 'user',
                 where: { id:{[Op.in] :ids}}
+            },{
+                model:PriceSetting,
+                as:"price"
             }]
         }).then(res=>{
             res.forEach(item=>{

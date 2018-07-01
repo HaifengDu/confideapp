@@ -1,8 +1,6 @@
 import * as Sequelize from "sequelize";
 import sequelize from "../mysqlSeq";
 import { IUser } from "../interface/model/IUser";
-import Listener from "./Listener";
-import MainLabel from "./MainLabel";
 const User = sequelize.define<IUser,IUser>('user',{
     id: {type:Sequelize.INTEGER, primaryKey: true,autoIncrement:true,comment:"唯一id"},
     weixinid: {type:Sequelize.STRING(100),allowNull:false,comment:"微信id"},

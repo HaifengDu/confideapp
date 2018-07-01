@@ -3,6 +3,7 @@ import UserService from "../controller/User";
 import { body,query, validationResult, Result } from 'express-validator/check';
 import ErrorMsg from "../model/ErrorMsg";
 import { IMailCode } from "../interface/IMailCode";
+import { IUser } from "../interface/model/IUser";
 const router = express.Router();
 const userContrl = UserService.getInstance();
 
@@ -37,6 +38,34 @@ router.get("/",[
             return;
         }
         res.json({ data: result,...new ErrorMsg(true) });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.post("/",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("nickname").isEmpty().withMessage("用户名称不能为空"),
+    body("sex").isNumeric().withMessage("性别不正确"),
+    body("address").isNumeric().withMessage("地址不能为空"),
+    body("birthday").isEmpty().withMessage("生日不能为空")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    const user:IUser = {
+        id:req.query.userid,
+        nickname:req.body.nickname,
+        sex:req.body.sex,
+        address:req.body.address,
+        birthday:req.body.birthday,
+        resume:req.body.resume||""
+    }
+    userContrl.update(user).then(data=>{
+        res.json({data,...new ErrorMsg(true)});
     },err=>{
         res.json(new ErrorMsg(false,err.message,err));
     }).catch(err=>{

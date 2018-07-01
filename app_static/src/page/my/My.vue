@@ -273,7 +273,9 @@ export default class My extends Vue{
       margin-left:1rem;
       .fs(1.3rem);
       &:last-child{
-        border:none;
+        .mint-cell{
+          border:none;
+        }
       }
     }
   }

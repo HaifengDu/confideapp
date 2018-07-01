@@ -63,7 +63,7 @@ input,textarea{appearance: none;}
     }
   }
 }
-@light-blue:#00D1CF;
+@light-blue:@mainColor;
 .m-width{
   max-width:620px;
 }
@@ -117,4 +117,12 @@ input,textarea{appearance: none;}
   button{
       padding:0 12px;
   }
+}
+
+.mint-switch-input:checked + .mint-switch-core{
+  background:@mainColor;
+}
+
+.cell-con .mint-cell-wrapper{
+  padding:0 10px 0 20px;
 }

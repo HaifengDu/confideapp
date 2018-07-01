@@ -35,6 +35,11 @@
                     <p>含税价：21.11元</p>
                 </div>
             </mt-cell>
+            <div class="reminder">
+                <p>温馨提示：</p>
+                <p>1、文字服务为即时服务，订单将在倾诉者下单后开始计时，为保证服务质量，请您做好即时服务准备。</p>
+                <p>2、平台将按含税价展示文字服务价格，订单收益按不含税交易额计算。</p>
+            </div>
         </div>
         <div class="button-box">
             <mt-button size="normal" type="primary" @click.native="save">保存设置</mt-button>
@@ -102,6 +107,11 @@ export default class TextService extends Vue{
             .tax-price{
                 color:rgb(181,181,181);
             }
+        }
+        .reminder{
+            text-align:left;
+            color:rgb(181,181,181);
+            padding:20px;
         }
     }
 </style>

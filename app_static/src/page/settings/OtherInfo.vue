@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <div class="header">
-          其他资料
-        </div>
         <div class="body">
             <div class="list">
                 <mt-cell title="职业信息">
@@ -96,10 +93,6 @@ export default class OtherInfo extends Vue{
     .container{
         .p-rl;
     }
-    .header{
-        .v-middle(50px);
-        .f-lg;
-    }
     .body{
         .list{
             text-align:left;
@@ -125,14 +118,6 @@ export default class OtherInfo extends Vue{
                 }
             }
         }
-    }
-    .back{
-        width:20px;
-        height:20px;
-        .p-ab;
-        top:15px;
-        left:20px;
-        background:url(../../../static/images/userInfo/arrow-left-black.png) no-repeat center center;
     }
     .submit-btn{
         border-radius:0;

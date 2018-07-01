@@ -25,3 +25,12 @@ declare module "vue/types/vue" {
       $toast:any;
     }
 }
+declare module "vue/types/options" {
+  interface ComponentOptions<V extends Vue> {
+    router?: VueRouter;
+    beforeRouteEnter?: NavigationGuard;
+    beforeRouteLeave?: NavigationGuard;
+    beforeRouteUpdate?: NavigationGuard;
+  }
+}
+

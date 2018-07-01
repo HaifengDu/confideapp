@@ -2,7 +2,7 @@
   <div class="my-container">
     <div class="info">
       <div class="bg"></div>
-      <div class="detail"></div>
+      <div class="detail" @click="goBaseInfo"></div>
       <div class="main">
         <div class="icon">
           <img :src="user.headimgurl" alt="">
@@ -85,29 +85,6 @@ export default class My extends Vue{
   private entranceArr:any[] = [
     {
         children:[
-        {
-          imgUrl:'static/images/my/purse.png',
-          text:'钱包',
-          id:'purse'
-        },
-        {
-          imgUrl:'static/images/my/charge.png',
-          text:'充值',
-          id:'charge'
-        },
-        {
-          imgUrl:'static/images/my/order.png',
-          text:'订单',
-          id:'order'
-        }
-        // {
-        //   imgUrl:'static/images/my/card.png',
-        //   text:'优惠券',
-        //   id:'card'
-        // }
-        ]
-    },{
-        children:[
           {
             imgUrl:'static/images/my/publish.png',
             text:'我的发布',
@@ -129,12 +106,39 @@ export default class My extends Vue{
           //   id:'activity'
           // }
         ]
+    },
+    {
+        children:[
+        {
+          imgUrl:'static/images/my/purse.png',
+          text:'钱包',
+          id:'purse'
+        },
+        {
+          imgUrl:'static/images/my/charge.png',
+          text:'充值',
+          id:'charge'
+        },
+        {
+          imgUrl:'static/images/my/order.png',
+          text:'订单',
+          id:'order'
+        }
+        // {
+        //   imgUrl:'static/images/my/card.png',
+        //   text:'优惠券',
+        //   id:'card'
+        // }
+        ]
     }
   ];
   // private service = MyService.getInstance();
   applyListener(){
     //TODO:要改为中间页
-    this.$router.replace({path:'/bindPhone'})
+    this.$router.push({path:'/bindPhone'})
+  }
+  goBaseInfo(){
+    this.$router.push({path:'/baseInfo',query:{from:"my"}})
   }
   created(){
     document.title = "我的";

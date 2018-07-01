@@ -50,7 +50,8 @@
       <textarea name="" id="" cols="30" rows="10" placeholder="请输入个人介绍" v-model="baseInfo.resume"></textarea>
     </div>
     <div class="button">
-      <mt-button class="next" @click="goExperience" size="normal" type="primary">下一步</mt-button>
+      <mt-button v-if="$route.query.from=='my'" class="next" @click="saveBaseInfo" size="normal" type="primary">保存</mt-button>
+      <mt-button v-else class="next" @click="goExperience" size="normal" type="primary">下一步</mt-button>
     </div>
     <update-name :name="baseInfo.nickname" v-if="showName" @cancel="cancel" @changeContent="updatedName"></update-name>
   </div>
@@ -85,6 +86,7 @@ export default class BaseInfo extends Vue{
   private areas:Array<{code:string,name:string}> = []
   private showName = false
   private setBaseInfo:INoop;
+  private buttonName = '下一步'
   private sexOptions = [{
       label: '男',
       value: "1"
@@ -104,6 +106,7 @@ export default class BaseInfo extends Vue{
     document.title = "基础信息"
     Object.assign(this.baseInfo,(<any>this).user)
     this.baseInfo.sex = this.baseInfo.sex.toString()
+    this.baseInfo.birthday = (<any>new Date(this.baseInfo.birthday)).format("yyyy-MM-dd");
     this.service.getBase(EBaseDataType.Area).then(res=>{
       let data = res.data.data;
       for(var key in data){
@@ -139,6 +142,14 @@ export default class BaseInfo extends Vue{
     }
     this.setBaseInfo(this.baseInfo)
     this.$router.replace({path:'/exprience'})
+  }
+  saveBaseInfo(){
+    this.service.updateUserInfo(this.baseInfo).then(data=>{
+      this.$toast("修改成功");
+      setTimeout(() => {
+        this.$router.replace({path:'/my'})
+      }, 1000);
+    })
   }
 }
 </script>

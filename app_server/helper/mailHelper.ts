@@ -20,7 +20,7 @@ export default class MailHelper {
     }
 
     public checkCode(source:IMailCode,checkModel:IMailCode){
-        if(!source||!source.code||!source.date||!checkModel||!checkModel.code||!checkModel.date){
+        if(!source||!source.code||!source.date||!checkModel||!checkModel.code){
             return new ErrorMsg(false,"参数非法");
         }
         if(Date.now()>source.date+this.maxTime){

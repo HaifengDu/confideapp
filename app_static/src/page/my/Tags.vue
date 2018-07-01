@@ -75,6 +75,10 @@ export default class Tags extends Vue{
     }
   }
   submit(){
+    if(!this.selectedTags.length){
+      this.$toast("请选择标签");
+      return;
+    }
     console.log("提交");
   }
 }

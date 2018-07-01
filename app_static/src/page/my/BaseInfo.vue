@@ -87,10 +87,10 @@ export default class BaseInfo extends Vue{
   private setBaseInfo:INoop;
   private sexOptions = [{
       label: '男',
-      value: 1
+      value: "1"
   },{
       label: '女',
-      value: 2
+      value: "2"
   }]
   private baseInfo = {
     headimgurl:'',

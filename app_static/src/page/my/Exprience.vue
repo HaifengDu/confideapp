@@ -2,9 +2,10 @@
 <div class="expirence-container">
   <div class="list">
     <mt-cell title="职业">
-      <select v-model="job">
+      <div @click="showPopup" style="width:200px;height:20px;"></div>
+      <!-- <select v-model="job">
           <option :key="index" :value="item.code" v-for="(item,index) in Jobs">{{item.name}}</option>
-      </select>
+      </select> -->
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
@@ -25,6 +26,10 @@
     </mt-cell>
   </div>
   <mt-button class="next" @click="goSelectTag" size="normal" type="primary">下一步</mt-button>
+  <mt-popup
+    v-model="popupVisible"
+    position="right">
+  </mt-popup>
 </div>
 </template>
 
@@ -54,7 +59,8 @@ export default class Exprience extends Vue{
   private family = '';
   private Familys:Array<{code:string,name:string}> = []
   private edu = '';
-  private Edus:Array<{code:string,name:string}> = []
+  private Edus:Array<{code:string,name:string}> = [];
+  private popupVisible = false;
   goSelectTag(){
     if(this.job&&this.family&&this.edu){
       let expirence = {
@@ -84,6 +90,9 @@ export default class Exprience extends Vue{
         })
       }
     })
+  }
+  showPopup(){
+    this.popupVisible = true;
   }
 }
 </script>

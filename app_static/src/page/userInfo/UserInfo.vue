@@ -88,6 +88,9 @@
         </mt-popup>
         <message :visible="msgVisible" position="top"></message>
         <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
+        <!-- <div class="button-box">
+            <mt-button size="normal" type="primary" @click.native="contact">进入聊天</mt-button>
+        </div> -->
     </div>
 </template>
 
@@ -215,7 +218,7 @@ export default class UserInfo extends Vue{
         }
     }
     .container{
-        padding-bottom: 41px;
+        padding-bottom: 60px;
         .header{
             width:100%;
             height:170px;

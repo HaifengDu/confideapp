@@ -66,8 +66,11 @@ input,textarea{appearance: none;}
   }
 }
 @light-blue:#00D1CF;
+.m-width{
+  max-width:620px;
+}
 .mint-button{
-  max-width:425px;
+  .m-width;
 }
 
 .f-sm{
@@ -101,4 +104,19 @@ input,textarea{appearance: none;}
   width:@length;
   height:@length;
   border-radius:50%;
+}
+.cell-con{
+  color: #adadad;
+  text-align: left;
+}
+.button-box{
+  .m-width;
+  width: 100%;
+  text-align:center;
+  position:fixed;
+  bottom:0;
+  padding:15px 0;
+  button{
+      padding:0 12px;
+  }
 }

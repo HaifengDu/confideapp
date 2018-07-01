@@ -138,7 +138,7 @@ export default class BaseInfo extends Vue{
       return;
     }
     this.setBaseInfo(this.baseInfo)
-    this.$router.push({path:'/exprience'})
+    this.$router.replace({path:'/exprience'})
   }
 }
 </script>

@@ -49,7 +49,7 @@ export default class BindPhone extends Vue{
   // private BaseInfoService = Service.getInstance()
   goBaseInfo(){
     if(this.bind){
-      this.$router.push({path:'/baseInfo'});
+      this.$router.replace({path:'/baseInfo'});
     }
     if(this.phone&&this.code){
       (<any>this).bindPhone({code:this.code,phone:this.phone}).then((res:any) => {

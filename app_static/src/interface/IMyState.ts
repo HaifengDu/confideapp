@@ -1,6 +1,6 @@
 export interface IMyState {
   phone?: string;
-  baseInfo?: object;
-  exprience?:object;
+  baseInfo?: any;
+  exprience?:any;
 }
 export default IMyState;

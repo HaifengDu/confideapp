@@ -1,26 +1,23 @@
 <template>
 <div class="expirence-container">
-  <div class="list">
-    <mt-cell title="职业">
-      <div @click="showPopup" style="width:200px;height:20px;"></div>
-      <!-- <select v-model="job">
-          <option :key="index" :value="item.code" v-for="(item,index) in Jobs">{{item.name}}</option>
-      </select> -->
+  <div class="list" @click="showPopup" >
+    <mt-cell title="职业" is-link>
+      <span>{{job.name}}</span>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
-  <div class="list">
+  <div class="list select">
     <mt-cell title="家庭状况">
       <select v-model="family">
-          <option :value="item.code" :key="index" v-for="(item,index) in Familys">{{item.name}}</option>
+          <option :value="item.id" :key="index" v-for="(item,index) in Familys">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
   </div>
-  <div class="list">
+  <div class="list select">
     <mt-cell title="最高学历">
       <select v-model="edu">
-          <option :value="item.code" :key="index" v-for="(item,index) in Edus">{{item.name}}</option>
+          <option :value="item.id" :key="index" v-for="(item,index) in Edus">{{item.name}}</option>
       </select>
       <i class="mint-cell-allow-right"></i>
     </mt-cell>
@@ -29,6 +26,7 @@
   <mt-popup
     v-model="popupVisible"
     position="right">
+    <two-level-menu :lists="Jobs" v-if="Jobs.length" @changeMenu="updateJob"></two-level-menu>
   </mt-popup>
 </div>
 </template>
@@ -69,7 +67,7 @@ export default class Exprience extends Vue{
         edu:this.edu
       }
       this.setExprience(expirence)
-      this.$router.push({path:'/tag'})
+      this.$router.replace({path:'/tag'})
     }else{
       this.$toast("信息不能为空");
     }
@@ -83,16 +81,15 @@ export default class Exprience extends Vue{
   filterFunc(type:string){
     this.service.getBase(EBaseDataType[type]).then(res=>{
       let data = res.data.data;
-      for(var key in data){
-        this[type+'s'].push({
-          code:key,
-          name:data[key].name
-        })
-      }
+      this[type+'s'] = data;
     })
   }
   showPopup(){
     this.popupVisible = true;
+  }
+  updateJob(job:any){
+    this.job = job
+    this.popupVisible = false;
   }
 }
 </script>
@@ -100,7 +97,7 @@ export default class Exprience extends Vue{
 <style lang="less">
 @bg:#f5f5f5;
 @mainColor:#00D1CF;
-.expirence-container .mint-cell-value{
+.expirence-container .select .mint-cell-value{
   flex:2 !important;
 }
 .expirence-container{
@@ -108,6 +105,10 @@ export default class Exprience extends Vue{
   font-size:1.4rem;
   // height:100vh;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
+  .mint-popup{
+    width:100%;
+    height:100%;
+  }
   .list{
     text-align:left;
     padding-left:1rem;

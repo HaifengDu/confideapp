@@ -91,8 +91,7 @@ export default class Tags extends Vue{
     .next{
       position:fixed;
       bottom:2rem;
-      // left:50%;
-      // margin-left:-6rem;
+      left:0;
     }
     .title{
       text-align:left;

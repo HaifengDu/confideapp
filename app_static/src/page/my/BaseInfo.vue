@@ -151,9 +151,6 @@ export default class BaseInfo extends Vue{
   background:@bg;
   font-size:1.4rem;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
-.mint-radiolist{
-  .mint-cell{border:none;}
-}
   .next{
     width:12rem;
     height:4rem;

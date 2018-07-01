@@ -35,8 +35,11 @@ import { EBaseDataType } from '../../enum/EBaseDataType';
 import UserService from "../../api/UserService";
 import { mapActions } from 'vuex';
 import {INoop} from "../../util/methods"
-
+import TwoLevelMenu from '@/components/TwoLevelMenu'
 @Component({
+  components:{
+    TwoLevelMenu
+  },
   methods:{
     ...mapActions({
       setExprience:'my/setExprience'

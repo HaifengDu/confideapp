@@ -23,7 +23,7 @@ import Vue from 'vue'
 import {Component, Prop, Watch, Emit} from 'vue-property-decorator';
 
 @Component
-export default class UpdateName extends Vue{
+export default class TwoLevelMenu extends Vue{
   @Prop({
     type:Array
   })
@@ -33,10 +33,11 @@ export default class UpdateName extends Vue{
 
   created(){
     this.parent = this.lists
-    this.current = this.lists[0]
+    this.current = this.lists[0];
     console.log(this.current);
   }
   selectParent(item:any){
+    console.log(item);
     this.current = item
   }
   selectChild(item:any){

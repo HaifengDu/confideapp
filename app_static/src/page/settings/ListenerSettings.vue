@@ -2,7 +2,7 @@
     <div class="container">
         <div class="body">
             <div class="title">个人设置</div>
-            <div @click="toPage('basic')">
+            <div @click="toPage('baseInfo')">
                 <mt-cell title="基本资料" is-link class="cell-con"></mt-cell>
             </div>
             <div @click="toPage('myTags')" class="cell-box">
@@ -10,7 +10,7 @@
                     <!-- <span class="cell-text">情感挽回,婚姻关系,人际关系,个人成长,情绪疏导</span> -->
                 </mt-cell>
             </div>
-            <div @click="toPage('info')" class="cell-box">
+            <div @click="toPage('my')" class="cell-box">
                 <mt-cell title="个人信息" is-link class="cell-con"></mt-cell>
             </div>
             <div @click="toPage('otherInfo')" class="cell-box">
@@ -26,7 +26,7 @@
                     <span class="cell-text">0.1元/条</span>
                 </mt-cell>
             </div>
-            <div @click="toPage('phone')" class="cell-box">
+            <div @click="toPage('callService')" class="cell-box">
                 <mt-cell title="通话服务" is-link class="cell-con">
                     <span class="cell-text">9.8元/15分钟</span>
                 </mt-cell>
@@ -77,7 +77,7 @@ export default class ListenerSettings extends Vue{
             background:rgb(247,247,247);
             color:rgb(173,173,173);
             text-align:left;
-            padding-left:10px;
+            padding-left:20px;
         }
         a.cell-con{
             padding-left:0;

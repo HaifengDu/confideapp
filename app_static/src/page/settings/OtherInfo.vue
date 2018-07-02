@@ -1,11 +1,9 @@
 <template>
     <div class="container">
-        <div class="body">
+        <div class="body" v-if="!showMenu">
             <div class="list">
-                <mt-cell title="职业信息" class="cell-con">
-                    <select v-model="informations.job">
-                        <option :value="item.code" :key="index" v-for="(item,index) in jobs">{{item.name}}</option>
-                    </select>
+                <mt-cell title="职业信息" class="cell-con" @click.native="selectJob">
+                    <span style="right:25px;position:relative;">{{jobName}}</span>
                     <i class="mint-cell-allow-right"></i>
                 </mt-cell>
             </div>
@@ -25,10 +23,16 @@
                     <i class="mint-cell-allow-right"></i>
                 </mt-cell>
             </div>
+            <div class="button-box">
+                <mt-button size="normal" type="primary" @click.native="submitInfo">提交资料</mt-button>
+            </div>
         </div>
-        <div class="button-box">
-            <mt-button size="normal" type="primary" @click.native="submitInfo">提交资料</mt-button>
-        </div>
+        <mt-popup style="width:100%;height:100%;"
+            v-model="showMenu"
+            :modal="false"
+            position="right">
+            <two-level-menu v-if="showMenu" :lists="this.jobs" @changeMenu="changeMenu"></two-level-menu>
+        </mt-popup>
         <!-- <mt-button type="primary" size="large" class="submit-btn" >提交资料</mt-button> -->
     </div>
 </template>
@@ -38,9 +42,12 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
+import TwoLevelMenu from "@/components/TwoLevelMenu.vue";
 
 @Component({
-
+    components:{
+        "two-level-menu":TwoLevelMenu
+    }
 })
 export default class OtherInfo extends Vue{
     private service = UserService.getInstance();
@@ -48,15 +55,11 @@ export default class OtherInfo extends Vue{
     private familyDatas:Array<any> = [];
     private educateDatas:Array<any> = [];
     private informations:any = {};
+    private jobName = "";
+    private showMenu = false;
     created(){
         this.service.getBase(EBaseDataType.Job).then(res=>{
-            let data = res.data.data;
-            for(var key in data){
-                this.jobs.push({
-                    code:key,
-                    name:data[key].name
-                });
-            }
+            this.jobs = res.data.data;
         });
         this.service.getBase(EBaseDataType.Family).then(res=>{
             let data = res.data.data;
@@ -78,6 +81,20 @@ export default class OtherInfo extends Vue{
         });
     }
 
+    selectJob(){
+        if(this.jobs&&this.jobs.length){
+            this.showMenu = !this.showMenu;
+        }
+    }
+
+    changeMenu(menu:any){
+        if(menu){
+            this.showMenu = false;
+            this.jobName = menu.name;
+            this.informations.job = menu.id;
+        }
+    }
+
     submitInfo(){
         console.log(this.informations);
     }
@@ -95,7 +112,6 @@ export default class OtherInfo extends Vue{
     .body{
         .list{
             text-align:left;
-            padding-left:1rem;
             select{
                 border:none;
                 height:48px;

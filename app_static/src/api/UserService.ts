@@ -42,6 +42,14 @@ export default class MyService {
         }
       });
     }
+    /**
+     * 修改个人信息
+     */
+    public updateUserInfo(baseInfo:any): AxiosPromise<any> {
+      return Axios.post("user", {
+        ...baseInfo
+      });
+    }
     private constructor() {}
 
     public static getInstance() {

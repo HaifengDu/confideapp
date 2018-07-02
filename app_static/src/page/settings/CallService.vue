@@ -5,19 +5,16 @@
             <mt-cell title="通话服务" class="cell-con">
                 <mt-switch v-model="isSetCall"></mt-switch>
             </mt-cell>
-            <mt-cell title="设置单价" class="cell-con" v-if="isSetCall">
+            <mt-cell title="价格" class="cell-con" v-if="isSetCall">
                 <div class="price-wrapper">
-                    <div class="price" @click="changePrice()">
-                        <img src="static/images/settings/edit.png"/>0.61元
-                    </div>
-                    <p>含税价：0.66元</p>
+                    <span>设定价</span>
+                    <input class="entry" type="number" min="0.6" max="20" v-model="callPrice"/>元
+                    <p class="tax-price">显示价(含税)：0.66元</p>
                 </div>
             </mt-cell>
             <mt-cell title="最低服务时长" class="cell-con" v-if="isSetCall">
-                <div class="price-wrapper" @click="changeTime()">
-                    <div class="price">
-                        <img src="static/images/settings/edit.png"/>15分钟
-                    </div>
+                <div class="price-wrapper">
+                    <input class="entry" type="number" min="15" v-model="minCallTime"/>分钟
                 </div>
             </mt-cell>
             <mt-cell title="起步价" class="cell-con" value="9.9元" v-if="isSetCall">
@@ -44,16 +41,10 @@ import {Component} from 'vue-property-decorator';
 export default class CallService extends Vue{
     //是否设置通话服务
     private isSetCall = true;
+    private callPrice = 0.66;
+    private minCallTime = 15;
     created(){
         console.log(888);
-    }
-
-    changePrice(){
-        console.log(999);
-    }
-
-    changeTime(){
-
     }
 
     save(){
@@ -76,21 +67,17 @@ export default class CallService extends Vue{
             color: rgb(230,162,92);
         }
         .cell-con .price-wrapper{
-            text-align:right;
-            display: flex;
-            flex-direction: column;
-            .price{
-                font-size:16px;
-                color:@light-blue;
-                padding-bottom:5px;
-                img{
-                    width:20px;
-                    margin-right:5px;
-                    vertical-align: bottom;
-                }
+            line-height: 20px;
+            .entry{
+                outline: none;
+                width: 50px;
             }
             .tax-price{
+                padding-left:10px;
                 color:rgb(181,181,181);
+            }
+            .tax-price,.design,.entry{
+                .i-bl;
             }
         }
         .reminder{

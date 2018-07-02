@@ -148,12 +148,7 @@ export default class My extends Vue{
 
 </script>
 <style lang="less" scoped>
-@mainColor:#00D1CF;
-@color:#333;
-@bg:#f5f5f5;
-.fs(@size){
-  font-size: @size;
-}
+@import '~@/assets/common.less';
 .my-container{
   height:100%;
   width:100%;

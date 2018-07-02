@@ -2,7 +2,7 @@
     <div class="container">
         <div class="body" v-if="!showMenu">
             <div class="list">
-                <mt-cell title="职业信息" class="cell-con" @click.native="showMenu=!showMenu">
+                <mt-cell title="职业信息" class="cell-con" @click.native="selectJob">
                     <span style="right:25px;position:relative;">{{jobName}}</span>
                     <i class="mint-cell-allow-right"></i>
                 </mt-cell>
@@ -79,6 +79,12 @@ export default class OtherInfo extends Vue{
                 });
             }
         });
+    }
+
+    selectJob(){
+        if(this.jobs&&this.jobs.length){
+            this.showMenu = !this.showMenu;
+        }
     }
 
     changeMenu(menu:any){

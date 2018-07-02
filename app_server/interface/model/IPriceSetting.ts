@@ -6,8 +6,8 @@ export interface IPriceSetting{
     uid?:number,
     type?:EPriceCircle,
     timecircle?:EPriceCircle,
-    price?:Number,
-    taxprice?:Number,
+    price?:number,
+    taxprice?:number,
     status?:EPriceStatus
 }
 export default IPriceSetting;

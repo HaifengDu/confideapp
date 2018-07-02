@@ -14,9 +14,9 @@ import UserService from "./User";
 import ErrorMsg from "../model/ErrorMsg";
 import { ERoleStatus } from "../enum/ERoleStatus";
 import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
-import { IUser } from "../interface/model/IUser";
 import IPager from "../interface/IPager";
 import PriceSetting from "../model/PriceSetting";
+import MongoSyncBiz from "../biz/MongoSyncBiz";
 
 export default class ListenerService {
 
@@ -24,9 +24,11 @@ export default class ListenerService {
     private biz:ListenerBiz;
     private mainlabelService:MainLabelService;
     private userService:UserService;
+    private mongoSyncbiz:MongoSyncBiz
     private readonly PAGE_SIZE = 20;
     private constructor() {
         this.biz = ListenerBiz.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz.getInstance(); 
         this.mainlabelService = MainLabelService.getInstance();
         this.userService = UserService.getInstance();
     }
@@ -101,13 +103,7 @@ export default class ListenerService {
         promise.then(res=>{
             this.syncMongo(id);
         });
-    }
-
-    public updateUser(user:IUser){
-        const promise = this.userService.update(user);
-        promise.then(res=>{
-            this.syncMongo(user.id);
-        });
+        return promise;
     }
 
     public updateListener(listener:IListener){
@@ -118,26 +114,33 @@ export default class ListenerService {
                 uid:uid
             }
         });
-        promise.then(res=>{
-            this.syncMongo(listener.uid);
+        promise.then((res)=>{
+            if(res[0]>0){
+                return this.mongoSyncbiz.updateByListener(res[1][0]);
+            }
+            return res;
         });
+        return promise;
     }
 
-    private syncMongo(id:number){
-        this.findByUserid(id).then(res=>{
-            MongoSortFilterModel.create({
-                uid:id,
-                generalprice:Math.min(res.phoneprice,res.wordprice),
-                auth:res.labelids,
-                praisepercent:0,
-                sex:res.user.sex,
-                family:res.family,
-                birthday:res.user.birthday,
-                edu:res.edu,
-                sealtimes:0,
-                receivestatus:res.recievestatus,
-                labelids:res.labelids
-            });
+    public updateListenById(id:number,listener:IListener){
+        const promise = ListenerModel.update(listener,{
+            where:{
+                uid:id
+            }
+        });
+        promise.then((res)=>{
+            if(res[0]>0){
+                return this.mongoSyncbiz.updateByListener(res[1][0]);
+            }
+            return res;
+        });
+        return promise;
+    }
+
+    private syncMongo(uid:number){
+        this.findByUserid(uid).then(res=>{
+            this.mongoSyncbiz.create(res);
         });
     }
 
@@ -160,13 +163,10 @@ export default class ListenerService {
             ObjectHelper.merge(res,{
                 labels:labels
             });
-            // if(res){
-            //     ObjectHelper.mergeChildToSource(res);
-            // }
             return Promise.resolve(res);
         });
     }
-
+    
     public findInUserids(ids:number[]){
         return ListenerModel.findAll({
             include: [{
@@ -227,6 +227,34 @@ export default class ListenerService {
                 // }
             });
             return Bluebird.resolve(res);
+        });
+    }
+
+    /**
+     * 更新标签
+     * @param labels 
+     * @param userid 
+     */
+    public updateLabels(labels:IListenLabel[],userid:number){
+        if(!userid){
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
+        }
+        if(!labels||!labels.length){
+            return Bluebird.reject(new ErrorMsg(false,"更新的标签不能为空"));
+        }
+        const result = labels.filter(item=>!!item.id).reduce((ori,item)=>{
+            ori.ids.push(item.id);
+            ori.descs.push({id:item.id,desc:item.desc});
+            return ori;
+        },{
+            ids:[],
+            descs:[]
+        });
+
+        return this.updateListener({
+            uid:userid,
+            labelids:JSON.stringify(result.ids),
+            labeldesc:JSON.stringify(result.descs)
         });
     }
 

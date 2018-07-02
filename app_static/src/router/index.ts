@@ -15,6 +15,7 @@ import ListenerSettings from "@/page/settings/ListenerSettings.vue";
 import MyTags from "@/page/settings/MyTags.vue";
 import OtherInfo from "@/page/settings/OtherInfo.vue";
 import TextService from "@/page/settings/TextService.vue";
+import SearchFilter from "@/page/SearchFilter.vue";
 
 Vue.use(Router)
 
@@ -62,6 +63,10 @@ const router = new Router({
       path: "/exprience",
       name: "Exprience",
       component: Exprience
+    },{
+      path:"/searchFilter",
+      name:"SearchFilter",
+      component:SearchFilter
     },
     {
       path: "/tag",

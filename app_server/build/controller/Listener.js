@@ -12,12 +12,13 @@ const mysqlSeq_1 = require("../mysqlSeq");
 const User_2 = require("./User");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
-const MongoSortFilterModel_1 = require("../model/mongo/MongoSortFilterModel");
 const PriceSetting_1 = require("../model/PriceSetting");
+const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
         this.biz = ListenerBiz_1.default.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
         this.mainlabelService = MainLabel_1.default.getInstance();
         this.userService = User_2.default.getInstance();
     }
@@ -85,12 +86,7 @@ class ListenerService {
         promise.then(res => {
             this.syncMongo(id);
         });
-    }
-    updateUser(user) {
-        const promise = this.userService.update(user);
-        promise.then(res => {
-            this.syncMongo(user.id);
-        });
+        return promise;
     }
     updateListener(listener) {
         const uid = listener.uid;
@@ -100,25 +96,31 @@ class ListenerService {
                 uid: uid
             }
         });
-        promise.then(res => {
-            this.syncMongo(listener.uid);
+        promise.then((res) => {
+            if (res[0] > 0) {
+                return this.mongoSyncbiz.updateByListener(res[1][0]);
+            }
+            return res;
         });
+        return promise;
     }
-    syncMongo(id) {
-        this.findByUserid(id).then(res => {
-            MongoSortFilterModel_1.default.create({
-                uid: id,
-                generalprice: Math.min(res.phoneprice, res.wordprice),
-                auth: res.labelids,
-                praisepercent: 0,
-                sex: res.user.sex,
-                family: res.family,
-                birthday: res.user.birthday,
-                edu: res.edu,
-                sealtimes: 0,
-                receivestatus: res.recievestatus,
-                labelids: res.labelids
-            });
+    updateListenById(id, listener) {
+        const promise = Listener_1.default.update(listener, {
+            where: {
+                uid: id
+            }
+        });
+        promise.then((res) => {
+            if (res[0] > 0) {
+                return this.mongoSyncbiz.updateByListener(res[1][0]);
+            }
+            return res;
+        });
+        return promise;
+    }
+    syncMongo(uid) {
+        this.findByUserid(uid).then(res => {
+            this.mongoSyncbiz.create(res);
         });
     }
     findByUserid(id) {
@@ -140,9 +142,6 @@ class ListenerService {
             objectHelper_1.default.merge(res, {
                 labels: labels
             });
-            // if(res){
-            //     ObjectHelper.mergeChildToSource(res);
-            // }
             return Promise.resolve(res);
         });
     }
@@ -205,6 +204,32 @@ class ListenerService {
                 // }
             });
             return Bluebird.resolve(res);
+        });
+    }
+    /**
+     * 更新标签
+     * @param labels
+     * @param userid
+     */
+    updateLabels(labels, userid) {
+        if (!userid) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "用户id不能为空"));
+        }
+        if (!labels || !labels.length) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "更新的标签不能为空"));
+        }
+        const result = labels.filter(item => !!item.id).reduce((ori, item) => {
+            ori.ids.push(item.id);
+            ori.descs.push({ id: item.id, desc: item.desc });
+            return ori;
+        }, {
+            ids: [],
+            descs: []
+        });
+        return this.updateListener({
+            uid: userid,
+            labelids: JSON.stringify(result.ids),
+            labeldesc: JSON.stringify(result.descs)
         });
     }
     static createInstance() {

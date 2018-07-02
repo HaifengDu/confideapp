@@ -17,8 +17,11 @@ const Listener = sequelize.define<IListener,IListener>('listener',{
     expdesc:{type:Sequelize.TEXT,defaultValue:"[]",comment:"倾听者经历描述:[{id:1,desc:'测试'}]"},
     certificateurls:{type:Sequelize.STRING,comment:"资质图片"},
     authstatus:{type:Sequelize.TINYINT,defaultValue:0,comment:"认证状态:[1,2,3]"},
-    phoneprice:{type:Sequelize.FLOAT,defaultValue:0,comment:"通话单价"},
-    wordprice:{type:Sequelize.FLOAT,defaultValue:0,comment:"文字单价"}
+    wchcount:{type:Sequelize.TINYINT,defaultValue:0,comment:"当月文字价格设置次数"},
+    cchcount:{type:Sequelize.TINYINT,defaultValue:0,comment:"当月通话价格设置次数"},
+    wchlastdate:{type:Sequelize.DATE,comment:"文字价格最后修改时间"},
+    cchlastdate:{type:Sequelize.DATE,comment:"通话价格最后修改时间"},
+    minprice:{type:Sequelize.FLOAT,comment:"最小价格"}
 },{
     freezeTableName: true
 });

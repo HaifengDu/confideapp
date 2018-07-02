@@ -16,11 +16,10 @@ export interface IListener{
     recievestatus?:ERecieveStatus,
     isopentime?:number,
     certificateurls?:string,
-    authstatus:EAuthStatus,
-    phoneprice?:number,
-    wordprice?:number,
+    authstatus?:EAuthStatus,
+    minprice?:number,
 
     labels?:IListenLabel[],//标签整合后的数据
-    user:IUser,
+    user?:IUser,
 }
 export default IListener;

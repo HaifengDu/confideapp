@@ -3,6 +3,8 @@ import { ESex } from "../../enum/ESex";
 import { ERecieveStatus } from "../../enum/ERecieveStatus";
 export interface IOnlyMongoSortFilterModel{
     uid?:number,
+    //地区
+    address?:number,
     //起步价
     generalprice?:number,
     //是否认证

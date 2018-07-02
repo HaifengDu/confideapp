@@ -90,6 +90,27 @@ export default class NetCallService{
     private beCalling = false;
     private beCalledInfo:any;
     private netImService = NetImService.getInstance();
+    private pushConfig = {
+        enable: true,
+        needBadge: true,
+        needPushNick: true,
+        pushContent: '',
+        custom: '测试自定义数据',
+        pushPayload: '',
+        sound: ''
+    };
+    private sessionConfig = {
+        videoQuality: this.Netcall.CHAT_VIDEO_QUALITY_HIGH,
+        videoFrameRate: this.Netcall.CHAT_VIDEO_FRAME_RATE_15,
+        videoBitrate: 0,
+        recordVideo: false,
+        recordAudio: false,
+        highAudio: false,
+        bypassRtmp: false,
+        rtmpUrl: '',
+        rtmpRecord: false,
+        splitMode: this.Netcall.LAYOUT_SPLITLATTICETILE
+    };
     constructor(private name:string,private token:string){
         var NIM = (<any>window).SDK.NIM;
         if(!NIM){
@@ -104,6 +125,50 @@ export default class NetCallService{
         NIM.use(this.Netcall);
         const nim = this.netImService.getImInstance(name,token);
         this.createNetCallInstance(nim);
+    }
+
+    /**
+     * 拨号
+     * @param name 
+     */
+    public call(name:string){
+        const netcall = this.netcall;
+            netcall
+                .call({
+                    type: this.Netcall.NETCALL_TYPE_AUDIO,
+                    account: name,
+                    pushConfig: this.pushConfig,
+                    sessionConfig: this.sessionConfig,
+                    webrtcEnable: true
+                })
+                .then(function(obj:any) {
+                    // 成功发起呼叫
+                    console.log('call success', obj);
+                })
+                .catch(function(err:any) {
+                    // 被叫不在线
+                    if (err.code === 11001) {
+                        console.log('callee offline', err);
+                    }
+                });
+            // 设置超时计时器
+            this.timeoutFlag = setTimeout(function() {
+                if (!netcall.callAccepted) {
+                    console.log('超时未接听, hangup');
+                    netcall.hangup();
+                }
+            }, 60 * 1000);
+    }
+
+    /**
+     * 挂断
+     */
+    public hangup(){
+        this.beCalling = false;
+        this.beCalledInfo = null;
+        this.netcall.hangup();
+        this.stopDeviceAudioIn();
+        this.stopDeviceAudioOut();
     }
 
     private createNetCallInstance(nim:any){
@@ -177,7 +242,7 @@ export default class NetCallService{
             console.log("呼叫方可能已经掉线，挂断通话");
             this.timeoutFlag = null;
             this.reject();
-        }.bind(this), 62 * 1000);
+        }.bind(this), 60 * 1000);
         this.beCalledInfo = obj;
     }
 

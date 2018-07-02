@@ -4,6 +4,7 @@ const Mongoose = require("mongoose");
 const MongoSortFilterModelSchema = new Mongoose.Schema({
     uid: Number,
     generalprice: Number,
+    address: Number,
     auth: Boolean,
     praisepercent: Number,
     sex: Number,
@@ -12,7 +13,7 @@ const MongoSortFilterModelSchema = new Mongoose.Schema({
     edu: Number,
     sealtimes: Number,
     receivestatus: Number,
-    labelids: Mongoose.SchemaTypes.Array
+    labelids: Mongoose.SchemaTypes.Array //标签
 });
 const MongoSortFilterModel = Mongoose.model('sortfiltermodel', MongoSortFilterModelSchema);
 exports.default = MongoSortFilterModel;

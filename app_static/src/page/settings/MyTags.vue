@@ -17,7 +17,7 @@
            <div class="add-tags-container">
                <div class="topic">话题标签<span>8/24</span></div>
                <div class="tags">
-                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':filterTag(item)},{'first-active':firstActive(item)}]" @click="selectTag(item)">{{item.name}}</span>
+                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':item.active}]" @click="selectTag(item)">{{item.name}}</span>
                     <span class="add" @click="showAddTag=true">+</span>
                 </div>
                <div class="button-box">
@@ -40,32 +40,33 @@ const labelService = LabelService.getInstance();
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
     private showAddTags = false;
-    private tags:Array<any> = [];
-    private selectedTags:Array<{id:number,name:string}> = [];
-    private myTags = [
+    private tags:Array<any> = [
         {
-            title:'情感挽回',
-            text:'暂无个性宣言',
+            name:'情感挽回',
+            desc:'',
             id:3
         },
         {
-            title:'婚姻关系',
-            text:'暂无个性宣言',
+            name:'婚姻关系',
+            desc:'暂无个性宣言',
             id:4
         },
         {
-            title:'情绪疏导',
-            text:'特别擅长情绪疏导',
+            name:'情绪疏导',
+            desc:'',
             id:5
         },{
-            title:'心理负担',
-            text:'暂无个性宣言',
+            name:'心理负担',
+            desc:'',
             id:6
         },{
-            title:'职业规划',
-            text:'擅长于帮人建立职业规划',
+            name:'职业规划',
+            desc:'',
             id:7
         }
+    ];
+    private myTags:Array<any> = [
+    
     ];
     created(){
         labelService.getSystemLabel().then((res:any)=>{
@@ -80,42 +81,14 @@ export default class MyTags extends Vue{
         this.showAddTags = true;
     }
 
-    addTags(item:any){
-        if(this.selectedTags.length < MyTags.MAX_COUNT){
-            this.selectedTags.push(item)
-        }
-    }
-
     selectTag(item:any){
-        let index = this.selectedTags.findIndex(ele=>ele.id==item.id)
-        index>-1?this.selectedTags.splice(index,1):this.addTags(item)
-        if(index>-1&&this.myTags.find(tag=>tag.id===item.id)){
-            const idx = this.myTags.findIndex(celTag=>celTag.id==item.id);
-            this.myTags.splice(idx,1);
-        }
-    }
-
-    firstActive(item:any){
-        let index = this.selectedTags.findIndex(ele=>ele.id==item.id)
-        return index>-1&&index<5
-    }
-
-    filterTag(item:any){
-        return this.selectedTags.findIndex(ele=>ele.id==item.id)>-1
+        //选择标签
     }
 
     addTopic(){
         //TODO:保存选择的标签
         this.showAddTags = !this.showAddTags;
-        this.selectedTags.forEach((tag)=>{
-            if(!this.myTags.find(item=>item.id===tag.id)){
-                this.myTags.push({
-                    title:tag.name,
-                    text:'',
-                    id:tag.id
-                });
-            }
-        });
+        
     }
 
 }

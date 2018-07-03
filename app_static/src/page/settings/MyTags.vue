@@ -17,8 +17,8 @@
            <div class="add-tags-container">
                <div class="topic">话题标签<span>8/24</span></div>
                <div class="tags">
-                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':item.active}]" @click="selectTag(item)">{{item.name}}</span>
-                    <span class="add" @click="showAddTag=true">+</span>
+                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':item.active}]" @click="selectTag(item.id)">{{item.name}}</span>
+                    <span class="add" @click="customTag">+</span>
                 </div>
                <div class="button-box">
                     <mt-button size="normal" type="primary" @click.native="addTopic">添加话题</mt-button>
@@ -75,20 +75,51 @@ export default class MyTags extends Vue{
                 this.tags = data.data;
             }
         });
+        //TODO:从store中获取listener下的label数据
     }
 
     showAddTagPage(){
         this.showAddTags = true;
     }
 
-    selectTag(item:any){
+    selectTag(id:number){
         //选择标签
+        let label = this.tags.find(item=>item.id===id);
+        //点击未选择的标签，直接切换标签状态
+        if(label&&!label.active){
+            label.active = true;
+            return;
+        }
+        /**
+         * 点击已选择的标签，弹出编辑选项弹窗，包括编辑、删除、取消按钮
+         * 编辑（与新增一个弹窗，name不可编辑即可）
+         * 删除（删除系统标签仅取消选中状态，删除自定义标签需向后台发请求删除标签,参数id、stype）
+         */
     }
 
+    /**
+     * 添加自定义标签
+     */
+    customTag(){
+        //TODO:添加自定义标签参数，name,stype(用ELabelSType.Label)
+        /**
+         * 添加自定义标签成功后，将该标签的active设为true
+         * 将该标签添加到myTags数组中
+         */
+    }
+
+    /**
+     * 保存选择的标签
+     */
     addTopic(){
         //TODO:保存选择的标签
+        /**
+         * 将选中的标签数组传给后台   例：  [{id:3,name:'情感挽回',desc:'我的测试宣言'}]
+         * 保存成功后，将数据存入store
+         * 更新myTags数组
+         */
+        let data = this.tags.filter(tag=>tag.active);
         this.showAddTags = !this.showAddTags;
-        
     }
 
 }

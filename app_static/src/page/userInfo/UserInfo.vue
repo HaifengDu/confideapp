@@ -213,7 +213,7 @@ export default class UserInfo extends Vue{
             bottom:0;
             left:0;
             color:#fff;
-            background:#1E90FF;
+            background:#40E0D0;
             border-radius:0 0 10px 10px;
         }
     }

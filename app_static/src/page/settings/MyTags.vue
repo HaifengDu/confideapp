@@ -25,53 +25,43 @@
                 </div>
            </div>
         </mt-popup>
+        <mt-popup
+            v-model="showAddTagsWin" 
+            class="custom">
+            <div class="title">新增标签</div>
+            <div class="content">
+                <mt-field label="名称" placeholder="请输入标签名称" v-model="newLabel.name"></mt-field>
+                <mt-field label="宣言" placeholder="请输入标签宣言" v-model="newLabel.text"></mt-field>
+            </div>
+            <div class="btn" @click="addCustomTag">保存</div>
+        </mt-popup>
     </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import { mapActions, mapGetters } from 'vuex';
 import LabelService from "../../api/LabelService.ts";
 const labelService = LabelService.getInstance();
 
 @Component({
- 
+    
 })
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
+    //控制弹出选择标签窗口
     private showAddTags = false;
-    private tags:Array<any> = [
-        {
-            name:'情感挽回',
-            desc:'',
-            id:3
-        },
-        {
-            name:'婚姻关系',
-            desc:'暂无个性宣言',
-            id:4
-        },
-        {
-            name:'情绪疏导',
-            desc:'',
-            id:5
-        },{
-            name:'心理负担',
-            desc:'',
-            id:6
-        },{
-            name:'职业规划',
-            desc:'',
-            id:7
-        }
-    ];
-    private myTags:Array<any> = [
-    
-    ];
+    //控制新增自定义标签窗口
+    private showAddTagsWin = false;
+    private tags:Array<any> = [];
+    private myTags:Array<any> = [];
+    private newLabel:any = {};
     created(){
         labelService.getSystemLabel().then((res:any)=>{
             const data =res.data;
             if(data.success){
+                data.data.forEach((item:any)=>item.active = false);
                 this.tags = data.data;
             }
         });
@@ -106,6 +96,18 @@ export default class MyTags extends Vue{
          * 添加自定义标签成功后，将该标签的active设为true
          * 将该标签添加到myTags数组中
          */
+        this.newLabel = {};
+        this.showAddTagsWin = true;
+    }
+
+    addCustomTag(){
+        console.log(this.newLabel);
+        if(!this.newLabel.name){
+            this.$toast('请输入标签名称');
+            return;
+        }
+        //向后台发送新增标签请求
+        this.showAddTagsWin = false;
     }
 
     /**
@@ -194,13 +196,9 @@ export default class MyTags extends Vue{
         border-radius:1.5rem;
         color:#666;
         &.active{
-          border:@mainColor 1px solid;
-          color:@mainColor;
-        }
-        &.first-active{
-          border:1px solid @mainColor;
-          background:@mainColor;
-          color:#fff;
+            border:1px solid @mainColor;
+            background:@mainColor;
+            color:#fff;
         }
       }
       .add{
@@ -214,5 +212,32 @@ export default class MyTags extends Vue{
         color:@mainColor;
         border-radius:50%;
       }
+    }
+    div.mint-popup.custom{
+        border-radius:10px;
+        width:250px;
+        height:250px;
+        background:#fff;
+        .title{
+            color: #333;
+            .v-middle(30px);
+            margin:20px 0;
+            .f-lg;
+        }
+        .content{
+            padding:0 10px;
+            .t-ellipsis(4);
+        }
+        .btn{
+            width: 100%;
+            .v-middle(40px);
+            .p-ab;
+            bottom:0;
+            left:0;
+            border-radius:0 0 10px 10px;
+            background: #eee;
+            color: #333;
+            font-size: 18px;
+        }
     }
 </style>

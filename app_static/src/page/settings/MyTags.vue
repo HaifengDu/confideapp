@@ -3,8 +3,8 @@
         <div class="body">
             <div class="topic">擅长话题<span>7/24</span></div>
             <div class="my-tag" v-for="(tag,index) in myTags" :key="index">
-                <span class="title">{{tag.title}}</span>
-                <p class="content">{{tag.text}}</p>
+                <span class="title">{{tag.name}}</span>
+                <p class="content">{{tag.desc||'暂无个性宣言'}}</p>
             </div>
             <div class="add-box">
                 <span class="add" @click="showAddTagPage">+</span>
@@ -28,13 +28,23 @@
         <mt-popup
             v-model="showAddTagsWin" 
             class="custom">
-            <div class="title">新增标签</div>
+            <div class="title">{{isEdit?'编辑标签':'新增标签'}}</div>
             <div class="content">
-                <mt-field label="名称" placeholder="请输入标签名称" v-model="newLabel.name"></mt-field>
-                <mt-field label="宣言" placeholder="请输入标签宣言" v-model="newLabel.text"></mt-field>
+                <mt-field label="名称" placeholder="请输入标签名称" v-model="newLabel.name" :readonly="isEdit" :disableClear="isEdit"></mt-field>
+                <mt-field label="宣言" placeholder="请输入标签宣言" v-model="newLabel.desc"></mt-field>
             </div>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="addCustomTag">保存</mt-button>
+            </div>
+        </mt-popup>
+        <mt-popup
+            v-model="showEditWin" 
+            class="custom edit-win">
+            <div class="edit">
+                <div class="edit-title">{{editLable.name}}</div>
+                <div class="edit-option" @click="editLabelAction">编辑宣言</div>
+                <div class="edit-option" @click="deleteLabel">删除标签</div>
+                <div class="edit-option" @click="closeEditWin">取消</div>
             </div>
         </mt-popup>
     </div>
@@ -44,11 +54,21 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import { mapActions, mapGetters } from 'vuex';
+import {ELabelCType} from '@/enum/ELabelType.ts';
 import LabelService from "../../api/LabelService.ts";
 const labelService = LabelService.getInstance();
 
 @Component({
-    
+    methods:{
+        ...mapActions({
+            getUserInfo:'getUserInfo'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
@@ -56,9 +76,12 @@ export default class MyTags extends Vue{
     private showAddTags = false;
     //控制新增自定义标签窗口
     private showAddTagsWin = false;
+    private showEditWin = false;
     private tags:Array<any> = [];
-    private myTags:Array<any> = [];
+    private myTags:Array<any> = [{"id":1,"name":"情感挽回","cuid":-1,"ctype":0,"stype":0,"status":0}];
     private newLabel:any = {};
+    private editLable:any = {};
+    private isEdit = false;
     created(){
         labelService.getSystemLabel().then((res:any)=>{
             const data =res.data;
@@ -82,11 +105,9 @@ export default class MyTags extends Vue{
             label.active = true;
             return;
         }
-        /**
-         * 点击已选择的标签，弹出编辑选项弹窗，包括编辑、删除、取消按钮
-         * 编辑（与新增一个弹窗，name不可编辑即可）
-         * 删除（删除系统标签仅取消选中状态，删除自定义标签需向后台发请求删除标签,参数id、stype）
-         */
+        this.editLable = label;
+        console.log(this.editLable);
+        this.showEditWin = true;
     }
 
     /**
@@ -107,7 +128,25 @@ export default class MyTags extends Vue{
             this.$toast('请输入标签名称');
             return;
         }
-        //向后台发送新增标签请求，参数，stype，name
+        if(!this.isEdit){
+            //向后台发送新增标签请求，参数，stype，name
+            labelService.addLabel({name:this.newLabel.name,id:(<any>this).user.id}).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    const data = res.data.data;
+                    this.tags.push({
+                        name:data.name,
+                        id:data.id,
+                        ctype:data.ctype,
+                        desc:this.newLabel.desc||'',
+                        active:true
+                    });
+                }
+            });
+        }else{
+            let editData = this.tags.find(tag=>tag.id===this.editLable.id);
+            editData.desc = this.newLabel.desc;
+        }
         //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
         this.showAddTagsWin = false;
     }
@@ -123,7 +162,43 @@ export default class MyTags extends Vue{
          * 更新myTags数组
          */
         let data = this.tags.filter(tag=>tag.active);
+        data.forEach((item)=>{
+            const selectedTag = this.myTags.find(tag=>tag.id===item.id);
+            if(!selectedTag){
+                this.myTags.push(item);
+            }
+        });
         this.showAddTags = !this.showAddTags;
+    }
+
+    editLabelAction(){
+        this.isEdit = true;
+        this.newLabel.name = this.editLable.name;
+        this.newLabel.desc = this.editLable.desc||'';
+        this.showAddTagsWin = true;
+        this.showEditWin = false;
+    }
+
+    deleteLabel(){
+        let label = this.tags.find(item=>item.id===this.editLable.id);
+        if(this.editLable.ctype === ELabelCType.Custom){
+            //发送请求，删除自定义标签
+            //请求成功后，删除标签
+            const index = this.tags.findIndex(item=>item.id===this.editLable.id);
+            this.tags.splice(index,1);
+        }else{
+            label.active = !label.active;
+            //从我的标签数组中删除该标签
+            const addedIndex = this.myTags.findIndex(item=>item.id===label.id);
+            if(addedIndex>-1){
+                this.myTags.splice(addedIndex,1);
+            }
+        }
+        this.showEditWin = false;
+    }
+
+    closeEditWin(){
+        this.showEditWin = false;
     }
 
 }
@@ -205,14 +280,14 @@ export default class MyTags extends Vue{
       }
       .add{
         display: inline-block;
-        .v-middle(1.2em);
-        font-size:34px;
+        height:3rem;
+        margin: 0 .5rem;
+        line-height: 3rem;
         text-align: center;
-        width:2em;
-        border-radius:5px;
-        padding:0 10px;
+        width:3rem;
         background:#f5f5f5;
-        color:@light-blue;
+        color:@mainColor;
+        border-radius:50%;
       }
     }
     div.mint-popup.custom{
@@ -228,5 +303,23 @@ export default class MyTags extends Vue{
             padding:10px;
             .t-ellipsis(4);
         }
+        .edit{
+            padding:10px 30px;
+            text-align:left;
+            .edit-title,.edit-option{
+                font-size:16px;
+                padding:10px 0;
+            }
+            .edit-title{
+                .f-lg;
+                color:#333;
+            }
+            .edit-option{
+                color:rgb(151,151,151);
+            }
+        }
+    }
+    div.mint-popup.custom.edit-win{
+        height:auto;
     }
 </style>

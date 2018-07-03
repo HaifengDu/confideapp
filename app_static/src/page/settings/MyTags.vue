@@ -21,7 +21,7 @@
                     <span class="add" @click="showAddTag=true">+</span>
                 </div>
                <div class="button-box">
-                    <mt-button size="normal" type="primary" @click.native="saveTags">添加话题</mt-button>
+                    <mt-button size="normal" type="primary" @click.native="addTopic">添加话题</mt-button>
                 </div>
            </div>
         </mt-popup>
@@ -38,27 +38,33 @@ const labelService = LabelService.getInstance();
  
 })
 export default class MyTags extends Vue{
+    private static readonly MAX_COUNT = 21;
     private showAddTags = false;
-    private tags = [];
+    private tags:Array<any> = [];
     private selectedTags:Array<{id:number,name:string}> = [];
     private myTags = [
         {
             title:'情感挽回',
-            text:'暂无个性宣言'
+            text:'暂无个性宣言',
+            id:3
         },
         {
             title:'婚姻关系',
-            text:'暂无个性宣言'
+            text:'暂无个性宣言',
+            id:4
         },
         {
             title:'情绪疏导',
-            text:'特别擅长情绪疏导'
+            text:'特别擅长情绪疏导',
+            id:5
         },{
             title:'心理负担',
-            text:'暂无个性宣言'
+            text:'暂无个性宣言',
+            id:6
         },{
             title:'职业规划',
-            text:'擅长于帮人建立职业规划'
+            text:'擅长于帮人建立职业规划',
+            id:7
         }
     ];
     created(){
@@ -75,7 +81,7 @@ export default class MyTags extends Vue{
     }
 
     addTags(item:any){
-        if(this.selectedTags.length<21){
+        if(this.selectedTags.length < MyTags.MAX_COUNT){
             this.selectedTags.push(item)
         }
     }
@@ -83,6 +89,10 @@ export default class MyTags extends Vue{
     selectTag(item:any){
         let index = this.selectedTags.findIndex(ele=>ele.id==item.id)
         index>-1?this.selectedTags.splice(index,1):this.addTags(item)
+        if(index>-1&&this.myTags.find(tag=>tag.id===item.id)){
+            const idx = this.myTags.findIndex(celTag=>celTag.id==item.id);
+            this.myTags.splice(idx,1);
+        }
     }
 
     firstActive(item:any){
@@ -94,8 +104,18 @@ export default class MyTags extends Vue{
         return this.selectedTags.findIndex(ele=>ele.id==item.id)>-1
     }
 
-    saveTags(){
+    addTopic(){
+        //TODO:保存选择的标签
         this.showAddTags = !this.showAddTags;
+        this.selectedTags.forEach((tag)=>{
+            if(!this.myTags.find(item=>item.id===tag.id)){
+                this.myTags.push({
+                    title:tag.name,
+                    text:'',
+                    id:tag.id
+                });
+            }
+        });
     }
 
 }

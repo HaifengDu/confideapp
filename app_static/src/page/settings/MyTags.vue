@@ -33,7 +33,9 @@
                 <mt-field label="名称" placeholder="请输入标签名称" v-model="newLabel.name"></mt-field>
                 <mt-field label="宣言" placeholder="请输入标签宣言" v-model="newLabel.text"></mt-field>
             </div>
-            <div class="btn" @click="addCustomTag">保存</div>
+            <div class="button-box">
+                <mt-button size="normal" type="primary" @click.native="addCustomTag">保存</mt-button>
+            </div>
         </mt-popup>
     </div>
 </template>
@@ -101,12 +103,12 @@ export default class MyTags extends Vue{
     }
 
     addCustomTag(){
-        console.log(this.newLabel);
         if(!this.newLabel.name){
             this.$toast('请输入标签名称');
             return;
         }
-        //向后台发送新增标签请求
+        //向后台发送新增标签请求，参数，stype，name
+        //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
         this.showAddTagsWin = false;
     }
 
@@ -203,14 +205,14 @@ export default class MyTags extends Vue{
       }
       .add{
         display: inline-block;
-        height:3rem;
-        margin: 0 .5rem;
-        line-height: 3rem;
+        .v-middle(1.2em);
+        font-size:34px;
         text-align: center;
-        width:3rem;
+        width:2em;
+        border-radius:5px;
+        padding:0 10px;
         background:#f5f5f5;
-        color:@mainColor;
-        border-radius:50%;
+        color:@light-blue;
       }
     }
     div.mint-popup.custom{
@@ -219,25 +221,12 @@ export default class MyTags extends Vue{
         height:250px;
         background:#fff;
         .title{
-            color: #333;
-            .v-middle(30px);
-            margin:20px 0;
-            .f-lg;
+            padding: 15px 10px;
+            border-bottom: 1px solid #ccc;
         }
         .content{
-            padding:0 10px;
+            padding:10px;
             .t-ellipsis(4);
-        }
-        .btn{
-            width: 100%;
-            .v-middle(40px);
-            .p-ab;
-            bottom:0;
-            left:0;
-            border-radius:0 0 10px 10px;
-            background: #eee;
-            color: #333;
-            font-size: 18px;
         }
     }
 </style>

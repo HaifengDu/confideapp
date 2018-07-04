@@ -57,7 +57,10 @@ import {Component} from 'vue-property-decorator';
 import { mapActions, mapGetters } from 'vuex';
 import {ELabelCType} from '@/enum/ELabelType.ts';
 import LabelService from "../../api/LabelService.ts";
+import ListenerService from "../../api/ListenerService.ts";
+import {IListenLabel} from "@/interface/model/IMainLabel.ts";
 const labelService = LabelService.getInstance();
+const listenerService = ListenerService.getInstance();
 
 @Component({
     
@@ -99,7 +102,6 @@ export default class MyTags extends Vue{
             return;
         }
         this.editLable = label;
-        console.log(this.editLable);
         this.showEditWin = true;
     }
 
@@ -124,8 +126,7 @@ export default class MyTags extends Vue{
         if(!this.isEdit){
             //向后台发送新增标签请求，参数，stype，name
             //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
-            labelService.addLabel({name:this.newLabel.name,id:(<any>this).user.id}).then((res:any)=>{
-                console.log(res);
+            labelService.addLabel({name:this.newLabel.name}).then((res:any)=>{
                 if(res.data.success){
                     const data = res.data.data;
                     this.tags.push({
@@ -140,8 +141,7 @@ export default class MyTags extends Vue{
         }else{
             let editData = this.tags.find(tag=>tag.id===this.editLable.id);
             editData.desc = this.newLabel.desc;
-            let myTag = this.myTags.find(tag=>tag.id===this.editLable.id);
-            myTag.desc = this.newLabel.desc;
+            this.isEdit = false;
         }
         this.showAddTagsWin = false;
     }
@@ -159,20 +159,30 @@ export default class MyTags extends Vue{
         let data = this.tags.filter(tag=>tag.active);
 
         //向后台发送数据 tagDatas
-        const tagDatas = this.tags.map(item=>{
+        const labels = data.map(item=>{
             return {
+                name:item.name,
                 id:item.id,
                 desc:item.desc
             }
         });
-        //数据保存成功后，如果该标签不在我的标签中，就将该标签添加到我的标签中
-        data.forEach((item)=>{
-            const selectedTag = this.myTags.find(tag=>tag.id===item.id);
-            if(!selectedTag){
-                this.myTags.push(item);
+        listenerService.updateLabels(labels).then((res:any)=>{
+            if(res.data.success){
+                //数据保存成功后，如果该标签不在我的标签中，就将该标签添加到我的标签中
+                data.forEach((item)=>{
+                    const selectedTag = this.myTags.find(tag=>tag.id===item.id);
+                    if(!selectedTag){
+                        this.myTags.push(Object.assign({},item));
+                    }else{
+                        selectedTag.desc = this.editLable.desc;
+                    }
+                }); 
+                this.showAddTags = !this.showAddTags;
+            }else{
+                this.$toast(res.data.message);
             }
         });
-        this.showAddTags = !this.showAddTags;
+        
     }
 
     editLabelAction(){
@@ -187,9 +197,19 @@ export default class MyTags extends Vue{
         let label = this.tags.find(item=>item.id===this.editLable.id);
         if(this.editLable.ctype === ELabelCType.Custom){
             //发送请求，删除自定义标签
-            //请求成功后，删除标签
-            const index = this.tags.findIndex(item=>item.id===this.editLable.id);
-            this.tags.splice(index,1);
+            labelService.deleteLabel(label.id).then((res:any)=>{
+                if(res.data.success){
+                    //请求成功后，删除标签
+                    const index = this.tags.findIndex(item=>item.id===this.editLable.id);
+                    this.tags.splice(index,1);
+                    let myTagIdx = this.myTags.findIndex(tag=>tag.id===this.editLable.id);
+                    if(myTagIdx>-1){
+                        this.myTags.splice(myTagIdx,1);
+                    }
+                }else{
+                    this.$toast(res.data.message);
+                }
+            });
         }else{
             label.active = !label.active;
             //从我的标签数组中删除该标签

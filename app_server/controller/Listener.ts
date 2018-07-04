@@ -17,6 +17,7 @@ import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
 import IPager from "../interface/IPager";
 import PriceSetting from "../model/PriceSetting";
 import MongoSyncBiz from "../biz/MongoSyncBiz";
+import _ = require("lodash");
 
 export default class ListenerService {
 
@@ -256,6 +257,35 @@ export default class ListenerService {
             labelids:JSON.stringify(result.ids),
             labeldesc:JSON.stringify(result.descs)
         });
+    }
+
+    public deleteLabels(userid:number,labelid:number){
+        this.findByUserid(userid).then(res=>{
+            let isChange = false;
+            if(res&&res.labelids){
+                const labelids = ObjectHelper.parseJSON(<string>res.labelids)||[];
+                if(_.isArray(labelids)){
+                    _.remove(labelids,item=>item===labelid);
+                }
+                res.labelids = JSON.stringify(labelids);
+                isChange = true;
+            }
+            if(res&&res.labeldesc){
+                const labeldescs = ObjectHelper.parseJSON(<string>res.labeldesc)||[];
+                if(_.isArray(labeldescs)){
+                    _.remove(labeldescs,item=>item.id===labelid);
+                }
+                res.labeldesc = JSON.stringify(labeldescs);;
+                isChange = true;
+            }
+            if(isChange){
+                return this.updateListener({
+                    uid:userid,
+                    labelids:res.labelids,
+                    labeldesc:res.labeldesc
+                });
+            }
+        })
     }
 
     static createInstance() {

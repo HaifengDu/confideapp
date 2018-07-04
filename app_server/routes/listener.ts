@@ -88,5 +88,24 @@ router.post("/",
         });
     }
 );
+router.post("/updateLabels",[
+    query("userid").isNumeric().withMessage("用户编号非法"),
+    body("labels").isArray().withMessage("标签数据非法")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    const labels =  ObjectHelper.parseJSON(req.body.labels)||[];
+    listenCtrl.updateLabels(labels,parseInt(req.query.userid)).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        })
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
 
 export = router;

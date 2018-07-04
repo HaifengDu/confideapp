@@ -70,6 +70,23 @@ class MainLabelService {
         ;
         return promise;
     }
+    deleteLabel(id, stype) {
+        const promise = MainLabel_1.default.destroy({
+            where: {
+                id: id
+            }
+        });
+        promise.then(res => {
+            let current;
+            if (stype === ELabelType_1.ELabelSType.Label) {
+                _.remove(this._labelList, item => item.id === id);
+            }
+            else {
+                _.remove(this._expList, item => item.id === id);
+            }
+        });
+        return promise;
+    }
     initMainLabel() {
         MainLabel_1.default.findAll().then(res => {
             const list = JSON.parse(JSON.stringify(res)) || [];

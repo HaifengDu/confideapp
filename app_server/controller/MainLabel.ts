@@ -80,6 +80,23 @@ export default class MainLabelService {
         return promise;
     }
 
+    public deleteLabel(id:number,stype:ELabelSType){
+        const promise = MainLabelModel.destroy({
+            where:{
+                id:id
+            }
+        });
+        return promise.then(res=>{
+            let current:IMainLabel;
+            if(stype===ELabelSType.Label){
+                current = _.remove(this._labelList,item=>item.id===id)[0];
+            }else{ 
+                current = _.remove(this._expList,item=>item.id===id)[0];
+            }
+            return current;
+        });
+    }
+
     private initMainLabel(){
         MainLabelModel.findAll().then(res=>{
             const list = <IMainLabel[]>JSON.parse(JSON.stringify(res))||[];

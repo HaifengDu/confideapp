@@ -11,13 +11,48 @@ import list from "./list";
 import my from "./my";
 import order from "./order";
 import payment from "./payment";
+import _ from 'lodash';
 
 const rootStore:Store<IRootState> = new Store<IRootState>({
   state:{
-    user:{}
+    user:{},
+    baseData:{
+      family:[],
+      edu:[],
+      job:[]
+    }
   },
   getters:{
-    user:state=>state.user
+    user:state=>state.user,
+    baseData:state=>state.baseData,
+    allBaseData:state=>{
+      const temp:any = {};
+      for(let key in state.baseData){
+        const current = state.baseData[key];
+        if(_.isArray(current)){
+          const tempArr = _.slice(current);
+          tempArr.unshift({
+            id:-1,
+            name:"不限"
+          });
+          temp[key] = tempArr;
+        }else{
+          const tempArr:any[] =  [];
+          for(let areaKey in current){
+            tempArr.push({
+              id:areaKey,
+              name:current[areaKey].name
+            });
+          }
+          tempArr.unshift({
+            id:-1,
+            name:"不限"
+          })
+          temp[key] = tempArr;
+        }
+      }
+      return temp;
+    }
   },
   actions:{
     ...actions
@@ -25,6 +60,11 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
   mutations:{
     [MType.UPDATE_USER](state,user:any){
       state.user = user.data;
+    },
+    [MType.SET_BASE_DATA](state,data:any){
+      const tempData = Object.assign({},data);
+      delete tempData.success;
+      Object.assign(state.baseData,tempData);
     }
   },
   modules:{

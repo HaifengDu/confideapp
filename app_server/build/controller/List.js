@@ -30,9 +30,14 @@ class ListService {
                 whereOption[item] = filter[item];
             }
         });
-        if (filter.generalprice) {
+        if (filter.minprice) {
             whereOption.generalprice = {
-                '$gte': filter.generalprice
+                '$gte': filter.minprice
+            };
+        }
+        if (filter.maxprice) {
+            whereOption.generalprice = {
+                '$lte': filter.minprice
             };
         }
         if (filter.age) {

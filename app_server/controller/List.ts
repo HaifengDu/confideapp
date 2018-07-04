@@ -40,9 +40,14 @@ export default class ListService {
             }
         })
         
-        if(filter.generalprice){
+        if(filter.minprice){
             whereOption.generalprice = {
-                '$gte':filter.generalprice
+                '$gte':filter.minprice
+            };
+        }
+        if(filter.maxprice){
+            whereOption.generalprice = {
+                '$lte':filter.minprice
             };
         }
         if(filter.age){

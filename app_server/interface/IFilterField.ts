@@ -6,8 +6,10 @@ export interface IFilterField{
     start:number,
     //页数
     page:number,
-    //起步价
-    generalprice?:number,
+    //最小价格
+    minprice?:number,
+    //最大价格
+    maxprice?:number
     //是否认证
     auth?:boolean,
     //好评率

@@ -21,7 +21,8 @@
                     <span class="add" @click="customTag">+</span>
                 </div>
                <div class="button-box">
-                    <mt-button size="normal" type="primary" @click.native="addTopic">添加话题</mt-button>
+                   <mt-button size="normal" type="primary" @click.native="showAddTags=!showAddTags">取消</mt-button>
+                    <mt-button style="margin-left:20px;" size="normal" type="primary" @click.native="addTopic">添加</mt-button>
                 </div>
            </div>
         </mt-popup>
@@ -59,16 +60,7 @@ import LabelService from "../../api/LabelService.ts";
 const labelService = LabelService.getInstance();
 
 @Component({
-    methods:{
-        ...mapActions({
-            getUserInfo:'getUserInfo'
-        })
-    },
-    computed:{
-        ...mapGetters({
-            user:'user'
-        })
-    }
+    
 })
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
@@ -83,6 +75,7 @@ export default class MyTags extends Vue{
     private editLable:any = {};
     private isEdit = false;
     created(){
+        this.myTags.forEach((item)=>!item.desc&&(item.desc=''));
         labelService.getSystemLabel().then((res:any)=>{
             const data =res.data;
             if(data.success){
@@ -130,6 +123,7 @@ export default class MyTags extends Vue{
         }
         if(!this.isEdit){
             //向后台发送新增标签请求，参数，stype，name
+            //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
             labelService.addLabel({name:this.newLabel.name,id:(<any>this).user.id}).then((res:any)=>{
                 console.log(res);
                 if(res.data.success){
@@ -146,8 +140,9 @@ export default class MyTags extends Vue{
         }else{
             let editData = this.tags.find(tag=>tag.id===this.editLable.id);
             editData.desc = this.newLabel.desc;
+            let myTag = this.myTags.find(tag=>tag.id===this.editLable.id);
+            myTag.desc = this.newLabel.desc;
         }
-        //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
         this.showAddTagsWin = false;
     }
 
@@ -157,11 +152,20 @@ export default class MyTags extends Vue{
     addTopic(){
         //TODO:保存选择的标签
         /**
-         * 将选中的标签数组传给后台   例：  [{id:3,name:'情感挽回',desc:'我的测试宣言'}]
+         * 将选中的标签数组传给后台   例：  [{id:3,desc:'我的测试宣言'}]
          * 保存成功后，将数据存入store
          * 更新myTags数组
          */
         let data = this.tags.filter(tag=>tag.active);
+
+        //向后台发送数据 tagDatas
+        const tagDatas = this.tags.map(item=>{
+            return {
+                id:item.id,
+                desc:item.desc
+            }
+        });
+        //数据保存成功后，如果该标签不在我的标签中，就将该标签添加到我的标签中
         data.forEach((item)=>{
             const selectedTag = this.myTags.find(tag=>tag.id===item.id);
             if(!selectedTag){

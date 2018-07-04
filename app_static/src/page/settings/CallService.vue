@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="body">
-            <mt-cell title="修改服务价格需平台审核，每月可修改2次" is-link class="cell-con info"></mt-cell>
+            <mt-cell title="修改服务价格需平台审核，每月可修改3次" is-link class="cell-con info"></mt-cell>
             <mt-cell title="通话服务" class="cell-con">
                 <mt-switch v-model="isSetCall"></mt-switch>
             </mt-cell>
@@ -70,6 +70,8 @@ export default class CallService extends Vue{
             line-height: 20px;
             .entry{
                 outline: none;
+                border:none;
+                border-bottom:1px solid @mainColor;
                 width: 50px;
             }
             .tax-price{

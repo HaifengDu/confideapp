@@ -17,8 +17,7 @@ export interface IListener{
     isopentime?:number,
     certificateurls?:string,
     authstatus?:EAuthStatus,
-    phoneprice?:number,
-    wordprice?:number,
+    minprice?:number,
 
     labels?:IListenLabel[],//标签整合后的数据
     user?:IUser,

@@ -4,7 +4,7 @@
     <section class="filter-container">
         <div>话题分类</div>
         <div :class="{'collose':!toggleModel.topic}">
-            <radio-button v-model="filterModel.topic" :list="topicList">
+            <radio-button v-model="filterModel.labelid" :list="topicList">
 
             </radio-button>
         </div>
@@ -125,7 +125,7 @@ const labelService = LabelService.getInstance();
 })
 export default class SearchFilter extends Vue{
     private filterModel = {
-        topic:-1,
+        labelid:-1,
         price:-1,
         sex:-1,
         family:-1,
@@ -232,6 +232,7 @@ export default class SearchFilter extends Vue{
     }
     filter(){
         this.setConds(this.filterModel);
+        this.$router.push("/searchResult")
     }
     private getAllBaseData:INoop;
     private setConds:INoop;

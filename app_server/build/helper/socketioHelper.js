@@ -1,64 +1,93 @@
 "use strict";
 var _a;
-// tslint:disable-next-line:no-unused-expression
-const crypto = require("crypto");
 const MongoChatModel_1 = require("../model/mongo/MongoChatModel");
 const EChatMsgStatus_1 = require("../enum/EChatMsgStatus");
 const util_1 = require("./util");
+const ERole_1 = require("../enum/ERole");
+const EChatMsgType_1 = require("../enum/EChatMsgType");
+const _ = require("lodash");
 module.exports = (_a = class SocketHelper {
         constructor(socketio) {
             this.chatPath = "/chat";
             this.joinEvent = "join";
             this.sendEvent = "send";
-            this.roomDic = {};
+            this.notifyEvent = "notify";
+            this.createOwnRoom = "createOwn";
             this.socketio = socketio;
             this.initEvent();
         }
         initEvent() {
             this.socketio.of(this.chatPath).on("connection", socket => {
-                // console.log("socket get new connnection");   
-                const roomid = socket.handshake.query.roomid;
-                const senduid = socket.handshake.query.senduid;
-                const touid = socket.handshake.query.touid;
-                if (!roomid || !senduid || !touid) {
-                    socket.disconnect(true);
-                    return;
-                }
-                socket.join(roomid);
-                if (!this.roomDic[roomid]) {
-                    this.roomDic[roomid] = [];
-                }
-                socket.on(this.joinEvent, name => {
-                    socket.to(roomid).broadcast.emit(this.joinEvent, `${name}加入房间`);
+                const roomDic = {};
+                const role = socket.handshake.query.role === "0" ? ERole_1.ERole.Pourouter : ERole_1.ERole.Listener;
+                // socket.on()
+                socket.on(this.joinEvent, (res) => {
+                    const pid = res.pid; //倾诉者
+                    const lid = res.lid; //倾听者
+                    const roomid = this.createRoom(pid, lid);
+                    socket.join(roomid);
+                    socket.to(roomid).broadcast.emit(this.joinEvent, { msg: `${name}加入房间`, roomid });
                 });
-                socket.on(this.sendEvent, msg => {
-                    this.roomDic[roomid].push({
+                socket.on(this.sendEvent, res => {
+                    let tempsenduid = res.pid;
+                    let temptouid = res.lid;
+                    if (role === ERole_1.ERole.Listener) {
+                        tempsenduid = res.lid;
+                        temptouid = res.pid;
+                    }
+                    const roomid = this.createRoom(res.pid, res.lid);
+                    const msgObj = {
                         roomid,
-                        senduid,
-                        touid,
-                        msg,
+                        senduid: tempsenduid,
+                        touid: temptouid,
                         date: new Date(),
-                        status: EChatMsgStatus_1.EChatMsgStatus.Send
-                    });
+                        status: EChatMsgStatus_1.EChatMsgStatus.Send,
+                        type: EChatMsgType_1.default.Text,
+                        msg: res.msg
+                    };
+                    if (res.type === EChatMsgType_1.default.Audio) {
+                        msgObj.isload = false;
+                        msgObj.mediaid = res.mediaid;
+                        msgObj.type = EChatMsgType_1.default.Audio;
+                    }
+                    roomDic[roomid].push(msgObj);
                     //当消息长度大于最大限制时，插入库中并删除
-                    if (this.roomDic[roomid].length >= SocketHelper.MAX_MSG_LENGTH) {
+                    if (roomDic[roomid].length >= SocketHelper.MAX_MSG_LENGTH) {
                         setTimeout(() => {
-                            util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, this.roomDic[roomid], (err, docs) => {
-                                this.roomDic[roomid].splice(0, SocketHelper.MAX_MSG_LENGTH);
-                            });
+                            const shouldInsertedRecord = roomDic[roomid].splice(0, SocketHelper.MAX_MSG_LENGTH);
+                            util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, shouldInsertedRecord);
                         });
                     }
-                    socket.to(roomid).broadcast.emit(this.sendEvent, msg);
+                    socket.to(roomid).broadcast.emit(this.sendEvent, msgObj);
+                    //去指定的用户通知
+                    socket.to(temptouid).broadcast.emit(this.notifyEvent, msgObj);
                 });
                 socket.on('disconnect', (reason) => {
-                    if (this.roomDic[roomid].length) {
-                        util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, this.roomDic[roomid], (err, docs) => {
-                            delete this.roomDic[roomid];
+                    const values = _.values(roomDic);
+                    const records = _.flatten(values);
+                    if (records.length) {
+                        util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, records, (err, docs) => {
+                            for (let key in roomDic) {
+                                delete roomDic[key];
+                            }
                         });
+                    }
+                });
+                socket.on("leave", (res) => {
+                    const roomid = res.roomid;
+                    if (roomid) {
+                        socket.leave(roomid);
+                        if (roomDic[roomid] && roomDic[roomid].length) {
+                            util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, roomDic[roomid], (err, docs) => {
+                                delete roomDic[roomid];
+                            });
+                        }
                     }
                 });
                 socket.on("error", () => {
-                    delete this.roomDic[roomid];
+                    for (let key in roomDic) {
+                        delete roomDic[key];
+                    }
                 });
             });
             this.socketio.on("connect", socket => {
@@ -66,9 +95,7 @@ module.exports = (_a = class SocketHelper {
             });
         }
         createRoom(source, target) {
-            const hashCode = crypto.createHash('sha1');
-            const roomid = hashCode.update(`${source}_${target}`, 'utf8').digest('hex');
-            return roomid;
+            return source + "_" + target;
         }
         static createInstance(socketio) {
             SocketHelper.getInstance(socketio);

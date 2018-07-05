@@ -1,5 +1,6 @@
 import { ELabelCType, ELabelSType } from "../../enum/ELabelType";
 import { ELabelStatus } from "../../enum/ELabelStatus";
+import EListenerLabelStatus from "../../enum/EListenerLabelStatus";
 
 export interface IMainLabel{
     id?:number,
@@ -12,6 +13,7 @@ export interface IMainLabel{
 }
 
 export interface IListenLabel extends IMainLabel{
-    desc?:string
+    desc?:string,
+    lsstatus?:EListenerLabelStatus
 }
 export default IMainLabel;

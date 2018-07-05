@@ -109,6 +109,9 @@ router.delete("/label", [
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
     mainLabelCtl.deleteLabel(req.query.id, req.query.stype).then(data => {
+        if (data && data.cuid) {
+            listenService.deleteLabels(data.cuid, req.query.id);
+        }
         res.json(new ErrorMsg_1.default(true));
     }, err => {
         res.json(new ErrorMsg_1.default(true, err.message, err));

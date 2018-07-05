@@ -16,7 +16,9 @@ module.exports = {
             "/base*": proxyUrl,
             "/base/*": proxyUrl,
             "/listener*": proxyUrl,
-            "/listener/*": proxyUrl
+            "/listener/*": proxyUrl,
+            "/list*": proxyUrl,
+            "/list/*": proxyUrl
         },
 
         // Various Dev Server settings

@@ -7,6 +7,9 @@ import _ = require('lodash');
 import ErrorMsg from '../model/ErrorMsg';
 import { EPriceStatus } from '../enum/EPriceStatus';
 import ListenerService from './Listener';
+import EPriceCircle from '../enum/EPriceCircle';
+import CalucateService from '../helper/CalucateService';
+import * as Sequelize from "sequelize";
 export default class PriceSettingService {
 
     private static _instance: PriceSettingService;
@@ -17,6 +20,52 @@ export default class PriceSettingService {
     private constructor() {
         this.listenerService = ListenerService.getInstance();
         this.biz =  PriceSettingBiz.getInstance();
+    }
+
+    /**
+     * 创建默认价格
+     * @param userid 
+     */
+    public createDefaultPrice(userid:number,options?:Sequelize.BulkCreateOptions){
+        const priceList:IPriceSetting[] = [];
+        priceList.push({
+            uid:userid,
+            type:EPriceType.EWord,
+            timecircle:EPriceCircle.Fifteen,
+            price:PriceSettingBiz.WordLimit[EPriceCircle.Fifteen].min,
+            taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Fifteen].min,0.8),
+            status:EPriceStatus.Enable
+        },{
+            uid:userid,
+            type:EPriceType.EWord,
+            timecircle:EPriceCircle.Thirty,
+            price:PriceSettingBiz.WordLimit[EPriceCircle.Thirty].min,
+            taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Thirty].min,0.8),
+            status:EPriceStatus.Enable
+        },{
+            uid:userid,
+            type:EPriceType.EWord,
+            timecircle:EPriceCircle.FortyFive,
+            price:PriceSettingBiz.WordLimit[EPriceCircle.FortyFive].min,
+            taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.FortyFive].min,0.8),
+            status:EPriceStatus.Enable
+        },{
+            uid:userid,
+            type:EPriceType.EWord,
+            timecircle:EPriceCircle.Sixty,
+            price:PriceSettingBiz.WordLimit[EPriceCircle.Sixty].min,
+            taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Sixty].min,0.8),
+            status:EPriceStatus.Enable
+        },{
+            uid:userid,
+            type:EPriceType.ECall,
+            timecircle:PriceSettingBiz.CallMinTime,
+            price:PriceSettingBiz.CallLimit.min,
+            taxprice:CalucateService.numDiv(PriceSettingBiz.CallLimit.min,0.8),
+            status:EPriceStatus.Enable
+        });
+        return PriceSetting.bulkCreate(priceList,options);
+        // PriceSetting.create()
     }
 
     /**
@@ -100,6 +149,20 @@ export default class PriceSettingService {
     }
 
     /**
+     * 获取价格
+     * @param type 
+     * @param userid 
+     */
+    public getPrice(type:EPriceCircle,userid:number){
+        return PriceSetting.findAll({
+            where:{
+                uid:userid,
+                type
+            }
+        });
+    }
+
+    /**
      * 同步最小价
      * @param uid 
      * @param price 
@@ -109,7 +172,7 @@ export default class PriceSettingService {
             if(res){
                 const minprice = Math.min(price,res.minprice);
                 if(minprice!==res.minprice){
-                    this.listenerService.updateListenById(res.id,{
+                    this.listenerService.updateListenerById(res.id,{
                         minprice:minprice
                     });
                 }

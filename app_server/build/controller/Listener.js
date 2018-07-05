@@ -14,6 +14,9 @@ const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
 const PriceSetting_1 = require("../model/PriceSetting");
 const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
+const _ = require("lodash");
+const EListenerLabelStatus_1 = require("../enum/EListenerLabelStatus");
+const PriceSetting_2 = require("./PriceSetting");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
@@ -21,6 +24,7 @@ class ListenerService {
         this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
         this.mainlabelService = MainLabel_1.default.getInstance();
         this.userService = User_2.default.getInstance();
+        this.priceSettingService = PriceSetting_2.default.getInstance();
     }
     bindListener(listenerp) {
         const listener = objectHelper_1.default.serialize(listenerp);
@@ -48,7 +52,8 @@ class ListenerService {
                 // listener.uid = listener.user.id;
                 // delete listener.user;
                 const createListenerPromise = Listener_1.default.create(listener, { transaction: tran });
-                return Bluebird.all([updateUserPromise, createListenerPromise]);
+                const createDefaultPricePromise = this.priceSettingService.createDefaultPrice(listener.uid, { transaction: tran });
+                return Bluebird.all([updateUserPromise, createListenerPromise, createDefaultPricePromise]);
             });
         });
     }
@@ -57,7 +62,8 @@ class ListenerService {
     }
     parseLabels(labelids, labeldesc) {
         labelids = objectHelper_1.default.parseJSON(labelids) || [];
-        const labels = this.mainlabelService.findLabel(labelids);
+        let labels = this.mainlabelService.findLabel(labelids);
+        labels = objectHelper_1.default.serialize(labels);
         if (labels.length && labeldesc) {
             const descObj = objectHelper_1.default.parseJSON(labeldesc) || [];
             if (descObj && descObj.length) {
@@ -65,6 +71,7 @@ class ListenerService {
                     const current = descObj.find(item => item.id === label.id);
                     if (current) {
                         label.desc = current.desc;
+                        label.lsstatus = current.lsstatus || EListenerLabelStatus_1.EListenerLabelStatus.正常;
                     }
                 });
             }
@@ -98,21 +105,23 @@ class ListenerService {
         });
         promise.then((res) => {
             if (res[0] > 0) {
-                return this.mongoSyncbiz.updateByListener(res[1][0]);
+                listener.uid = uid;
+                return this.mongoSyncbiz.updateByListener(listener);
             }
             return res;
         });
         return promise;
     }
-    updateListenById(id, listener) {
+    updateListenerById(userid, listener) {
         const promise = Listener_1.default.update(listener, {
             where: {
-                uid: id
+                uid: userid
             }
         });
         promise.then((res) => {
             if (res[0] > 0) {
-                return this.mongoSyncbiz.updateByListener(res[1][0]);
+                listener.uid = userid;
+                return this.mongoSyncbiz.updateByListener(listener);
             }
             return res;
         });
@@ -152,8 +161,7 @@ class ListenerService {
                     as: 'user',
                     where: { id: { [sequelize_1.Op.in]: ids } }
                 }, {
-                    model: PriceSetting_1.default,
-                    as: "price"
+                    model: PriceSetting_1.default
                 }]
         }).then(res => {
             res.forEach(item => {
@@ -230,6 +238,35 @@ class ListenerService {
             uid: userid,
             labelids: JSON.stringify(result.ids),
             labeldesc: JSON.stringify(result.descs)
+        });
+    }
+    deleteLabels(userid, labelid) {
+        this.findByUserid(userid).then(res => {
+            let isChange = false;
+            if (res && res.labelids) {
+                const labelids = objectHelper_1.default.parseJSON(res.labelids) || [];
+                if (_.isArray(labelids)) {
+                    _.remove(labelids, item => item === labelid);
+                }
+                res.labelids = JSON.stringify(labelids);
+                isChange = true;
+            }
+            if (res && res.labeldesc) {
+                const labeldescs = objectHelper_1.default.parseJSON(res.labeldesc) || [];
+                if (_.isArray(labeldescs)) {
+                    _.remove(labeldescs, item => item.id === labelid);
+                }
+                res.labeldesc = JSON.stringify(labeldescs);
+                ;
+                isChange = true;
+            }
+            if (isChange) {
+                return this.updateListener({
+                    uid: userid,
+                    labelids: res.labelids,
+                    labeldesc: res.labeldesc
+                });
+            }
         });
     }
     static createInstance() {

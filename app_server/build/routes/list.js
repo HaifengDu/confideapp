@@ -5,9 +5,7 @@ const List_1 = require("../controller/List");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const router = express.Router();
 const listCtl = List_1.default.getInstance();
-router.get("/", [
-    check_1.query("labelid").isNumeric().withMessage("标签id不能为空并且必须是数字")
-], function (req, res) {
+router.get("/", function (req, res) {
     const errors = check_1.validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));

@@ -17,6 +17,7 @@ import OtherInfo from "@/page/settings/OtherInfo.vue";
 import TextService from "@/page/settings/TextService.vue";
 import SearchFilter from "@/page/SearchFilter.vue";
 import CallService from "@/page/settings/CallService.vue";
+import SearchResult from "@/page/SearchResult.vue"
 
 Vue.use(Router)
 
@@ -68,6 +69,11 @@ const router = new Router({
       path:"/searchFilter",
       name:"SearchFilter",
       component:SearchFilter
+    },
+    {
+      path:"/searchResult",
+      name:"SearchResult",
+      component:SearchResult
     },
     {
       path: "/tag",

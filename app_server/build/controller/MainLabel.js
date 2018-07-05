@@ -76,16 +76,16 @@ class MainLabelService {
                 id: id
             }
         });
-        promise.then(res => {
+        return promise.then(res => {
             let current;
             if (stype === ELabelType_1.ELabelSType.Label) {
-                _.remove(this._labelList, item => item.id === id);
+                current = _.remove(this._labelList, item => item.id === id)[0];
             }
             else {
-                _.remove(this._expList, item => item.id === id);
+                current = _.remove(this._expList, item => item.id === id)[0];
             }
+            return current;
         });
-        return promise;
     }
     initMainLabel() {
         MainLabel_1.default.findAll().then(res => {

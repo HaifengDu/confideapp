@@ -18,6 +18,8 @@ import IPager from "../interface/IPager";
 import PriceSetting from "../model/PriceSetting";
 import MongoSyncBiz from "../biz/MongoSyncBiz";
 import _ = require("lodash");
+import { EListenerLabelStatus } from "../enum/EListenerLabelStatus";
+import PriceSettingService from "./PriceSetting";
 
 export default class ListenerService {
 
@@ -25,13 +27,15 @@ export default class ListenerService {
     private biz:ListenerBiz;
     private mainlabelService:MainLabelService;
     private userService:UserService;
-    private mongoSyncbiz:MongoSyncBiz
+    private mongoSyncbiz:MongoSyncBiz;
+    private priceSettingService:PriceSettingService;
     private readonly PAGE_SIZE = 20;
     private constructor() {
         this.biz = ListenerBiz.getInstance();
         this.mongoSyncbiz = MongoSyncBiz.getInstance(); 
         this.mainlabelService = MainLabelService.getInstance();
         this.userService = UserService.getInstance();
+        this.priceSettingService = PriceSettingService.getInstance();
     }
 
     public bindListener(listenerp:IListener):Bluebird<IErrorMsg>{
@@ -62,7 +66,8 @@ export default class ListenerService {
                 // listener.uid = listener.user.id;
                 // delete listener.user;
                 const createListenerPromise = ListenerModel.create(listener,{transaction:tran});
-                return Bluebird.all([updateUserPromise,createListenerPromise]);
+                const createDefaultPricePromise = this.priceSettingService.createDefaultPrice(listener.uid,{transaction:tran});
+                return Bluebird.all([updateUserPromise,createListenerPromise,createDefaultPricePromise]);
             });
         });
     }
@@ -73,7 +78,8 @@ export default class ListenerService {
 
     private parseLabels(labelids:string|number[],labeldesc:string){
         labelids = ObjectHelper.parseJSON(<string>labelids)||[];
-        const labels = <IListenLabel[]>this.mainlabelService.findLabel(<number[]>labelids);
+        let labels = <IListenLabel[]>this.mainlabelService.findLabel(<number[]>labelids);
+        labels = ObjectHelper.serialize<IListenLabel[]>(labels);
         if(labels.length&&labeldesc){
             const descObj = <any[]>ObjectHelper.parseJSON(labeldesc)||[];
             if(descObj&&descObj.length){
@@ -81,6 +87,7 @@ export default class ListenerService {
                     const current = descObj.find(item=>item.id===label.id);
                     if(current){
                         label.desc = current.desc;
+                        label.lsstatus = current.lsstatus||EListenerLabelStatus.正常;
                     }
                 })
             }
@@ -117,22 +124,24 @@ export default class ListenerService {
         });
         promise.then((res)=>{
             if(res[0]>0){
-                return this.mongoSyncbiz.updateByListener(res[1][0]);
+                listener.uid = uid;
+                return this.mongoSyncbiz.updateByListener(listener);
             }
             return res;
         });
         return promise;
     }
 
-    public updateListenById(id:number,listener:IListener){
+    public updateListenerById(userid:number,listener:IListener){
         const promise = ListenerModel.update(listener,{
             where:{
-                uid:id
+                uid:userid
             }
         });
         promise.then((res)=>{
             if(res[0]>0){
-                return this.mongoSyncbiz.updateByListener(res[1][0]);
+                listener.uid = userid;
+                return this.mongoSyncbiz.updateByListener(listener);
             }
             return res;
         });
@@ -175,8 +184,7 @@ export default class ListenerService {
                 as: 'user',
                 where: { id:{[Op.in] :ids}}
             },{
-                model:PriceSetting,
-                as:"price"
+                model:PriceSetting
             }]
         }).then(res=>{
             res.forEach(item=>{

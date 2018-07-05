@@ -6,7 +6,7 @@ import { EPriceType } from "../enum/EPriceType";
 
 export default class PriceSettingBiz {
 
-    private static readonly WordLimit = {
+    public static readonly WordLimit = {
         [EPriceCircle.Fifteen]:{
             min:5,
             max:100
@@ -25,11 +25,11 @@ export default class PriceSettingBiz {
         }
     }
 
-    private static readonly CallLimit = {
+    public static readonly CallLimit = {
         min:0.6,
         max:20
     }
-    private static readonly CallMinTime = 15;
+    public static readonly CallMinTime = 15;
 
     private static _instance: PriceSettingBiz;
 

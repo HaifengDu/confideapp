@@ -1,7 +1,6 @@
 import * as express from "express";
 import { body,query, validationResult, Result } from 'express-validator/check';
 import * as multer from "multer";
-import * as crypto from 'crypto';
 import * as fs from "fs";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -9,8 +8,11 @@ import ErrorMsg from "../model/ErrorMsg";
 import ListenerService from "../controller/Listener";
 import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
+import _ = require("lodash");
+import PriceSettingService from "../controller/PriceSetting";
 const router = express.Router();
 const listenCtrl = ListenerService.getInstance();
+const priceSettingCtrl = PriceSettingService.getInstance();
 const execPath = process.cwd();
 const storage = multer.diskStorage({
     destination: function (req:express.Request, file, cb) {
@@ -90,7 +92,13 @@ router.post("/",
 );
 router.post("/updateLabels",[
     query("userid").isNumeric().withMessage("用户编号非法"),
-    body("labels").isArray().withMessage("标签数据非法")
+    body("labels").custom((value,{req,location,path})=>{
+        const checkValues = ObjectHelper.parseJSON(value);
+        if(!_.isArray(checkValues)){
+            throw new Error("标签数据类型非法")
+        }
+        return value;
+    })
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
@@ -101,6 +109,44 @@ router.post("/updateLabels",[
         res.json({
             data,...new ErrorMsg(true)
         })
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.post("/setprice",[
+    query("userid").isNumeric().withMessage("用户编号非法"),
+    body("prices").isEmpty().withMessage("价格设置不能为空")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    priceSettingCtrl.updatePrice(req.body.type,req.body.prices,req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.get("/price",[
+    query("userid").isNumeric().withMessage("用户编号非法"),
+    query("type").isNumeric().withMessage("价格类型非法")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    priceSettingCtrl.getPrice(req.query.type,req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
     },err=>{
         res.json(new ErrorMsg(false,err.message,err));
     }).catch(err=>{

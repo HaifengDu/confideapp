@@ -5,7 +5,7 @@ const mysqlSeq_1 = require("../mysqlSeq");
 const Listener_1 = require("./Listener");
 const PriceSetting = mysqlSeq_1.default.define("pricesetting", {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true, comment: "唯一id" },
-    uid: { type: Sequelize.INTEGER, comment: "user外键", allowNull: false },
+    uid: { type: Sequelize.INTEGER, comment: "listener外键", allowNull: false },
     type: { type: Sequelize.TINYINT, comment: "价格类型,1、文字;2、通话", allowNull: false, defaultValue: 1 },
     timecircle: { type: Sequelize.TINYINT, comment: "价格周期，1：15分中，2：30分钟，3：60分钟", allowNull: false },
     price: { type: Sequelize.FLOAT, comment: "单价", allowNull: false },
@@ -14,8 +14,11 @@ const PriceSetting = mysqlSeq_1.default.define("pricesetting", {
 }, {
     freezeTableName: true
 });
-PriceSetting.sync({ alter: true, force: true });
-PriceSetting.belongsTo(Listener_1.default, {
+PriceSetting.sync({ alter: true });
+Listener_1.default.hasMany(PriceSetting, {
     foreignKey: "uid"
 });
+// PriceSetting.belongsTo(Listener,{
+//     foreignKey:"uid"
+// });
 exports.default = PriceSetting;

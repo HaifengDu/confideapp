@@ -45,6 +45,18 @@ export default class ListenerService {
         return Axios.get("/listener/price",{params:params});
     }
 
+    /**
+     * 更新倾听者文字及通话服务价格设置信息
+     * @param params 
+     */
+    updatePrice(prices:Array<IPriceSetting>):Promise<AxiosResponse<IResponse<any>>>{
+        if(!prices){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        let data = JSON.stringify(prices);
+        return Axios.post("/listener/setprice",{prices:data});
+    }
+
     static createInstance() {
         ListenerService.getInstance();
     }

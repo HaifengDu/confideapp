@@ -44,7 +44,7 @@ export default class BindPhone extends Vue{
   private bind = false
   private phone = ''
   private code = ''
-  private checkText = "输入验证码";
+  private checkText = "发送验证码";
   private ispendding = false;
   // private BaseInfoService = Service.getInstance()
   goBaseInfo(){

@@ -44,7 +44,7 @@ export default class CallService extends Vue{
     private callPrice = 0.66;
     private minCallTime = 15;
     created(){
-        console.log(888);
+        //TODO:获取该用户相关的通话服务费用设置数据
     }
 
     save(){

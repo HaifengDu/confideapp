@@ -57,6 +57,9 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import ListenerService from "../../api/ListenerService.ts";
+import {EPriceType} from "../../enum/EPriceType.ts";
+const listenerService = ListenerService.getInstance();
 
 @Component({
 
@@ -76,7 +79,10 @@ export default class TextService extends Vue{
     private thirdValue = "4.6";
     private fourthValue = "4.6";
     created(){
-        console.log(888);
+        //TODO:获取该用户相关的文字服务费用设置数据
+        listenerService.getPrice({type:EPriceType.EWord}).then((res:any)=>{
+            console.log(res);
+        });
     }
 
     changePrice(type:string){

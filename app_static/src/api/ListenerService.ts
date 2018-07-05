@@ -1,5 +1,6 @@
 import { IListener} from "../interface/model/IListener";
 import { IListenLabel } from "../interface/model/IMainLabel";
+import { IPriceSetting} from "../interface/model/IPriceSetting";
 import Axios, { AxiosResponse } from "axios";
 import ErrorMsg from "../model/ErrorMsg";
 import { IResponse } from "../interface/model/IResponse";
@@ -31,6 +32,17 @@ export default class ListenerService {
         }
         let data = JSON.stringify(labels);
         return Axios.post("/listener/updateLabels",{labels:data});
+    }
+
+    /**
+     * 获取倾听者文字及通话服务价格设置信息
+     * @param params 
+     */
+    getPrice(params:IPriceSetting):Promise<AxiosResponse<IResponse<any>>>{
+        if(!params){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.get("/listener/price",{params:params});
     }
 
     static createInstance() {

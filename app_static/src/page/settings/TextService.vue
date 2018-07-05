@@ -17,11 +17,9 @@
             </mt-cell>
             <mt-cell title="价格" class="cell-con" v-if="isSecondLevel">
                 <div class="price-wrapper">
-                    <div class="price-wrapper">
-                        <span>设定价</span>
-                        <input class="entry" type="number" min="5" max="200" v-model="secondValue"/>元
-                        <p class="tax-price">显示价(含税)：9.81元</p>
-                    </div>
+                    <span>设定价</span>
+                    <input class="entry" type="number" min="5" max="200" v-model="secondValue"/>元
+                    <p class="tax-price">显示价(含税)：9.81元</p>
                 </div>
             </mt-cell>
             <mt-cell title="45分钟文字服务" class="cell-con">
@@ -29,11 +27,9 @@
             </mt-cell>
             <mt-cell title="价格" class="cell-con" v-if="isThirdLevel">
                 <div class="price-wrapper">
-                    <div class="price-wrapper">
-                        <span>设定价</span>
-                        <input class="entry" type="number" min="5" max="300" v-model="thirdValue"/>元
-                        <p class="tax-price">显示价(含税)：19.8元</p>
-                    </div>
+                    <span>设定价</span>
+                    <input class="entry" type="number" min="5" max="300" v-model="thirdValue"/>元
+                    <p class="tax-price">显示价(含税)：19.8元</p>
                 </div>
             </mt-cell>
             <mt-cell title="60分钟文字服务" class="cell-con">
@@ -41,11 +37,9 @@
             </mt-cell>
             <mt-cell title="价格" class="cell-con" v-if="isFourthLevel">
                 <div class="price-wrapper">
-                    <div class="price-wrapper">
-                        <span class="design">设定价</span>
-                        <input class="entry" type="number" min="5" max="400" v-model="fourthValue"/>元
-                        <p class="tax-price">显示价(含税)：2000.8元</p>
-                    </div>
+                    <span class="design">设定价</span>
+                    <input class="entry" type="number" min="5" max="400" v-model="fourthValue"/>元
+                    <p class="tax-price">显示价(含税)：2000.8元</p>
                 </div>
             </mt-cell>
             <div class="reminder">
@@ -116,6 +110,8 @@ export default class TextService extends Vue{
             line-height: 20px;
             .entry{
                 outline: none;
+                border:none;
+                border-bottom:1px solid @mainColor;
                 width: 50px;
             }
             .tax-price{

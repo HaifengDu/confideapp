@@ -1,5 +1,7 @@
-import { IListener } from "../interface/model/IListener";
+import { IListener} from "../interface/model/IListener";
+import { IListenLabel } from "../interface/model/IMainLabel";
 import Axios, { AxiosResponse } from "axios";
+import ErrorMsg from "../model/ErrorMsg";
 import { IResponse } from "../interface/model/IResponse";
 
 export default class ListenerService {
@@ -21,6 +23,14 @@ export default class ListenerService {
         }); 
         formData.append("data",JSON.stringify(data));
         return Axios.post("/listener",formData,config);
+    }
+
+    updateLabels(labels:Array<IListenLabel>):Promise<AxiosResponse<IResponse<any>>>{
+        if(!labels){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        let data = JSON.stringify(labels);
+        return Axios.post("/listener/updateLabels",{labels:data});
     }
 
     static createInstance() {

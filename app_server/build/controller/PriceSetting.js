@@ -7,13 +7,14 @@ const Bluebird = require("bluebird");
 const _ = require("lodash");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const EPriceStatus_1 = require("../enum/EPriceStatus");
-const Listener_1 = require("./Listener");
 const EPriceCircle_1 = require("../enum/EPriceCircle");
 const CalucateService_1 = require("../helper/CalucateService");
+const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
 class PriceSettingService {
     constructor() {
-        this.listenerService = Listener_1.default.getInstance();
+        this.listenerMediator = ListenerPriceMediator_1.default.getInstance();
         this.biz = PriceSettingBiz_1.default.getInstance();
+        this.listenerMediator.setPriceSetting(this);
     }
     /**
      * 创建默认价格
@@ -96,12 +97,11 @@ class PriceSettingService {
                         });
                     }
                     promise = checkPromise.then(res => {
-                        if (res.success) {
-                            return Bluebird.all(pricesettings.map(item => PriceSetting_1.default.update(item))).then(res => {
-                                return this.syncMinPrice(userid, Math.min.apply(null, pricesettings.map(item => item.price)));
-                            });
-                        }
-                        return Bluebird.reject(res);
+                        return this.listenerMediator.checkChangePriceMaxCount(userid, type);
+                    }).then(res => {
+                        return Bluebird.all(pricesettings.map(item => PriceSetting_1.default.update(item, { where: { id: item.id } }))).then(res => {
+                            return this.listenerMediator.syncMinPrice(userid, Math.min.apply(null, pricesettings.map(item => item.price)), type);
+                        });
                     });
                 }
                 break;
@@ -126,12 +126,11 @@ class PriceSettingService {
                         });
                     }
                     promise = checkPromise.then(res => {
-                        if (res.success) {
-                            return PriceSetting_1.default.update(pricesettings[0]).then(res => {
-                                return this.syncMinPrice(userid, pricesettings[0].price);
-                            });
-                        }
-                        return Bluebird.reject(res);
+                        return this.listenerMediator.checkChangePriceMaxCount(userid, type);
+                    }).then(res => {
+                        return PriceSetting_1.default.update(pricesettings[0]).then(res => {
+                            return this.listenerMediator.syncMinPrice(userid, pricesettings[0].price, type);
+                        });
                     });
                 }
                 break;
@@ -151,23 +150,6 @@ class PriceSettingService {
             where: {
                 uid: userid,
                 type
-            }
-        });
-    }
-    /**
-     * 同步最小价
-     * @param uid
-     * @param price
-     */
-    syncMinPrice(uid, price) {
-        return this.listenerService.findByUserid(uid).then(res => {
-            if (res) {
-                const minprice = Math.min(price, res.minprice);
-                if (minprice !== res.minprice) {
-                    this.listenerService.updateListenerById(res.id, {
-                        minprice: minprice
-                    });
-                }
             }
         });
     }

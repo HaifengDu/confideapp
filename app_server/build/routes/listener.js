@@ -104,13 +104,14 @@ router.post("/updateLabels", [
 });
 router.post("/setprice", [
     check_1.query("userid").isNumeric().withMessage("用户编号非法"),
-    check_1.body("prices").isEmpty().withMessage("价格设置不能为空")
+    check_1.body("type").isNumeric().withMessage("类型不能为空")
 ], function (req, res) {
     const errors = check_1.validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
-    priceSettingCtrl.updatePrice(req.body.type, req.body.prices, req.query.userid).then(data => {
+    const prices = objectHelper_1.default.parseJSON(req.body.prices) || [];
+    priceSettingCtrl.updatePrice(parseInt(req.body.type), prices, req.query.userid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

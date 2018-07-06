@@ -31,6 +31,11 @@ export default class PriceSettingBiz {
     }
     public static readonly CallMinTime = 15;
 
+    /**
+     * 当月最多修改次数
+     */
+    public static readonly MaxChangeCount = 3;
+
     private static _instance: PriceSettingBiz;
 
     private constructor() {

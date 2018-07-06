@@ -16,15 +16,17 @@ const PriceSetting_1 = require("../model/PriceSetting");
 const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
 const _ = require("lodash");
 const EListenerLabelStatus_1 = require("../enum/EListenerLabelStatus");
-const PriceSetting_2 = require("./PriceSetting");
+const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
+const ERole_1 = require("../enum/ERole");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
+        this.pricesettingMediator = ListenerPriceMediator_1.default.getInstance();
+        this.pricesettingMediator.setListener(this);
         this.biz = ListenerBiz_1.default.getInstance();
         this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
         this.mainlabelService = MainLabel_1.default.getInstance();
-        this.userService = User_2.default.getInstance();
-        this.priceSettingService = PriceSetting_2.default.getInstance();
+        this.userService = User_2.default.getInstance(this);
     }
     bindListener(listenerp) {
         const listener = objectHelper_1.default.serialize(listenerp);
@@ -48,11 +50,12 @@ class ListenerService {
             return mysqlSeq_1.default.transaction(tran => {
                 listener.user.status = ERoleStatus_1.ERoleStatus.审核中;
                 listener.user.id = listener.uid;
+                listener.user.role = ERole_1.ERole.Listener;
                 const updateUserPromise = this.userService.update(listener.user, tran);
                 // listener.uid = listener.user.id;
                 // delete listener.user;
                 const createListenerPromise = Listener_1.default.create(listener, { transaction: tran });
-                const createDefaultPricePromise = this.priceSettingService.createDefaultPrice(listener.uid, { transaction: tran });
+                const createDefaultPricePromise = this.pricesettingMediator.createDefaultPrice(listener.uid, { transaction: tran });
                 return Bluebird.all([updateUserPromise, createListenerPromise, createDefaultPricePromise]);
             });
         });
@@ -137,21 +140,22 @@ class ListenerService {
             include: [{
                     model: User_1.default,
                     as: 'user',
+                    include: [{
+                            model: PriceSetting_1.default
+                        }],
                     where: { id: id }
-                }, {
-                    model: PriceSetting_1.default,
-                    as: "price"
                 }]
         }).then(res => {
             if (!res || !res.user) {
-                Bluebird.reject({ message: "未查到对应的用户" });
+                Bluebird.reject(new ErrorMsg_1.default(false, "未查到对应的用户"));
                 return;
             }
+            const listener = objectHelper_1.default.serialize(res);
             const labels = this.parseLabels(res.labelids, res.labeldesc);
-            objectHelper_1.default.merge(res, {
+            objectHelper_1.default.merge(listener, {
                 labels: labels
             });
-            return Promise.resolve(res);
+            return Promise.resolve(listener);
         });
     }
     findInUserids(ids) {
@@ -164,7 +168,8 @@ class ListenerService {
                     model: PriceSetting_1.default
                 }]
         }).then(res => {
-            res.forEach(item => {
+            const listeners = objectHelper_1.default.serialize(res);
+            listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
                 objectHelper_1.default.merge(item, {
                     labels: labels
@@ -173,7 +178,7 @@ class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
         });
     }
     findByName(name, page) {
@@ -202,7 +207,8 @@ class ListenerService {
                     }
                 }]
         }).then(res => {
-            res.forEach(item => {
+            const listeners = objectHelper_1.default.serialize(res);
+            listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
                 objectHelper_1.default.merge(item, {
                     labels: labels
@@ -211,7 +217,7 @@ class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
         });
     }
     /**

@@ -112,4 +112,8 @@ PriceSettingBiz.CallLimit = {
     max: 20
 };
 PriceSettingBiz.CallMinTime = 15;
+/**
+ * 当月最多修改次数
+ */
+PriceSettingBiz.MaxChangeCount = 3;
 exports.default = PriceSettingBiz;

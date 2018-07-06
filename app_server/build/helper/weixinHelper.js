@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const request = require("request");
-const appid = "wx3e8733cd66f81abd";
-const appsecret = "633a421e43bf700e02d2e07cf672bb8b";
+const wxconfig = require("../../config/wxconfig.json");
+const appid = wxconfig.appid;
+const appsecret = wxconfig.appsecret;
 class WeixinHelper {
     static getAccesstoken(code) {
         if (!code) {

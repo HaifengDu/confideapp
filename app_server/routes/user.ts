@@ -4,8 +4,10 @@ import { body,query, validationResult, Result } from 'express-validator/check';
 import ErrorMsg from "../model/ErrorMsg";
 import { IMailCode } from "../interface/IMailCode";
 import { IUser } from "../interface/model/IUser";
+import ListenerService from "../controller/Listener";
+import ObjectHelper from "../helper/objectHelper";
 const router = express.Router();
-const userContrl = UserService.getInstance();
+const userContrl = UserService.getInstance(ListenerService.getInstance());
 
 router.put("/",[
     body("code").not().isEmpty().withMessage('微信code不能为空'),
@@ -37,7 +39,7 @@ router.get("/",[
             res.json(new ErrorMsg(false,"未找到对应记录"));
             return;
         }
-        res.json({ data: result,...new ErrorMsg(true) });
+        res.json({ data: ObjectHelper.serialize(result),...new ErrorMsg(true) });
     },err=>{
         res.json(new ErrorMsg(false,err.message,err));
     }).catch(err=>{

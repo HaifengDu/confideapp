@@ -6,20 +6,21 @@ import * as Bluebird from "bluebird";
 import _ = require('lodash');
 import ErrorMsg from '../model/ErrorMsg';
 import { EPriceStatus } from '../enum/EPriceStatus';
-import ListenerService from './Listener';
 import EPriceCircle from '../enum/EPriceCircle';
 import CalucateService from '../helper/CalucateService';
 import * as Sequelize from "sequelize";
+import ListenerPriceMediator from './ListenerPriceMediator';
 export default class PriceSettingService {
 
     private static _instance: PriceSettingService;
 
     private biz:PriceSettingBiz;
-    private listenerService:ListenerService;
+    private listenerMediator:ListenerPriceMediator;
 
     private constructor() {
-        this.listenerService = ListenerService.getInstance();
+        this.listenerMediator = ListenerPriceMediator.getInstance();
         this.biz =  PriceSettingBiz.getInstance();
+        this.listenerMediator.setPriceSetting(this);
     }
 
     /**
@@ -102,13 +103,13 @@ export default class PriceSettingService {
                             return Bluebird.resolve(new ErrorMsg(true)); 
                         });
                     }
+                    
                     promise = checkPromise.then(res=>{
-                        if(res.success){
-                           return Bluebird.all(pricesettings.map(item=>PriceSetting.update(item))).then(res=>{
-                                return this.syncMinPrice(userid,Math.min.apply(null,pricesettings.map(item=>item.price)));
-                           });
-                        }
-                        return Bluebird.reject(res);
+                        return this.listenerMediator.checkChangePriceMaxCount(userid,type);
+                    }).then(res=>{
+                        return Bluebird.all(pricesettings.map(item=>PriceSetting.update(item,{where:{id:item.id}}))).then(res=>{
+                            return this.listenerMediator.syncMinPrice(userid,Math.min.apply(null,pricesettings.map(item=>item.price)),type);
+                        });
                     });
                 }
             break;
@@ -132,12 +133,11 @@ export default class PriceSettingService {
                         });
                     }
                     promise = checkPromise.then(res=>{
-                        if(res.success){
-                            return PriceSetting.update(pricesettings[0]).then(res=>{
-                                return this.syncMinPrice(userid,pricesettings[0].price);
-                            });
-                         }
-                         return Bluebird.reject(res);
+                        return this.listenerMediator.checkChangePriceMaxCount(userid,type);
+                    }).then(res=>{
+                        return PriceSetting.update(pricesettings[0]).then(res=>{
+                            return this.listenerMediator.syncMinPrice(userid,pricesettings[0].price,type);
+                        });
                     });
                 }
             break;
@@ -160,24 +160,6 @@ export default class PriceSettingService {
                 type
             }
         });
-    }
-
-    /**
-     * 同步最小价
-     * @param uid 
-     * @param price 
-     */
-    private syncMinPrice(uid:number,price:number){
-        return this.listenerService.findByUserid(uid).then(res=>{
-            if(res){
-                const minprice = Math.min(price,res.minprice);
-                if(minprice!==res.minprice){
-                    this.listenerService.updateListenerById(res.id,{
-                        minprice:minprice
-                    });
-                }
-            }
-        })
     }
 
     static createInstance() {

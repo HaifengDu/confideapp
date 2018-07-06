@@ -52,7 +52,7 @@ app.use(function(req, res, next) {
 //     maxFilesSize: 50 * 1024 * 1024
 // }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
     secret: 'dkl091125',

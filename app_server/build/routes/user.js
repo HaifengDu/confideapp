@@ -3,8 +3,10 @@ const express = require("express");
 const User_1 = require("../controller/User");
 const check_1 = require("express-validator/check");
 const ErrorMsg_1 = require("../model/ErrorMsg");
+const Listener_1 = require("../controller/Listener");
+const objectHelper_1 = require("../helper/objectHelper");
 const router = express.Router();
-const userContrl = User_1.default.getInstance();
+const userContrl = User_1.default.getInstance(Listener_1.default.getInstance());
 router.put("/", [
     check_1.body("code").not().isEmpty().withMessage('微信code不能为空'),
     check_1.body("code").isString().withMessage('微信code必须是字符串')
@@ -34,7 +36,7 @@ router.get("/", [
             res.json(new ErrorMsg_1.default(false, "未找到对应记录"));
             return;
         }
-        res.json(Object.assign({ data: result }, new ErrorMsg_1.default(true)));
+        res.json(Object.assign({ data: objectHelper_1.default.serialize(result) }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {

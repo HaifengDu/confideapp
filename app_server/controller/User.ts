@@ -11,6 +11,9 @@ import * as Sequelize from "sequelize";
 import MailHelper from "../helper/mailHelper";
 import { IMailCode } from "../interface/IMailCode";
 import { EBindPhoneStatus } from "../enum/EBindPhoneStatus";
+import ListenerService from "./Listener";
+import ObjectHelper from "../helper/objectHelper";
+import { IListener } from "../interface/model/IListener";
 
 export default class UserService {
 
@@ -18,7 +21,7 @@ export default class UserService {
     private _areaHelper:AreaHelper;
     private _mailHelper:MailHelper;
 
-    private constructor() {
+    private constructor(private listenerService:ListenerService) {
         this._mailHelper = MailHelper.getInstance();
         this._areaHelper = AreaHelper.getInstance();
     }
@@ -34,7 +37,7 @@ export default class UserService {
                 sex:res.sex
             }
             //查看是否绑定了微信
-            return this.findByWeixin(userModel.weixinid).then(res=>{
+            return this.findByWeixin(userModel.weixinid).then((res:any)=>{
                 if(res){
                     return Bluebird.resolve(res);
                 }
@@ -78,7 +81,18 @@ export default class UserService {
             where:{
                 weixinid:weixinid
             }
-        })
+        }).then(user=>{
+            if(user.role===ERole.Listener){
+                return this.listenerService.findByUserid(user.id).then(listener=>{
+                    const userTemp:any = ObjectHelper.serialize(user);
+                    userTemp.listener = ObjectHelper.serialize<IListener>(listener);
+                    userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                    delete userTemp.listener.user;
+                    return userTemp;
+                });
+            }
+            return user;
+        });
     }
 
     public delete(id:number){
@@ -139,12 +153,12 @@ export default class UserService {
         })
     }
 
-    static createInstance() {
-        UserService.getInstance();
+    static createInstance(listenerService:ListenerService) {
+        UserService.getInstance(listenerService);
     }
 
-    static getInstance() {
-        return this._instance || (this._instance = new this());
+    static getInstance(listenerService:ListenerService) {
+        return this._instance || (this._instance = new this(listenerService));
     }
 
 }

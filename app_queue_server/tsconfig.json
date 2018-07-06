@@ -1,0 +1,19 @@
+{    
+  "compilerOptions": {    
+      "module": "commonjs",       
+      "target": "es6",          
+      "noImplicitAny": false,     
+      "sourceMap": false,         
+    //   "rootDir":"./",         
+    //   "outDir":"./",   
+      "watch":true             
+  },    
+  "include":[  
+      "./**/*"    
+  ],    
+  "exclude":[    
+      "views",  
+      "public",
+      "node_modules"  
+  ]    
+}    

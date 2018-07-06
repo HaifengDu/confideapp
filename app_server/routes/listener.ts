@@ -118,13 +118,15 @@ router.post("/updateLabels",[
 
 router.post("/setprice",[
     query("userid").isNumeric().withMessage("用户编号非法"),
-    body("prices").isEmpty().withMessage("价格设置不能为空")
+    body("type").isNumeric().withMessage("类型不能为空")
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
-    priceSettingCtrl.updatePrice(req.body.type,req.body.prices,req.query.userid).then(data=>{
+
+    const prices = ObjectHelper.parseJSON(req.body.prices)||[];
+    priceSettingCtrl.updatePrice(parseInt(req.body.type),prices,req.query.userid).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
         });

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const User_1 = require("./User");
 const Sequelize = require("sequelize");
 const mysqlSeq_1 = require("../mysqlSeq");
-const Listener_1 = require("./Listener");
+// import Listener from "./Listener";
 const PriceSetting = mysqlSeq_1.default.define("pricesetting", {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true, comment: "唯一id" },
     uid: { type: Sequelize.INTEGER, comment: "listener外键", allowNull: false },
@@ -15,7 +16,7 @@ const PriceSetting = mysqlSeq_1.default.define("pricesetting", {
     freezeTableName: true
 });
 PriceSetting.sync({ alter: true });
-Listener_1.default.hasMany(PriceSetting, {
+User_1.default.hasMany(PriceSetting, {
     foreignKey: "uid"
 });
 // PriceSetting.belongsTo(Listener,{

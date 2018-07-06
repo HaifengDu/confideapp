@@ -1,7 +1,8 @@
-import * as Sequelize from "sequelize";
+import User from './User';
+import * as Sequelize from 'sequelize';
 import sequelize from "../mysqlSeq";
 import { IPriceSetting } from "../interface/model/IPriceSetting";
-import Listener from "./Listener";
+// import Listener from "./Listener";
 
 const PriceSetting = sequelize.define<IPriceSetting,IPriceSetting>("pricesetting",{
     id: {type:Sequelize.INTEGER, primaryKey: true,autoIncrement:true,comment:"唯一id"},
@@ -15,7 +16,7 @@ const PriceSetting = sequelize.define<IPriceSetting,IPriceSetting>("pricesetting
     freezeTableName: true
 });
 PriceSetting.sync({alter:true});
-Listener.hasMany(PriceSetting,{
+User.hasMany(PriceSetting,{
     foreignKey:"uid"
 })
 // PriceSetting.belongsTo(Listener,{

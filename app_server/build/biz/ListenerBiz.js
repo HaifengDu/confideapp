@@ -13,7 +13,7 @@ class ListenerBiz {
             if (!obj[current.prop]) {
                 return new ErrorMsg_1.default(false, `${current.key}不能为空`);
             }
-            if (_.isNumber(obj[current.prop])) {
+            if (!_.isNumber(obj[current.prop])) {
                 return new ErrorMsg_1.default(false, `${current.key}数据格式不正确`);
             }
         }

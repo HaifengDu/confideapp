@@ -6,7 +6,8 @@ const ErrorMsg_1 = require("../model/ErrorMsg");
 const Listener_1 = require("../controller/Listener");
 const objectHelper_1 = require("../helper/objectHelper");
 const router = express.Router();
-const userContrl = User_1.default.getInstance(Listener_1.default.getInstance());
+const listenerCtrl = Listener_1.default.getInstance();
+const userContrl = User_1.default.getInstance(listenerCtrl);
 router.put("/", [
     check_1.body("code").not().isEmpty().withMessage('微信code不能为空'),
     check_1.body("code").isString().withMessage('微信code必须是字符串')
@@ -45,10 +46,10 @@ router.get("/", [
 });
 router.post("/", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
-    check_1.body("nickname").isEmpty().withMessage("用户名称不能为空"),
+    check_1.body("nickname").not().isEmpty().withMessage("用户名称不能为空"),
     check_1.body("sex").isNumeric().withMessage("性别不正确"),
     check_1.body("address").isNumeric().withMessage("地址不能为空"),
-    check_1.body("birthday").isEmpty().withMessage("生日不能为空")
+    check_1.body("birthday").not().isEmpty().withMessage("生日不能为空")
 ], function (req, res) {
     const errors = check_1.validationResult(req);
     if (!errors.isEmpty()) {
@@ -63,6 +64,29 @@ router.post("/", [
         resume: req.body.resume || ""
     };
     userContrl.update(user).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.post("/updateOther", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("job").isNumeric().withMessage("职位信息不能为空"),
+    check_1.body("family").isNumeric().withMessage("家庭状况不能为空"),
+    check_1.body("edu").isNumeric().withMessage("教育经历不能为空"),
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    const listener = {
+        job: req.body.job,
+        family: req.body.family,
+        edu: req.body.edu
+    };
+    listenerCtrl.updateListenerById(req.query.userid, listener).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

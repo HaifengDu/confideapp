@@ -66,7 +66,7 @@ router.get("/",
 );
 router.post("/",
     [query("userid").isNumeric().withMessage("用户编号非法")],
-    [body("data").isEmpty().withMessage("提交数据不能为空")],
+    [body("data").not().isEmpty().withMessage("提交数据不能为空")],
     upload.array("files",6),
     function(req:express.Request,res:express.Response,next){
         const errors:Result<{msg:string}> = validationResult(req);

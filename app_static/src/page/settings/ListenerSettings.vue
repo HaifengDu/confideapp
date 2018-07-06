@@ -57,8 +57,14 @@ export default class ListenerSettings extends Vue{
     }
 
     toPage(route:string){
-        console.log(route);
-        this.$router.push('/'+route);
+        let query:any = {};
+        if(route==="baseInfo"){
+            query.from = "my";
+        }
+        this.$router.push({
+            path:'/'+route,
+            query
+        });
     }
 }
 </script>

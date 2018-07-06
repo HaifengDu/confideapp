@@ -35,9 +35,29 @@ export const getAllBaseData:Action<IRootState,IRootState> = ({dispatch,commit})=
     });   
 }
 
+export const setBaseInfo:Action<IRootState,IRootState> = ({dispatch,commit},payload)=>{
+    return myService.updateUserInfo(payload).then(res=>{
+        const data = res.data;
+        if(data.success){
+            commit(mutation_type.UPDATE_BASEINFO,payload);
+        }
+        return res;
+    });
+}
+
 export const setPrices: Action<IRootState, IRootState> = (
     { dispatch, commit },
     prices
   ) => {
     commit(mutation_type.UPDATE_PRICES, prices);
-  };
+};
+
+export const updateOther:Action<IRootState,IRootState> = ({dispatch,commit},payload)=>{
+    return myService.updateListenerOther(payload).then(res=>{
+        const data = res.data;
+        if(data.success){
+            commit(mutation_type.UPDATE_OTHER,payload);
+        }
+        return res;
+    });
+}

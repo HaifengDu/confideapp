@@ -6,8 +6,10 @@ import { IMailCode } from "../interface/IMailCode";
 import { IUser } from "../interface/model/IUser";
 import ListenerService from "../controller/Listener";
 import ObjectHelper from "../helper/objectHelper";
+import { IListener } from "../interface/model/IListener";
 const router = express.Router();
-const userContrl = UserService.getInstance(ListenerService.getInstance());
+const listenerCtrl = ListenerService.getInstance();
+const userContrl = UserService.getInstance(listenerCtrl);
 
 router.put("/",[
     body("code").not().isEmpty().withMessage('微信code不能为空'),
@@ -49,10 +51,10 @@ router.get("/",[
 
 router.post("/",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
-    body("nickname").isEmpty().withMessage("用户名称不能为空"),
+    body("nickname").not().isEmpty().withMessage("用户名称不能为空"),
     body("sex").isNumeric().withMessage("性别不正确"),
     body("address").isNumeric().withMessage("地址不能为空"),
-    body("birthday").isEmpty().withMessage("生日不能为空")
+    body("birthday").not().isEmpty().withMessage("生日不能为空")
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
@@ -74,6 +76,30 @@ router.post("/",[
         res.json(new ErrorMsg(false,err.message,err));
     });
 });
+
+router.post("/updateOther",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("job").isNumeric().withMessage("职位信息不能为空"),
+    body("family").isNumeric().withMessage("家庭状况不能为空"),
+    body("edu").isNumeric().withMessage("教育经历不能为空"),
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    const listener:IListener = {
+        job:req.body.job,
+        family:req.body.family,
+        edu:req.body.edu
+    }
+    listenerCtrl.updateListenerById(req.query.userid,listener).then(data=>{
+        res.json({data,...new ErrorMsg(true)});
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+})
 
 router.get("/getCheckCode",[
     query("phone").isMobilePhone("zh-CN").withMessage("非法的手机号"),

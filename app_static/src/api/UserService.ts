@@ -1,5 +1,6 @@
 import Axios, { AxiosPromise } from "axios";
 import { EBaseDataType } from "../enum/EBaseDataType";
+import ErrorMsg from "../model/ErrorMsg";
 
 export default class MyService {
     private static _instance: MyService;
@@ -45,10 +46,17 @@ export default class MyService {
     /**
      * 修改个人信息
      */
-    public updateUserInfo(baseInfo:any): AxiosPromise<any> {
+    public updateUserInfo(baseInfo:any): AxiosPromise<ErrorMsg> {
+      const temp = Object.assign({},baseInfo);
+      delete temp.listener;
+      delete temp.pricesettings;
       return Axios.post("user", {
-        ...baseInfo
+        ...temp
       });
+    }
+
+    public updateListenerOther(data:any):AxiosPromise<ErrorMsg>{
+      return Axios.post("user/updateOther", data);
     }
     private constructor() {}
 

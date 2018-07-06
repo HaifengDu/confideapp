@@ -151,7 +151,7 @@ export default class My extends Vue{
   }
   created(){
     document.title = "我的";
-    (<any>this).getUserInfo('oRtVK09h7Nsv19qD4eCjDsS0hB2E')
+    (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s')
   }
 }
 

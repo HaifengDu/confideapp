@@ -12,6 +12,7 @@ import my from "./my";
 import order from "./order";
 import payment from "./payment";
 import _ from 'lodash';
+import { IListener } from '../interface/model/IListener';
 
 const rootStore:Store<IRootState> = new Store<IRootState>({
   state:{
@@ -73,6 +74,29 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
           Object.assign(oriPrice,price);
         }
       });
+    },
+    [MType.UPDATE_BASEINFO](state,baseinfo){
+      const user = state.user;
+      user.nickname =baseinfo.nickname;
+      user.address = baseinfo.address;
+      user.birthday = baseinfo.birthday;
+      user.sex = baseinfo.sex;
+      user.resume = baseinfo.resume;
+    },
+    [MType.UPDATE_OTHER](state,data){
+      const user = state.user;
+      const listener:IListener = (<any>user).listener;
+      if(listener){
+        if(data.job){
+          listener.job = parseInt(data.job);
+        }
+        if(data.family){
+          listener.family = parseInt(data.family);
+        }
+        if(data.edu){
+          listener.edu = parseInt(data.edu);
+        }
+      }
     }
   },
   modules:{

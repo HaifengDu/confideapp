@@ -58,7 +58,7 @@ router.get("/", [check_1.query("userid").isNumeric().withMessage("用户编号�
         res.json(new ErrorMsg_1.default(false, err || err.message, err));
     });
 });
-router.post("/", [check_1.query("userid").isNumeric().withMessage("用户编号非法")], [check_1.body("data").isEmpty().withMessage("提交数据不能为空")], upload.array("files", 6), function (req, res, next) {
+router.post("/", [check_1.query("userid").isNumeric().withMessage("用户编号非法")], [check_1.body("data").not().isEmpty().withMessage("提交数据不能为空")], upload.array("files", 6), function (req, res, next) {
     const errors = check_1.validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));

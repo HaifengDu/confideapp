@@ -36,25 +36,34 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import ListenerService from "../../api/ListenerService.ts";
 import {EPriceType} from "../../enum/EPriceType.ts";
+import {mapGetters,mapActions} from 'vuex';
 const listenerService = ListenerService.getInstance();
 
 @Component({
-
+    methods:{
+        ...mapActions({
+            setPrices:'setPrices'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class CallService extends Vue{
     //是否设置通话服务
     private priceData:any = {};
     //TODO:设置最低价格、计算税后价格
     created(){
-        listenerService.getPrice({type:EPriceType.ECall}).then((res:any)=>{
-            if(res.data.success){
-                let priceData = res.data.data[0];
+        if((<any>this).user.pricesettings){
+            let priceData = (<any>this).user.pricesettings.find((price:any)=>price.type==EPriceType.ECall);
+            if(priceData){
                 priceData.available = priceData.status==1;
-                this.priceData = priceData;
-            }else{
-                this.$toast('获取通话服务费用设置数据失败');
+                this.priceData = Object.assign({},priceData);
             }
-        });
+            
+        }
     }
 
     checkPrice(price:any){
@@ -86,20 +95,22 @@ export default class CallService extends Vue{
     }
 
     save(){
-        const price:any = {
+        const prices:any = {
+            id:this.priceData.id,
             type:this.priceData.type,
             status:this.priceData.available?1:0,
             price:parseFloat(this.priceData.price),
             timecircle:parseInt(this.priceData.timecircle)
         };
-        const result = this.checkPrice(price);
+        const result = this.checkPrice(prices);
         if(!result.success){
             this.$toast(result.msg);
             return;
         }
-        listenerService.updatePrice(price).then((res:any)=>{
+        listenerService.updatePrice({prices:JSON.stringify([prices]),type:EPriceType.ECall}).then((res:any)=>{
             if(res.data.success){
-                console.log(res);
+                this.$toast('保存成功');
+                (<any>this).setPrices([prices]);
             }else{
                 this.$toast(res.data.message);
             }
@@ -118,6 +129,7 @@ export default class CallService extends Vue{
     }
     .body{
         .info{
+            .f-nm;
             background: rgb(255,253,228);
             color: rgb(230,162,92);
         }

@@ -52,7 +52,7 @@ import TwoLevelMenu from '@/components/TwoLevelMenu'
 export default class Exprience extends Vue{
   private service = UserService.getInstance()
   private setExprience:INoop
-  private job = '';
+  private job:any = {};
   private Jobs:Array<{code:string,name:string}> = [];
   private family = '';
   private Familys:Array<{code:string,name:string}> = []
@@ -62,7 +62,7 @@ export default class Exprience extends Vue{
   goSelectTag(){
     if(this.job&&this.family&&this.edu){
       let expirence = {
-        job:this.job,
+        job:this.job.id,
         family:this.family,
         edu:this.edu
       }
@@ -88,7 +88,7 @@ export default class Exprience extends Vue{
     this.popupVisible = true;
   }
   updateJob(job:any){
-    this.job = job
+    this.job = job;
     this.popupVisible = false;
   }
 }

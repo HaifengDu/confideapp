@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="body">
-            <div class="topic">擅长话题<span>7/24</span></div>
+            <div class="topic">擅长话题<span class="num">7/24</span><span v-if="isAuditing" class="auditing">审核中</span></div>
             <div class="my-tag" v-for="(tag,index) in myTags" :key="index">
                 <span class="title">{{tag.name}}</span>
                 <p class="content">{{tag.desc||'暂无个性宣言'}}</p>
@@ -17,11 +17,11 @@
            <div class="add-tags-container">
                <div class="topic">话题标签<span>8/24</span></div>
                <div class="tags">
-                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':item.active}]" @click="selectTag(item.id)">{{item.name}}</span>
+                    <span :key="index" v-for="(item,index) in tags" :class="['tag',{'active':item.active},{'custom':item.active&&item.ctype==1}]" @click="selectTag(item.id)">{{item.name}}</span>
                     <span class="add" @click="customTag">+</span>
                 </div>
                <div class="button-box">
-                   <mt-button size="normal" type="primary" @click.native="showAddTags=!showAddTags">取消</mt-button>
+                    <mt-button size="normal" type="primary" @click.native="showAddTags=!showAddTags">取消</mt-button>
                     <mt-button style="margin-left:20px;" size="normal" type="primary" @click.native="addTopic">添加</mt-button>
                 </div>
            </div>
@@ -32,7 +32,7 @@
             <div class="title">{{isEdit?'编辑标签':'新增标签'}}</div>
             <div class="content">
                 <mt-field label="名称" placeholder="请输入标签名称" v-model="newLabel.name" :readonly="isEdit" :disableClear="isEdit"></mt-field>
-                <mt-field label="宣言" placeholder="请输入标签宣言" v-model="newLabel.desc"></mt-field>
+                <mt-field label="宣言" type="textarea" rows="4" placeholder="请输入标签宣言" v-model="newLabel.desc"></mt-field>
             </div>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="addCustomTag">保存</mt-button>
@@ -67,16 +67,19 @@ const listenerService = ListenerService.getInstance();
 })
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
+    private static readonly MAX_DECLARATION_COUNT = 50;
+    private static readonly MAX_LABEL_NAME_COUNT = 5;
     //控制弹出选择标签窗口
     private showAddTags = false;
     //控制新增自定义标签窗口
     private showAddTagsWin = false;
     private showEditWin = false;
     private tags:Array<any> = [];
-    private myTags:Array<any> = [{"id":1,"name":"情感挽回","cuid":-1,"ctype":0,"stype":0,"status":0}];
+    private myTags:Array<any> = [];
     private newLabel:any = {};
     private editLable:any = {};
     private isEdit = false;
+    private isAuditing = false;
     created(){
         this.myTags.forEach((item)=>!item.desc&&(item.desc=''));
         labelService.getSystemLabel().then((res:any)=>{
@@ -90,6 +93,10 @@ export default class MyTags extends Vue{
     }
 
     showAddTagPage(){
+        if(this.isAuditing){
+            this.$toast('标签审核中，暂时无法添加标签');
+            return;
+        }
         this.showAddTags = true;
     }
 
@@ -123,6 +130,10 @@ export default class MyTags extends Vue{
             this.$toast('请输入标签名称');
             return;
         }
+        if(this.newLabel.name.length > MyTags.MAX_LABEL_NAME_COUNT){
+            this.$toast('标签名称只能小于等于5个字');
+            return;
+        }
         if(!this.isEdit){
             //向后台发送新增标签请求，参数，stype，name
             //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
@@ -136,21 +147,27 @@ export default class MyTags extends Vue{
                         desc:this.newLabel.desc||'',
                         active:true
                     });
+                    this.showAddTagsWin = false;
+                }else{
+                    this.$toast(res.data.message);
                 }
             });
         }else{
+            if(this.newLabel.desc.length > MyTags.MAX_DECLARATION_COUNT){
+                this.$toast('标签宣言只能小于等于50个字');
+                return;
+            }
             let editData = this.tags.find(tag=>tag.id===this.editLable.id);
             editData.desc = this.newLabel.desc;
             this.isEdit = false;
+            this.showAddTagsWin = false;
         }
-        this.showAddTagsWin = false;
     }
 
     /**
      * 保存选择的标签
      */
     addTopic(){
-        //TODO:保存选择的标签
         /**
          * 将选中的标签数组传给后台   例：  [{id:3,desc:'我的测试宣言'}]
          * 保存成功后，将数据存入store
@@ -158,7 +175,7 @@ export default class MyTags extends Vue{
          */
         let data = this.tags.filter(tag=>tag.active);
 
-        //向后台发送数据 tagDatas
+        //向后台发送数据 labels
         const labels = data.map(item=>{
             return {
                 name:item.name,
@@ -242,9 +259,14 @@ export default class MyTags extends Vue{
         color:rgb(75,75,75);
         text-align:left;
         padding-left:20px;
-        span{
+        .auditing,.num{
             padding-left:20px;
+        }
+        .num{
             color:@light-blue;
+        }
+        .auditing{
+            color:#e43937;
         }
     }
     .my-tag{
@@ -259,7 +281,7 @@ export default class MyTags extends Vue{
             padding:5px 10px;
         }
         .content{
-            .t-ellipsis(1);
+            .t-ellipsis(3);
             color:rgb(173,173,173);
             margin-top:10px;
         }
@@ -282,6 +304,8 @@ export default class MyTags extends Vue{
     .add-tags-container{
         width:100%;
         height:100%;
+        max-width: 620px;
+        margin: 0 auto;
     }
     .tags{
       text-align:left;
@@ -301,6 +325,9 @@ export default class MyTags extends Vue{
             background:@mainColor;
             color:#fff;
         }
+        &.active.custom{
+            background:#11b7f3;
+        }
       }
       .add{
         display: inline-block;
@@ -316,8 +343,8 @@ export default class MyTags extends Vue{
     }
     div.mint-popup.custom{
         border-radius:10px;
-        width:250px;
-        height:250px;
+        width:280px;
+        height:280px;
         background:#fff;
         .title{
             padding: 15px 10px;

@@ -134,6 +134,7 @@ export default class TextService extends Vue{
     }
     .body{
         .info{
+            .f-nm;
             background: rgb(255,253,228);
             color: rgb(230,162,92);
         }
@@ -142,6 +143,7 @@ export default class TextService extends Vue{
             .entry{
                 outline: none;
                 border:none;
+                border-radius:0;
                 border-bottom:1px solid @mainColor;
                 width: 50px;
             }

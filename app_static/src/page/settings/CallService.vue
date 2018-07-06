@@ -129,6 +129,7 @@ export default class CallService extends Vue{
     }
     .body{
         .info{
+            .f-nm;
             background: rgb(255,253,228);
             color: rgb(230,162,92);
         }

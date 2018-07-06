@@ -1,5 +1,4 @@
 // tslint:disable-next-line:no-unused-expression
-import * as crypto from "crypto";
 import MongoChatRecord from "../model/mongo/MongoChatModel";
 import { IOnlyChatRecord, IChatRecord } from "../interface/mongomodel/IChatRecord";
 import { EChatMsgStatus } from "../enum/EChatMsgStatus";
@@ -7,6 +6,7 @@ import { retryInsertMongo } from "./util";
 import { ERole } from "../enum/ERole";
 import EChatMsgType from "../enum/EChatMsgType";
 import _ = require("lodash");
+import SyncHelper from "./syncHelper";
 
 export = class SocketHelper {
     private socketio:SocketIO.Server;
@@ -19,7 +19,10 @@ export = class SocketHelper {
     private readonly sendEvent = "send";
     private readonly notifyEvent = "notify";
     private readonly createOwnRoom = "createOwn";
+
+    private syncHelper:SyncHelper;
     private constructor(socketio:SocketIO.Server) {
+        this.syncHelper = SyncHelper.getInstance();
         this.socketio = socketio;
         this.initEvent();
     }
@@ -63,7 +66,13 @@ export = class SocketHelper {
                 if(roomDic[roomid].length>=SocketHelper.MAX_MSG_LENGTH){
                     setTimeout(()=>{
                         const shouldInsertedRecord = roomDic[roomid].splice(0,SocketHelper.MAX_MSG_LENGTH);
-                        retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatRecord,<IChatRecord[]>shouldInsertedRecord);
+                        retryInsertMongo(SocketHelper.RETRY_COUNT)
+                        (MongoChatRecord,<IChatRecord[]>shouldInsertedRecord,(err,docs)=>{
+                            const ids = docs.filter(item=>item.type===EChatMsgType.Audio).map(item=>item._id);
+                            if(ids.length){
+                                this.syncHelper.syncAudio(ids);
+                            }
+                        });
                     });
                 }
                 socket.to(roomid).broadcast.emit(this.sendEvent,msgObj);

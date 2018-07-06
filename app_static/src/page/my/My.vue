@@ -23,8 +23,14 @@
       </div>
     </div>
     <div class="lists">
-      <div class="list" @click="applyListener">
+      <div class="list" v-if="user.role===0" @click="applyListener">
         <mt-cell title="申请倾听者">
+          <i class="mint-cell-allow-right"></i>
+          <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
+        </mt-cell>
+      </div>
+      <div class="list" v-if="user.role===1" @click="listenerSetting">
+        <mt-cell title="倾听者设置">
           <i class="mint-cell-allow-right"></i>
           <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
         </mt-cell>
@@ -137,12 +143,15 @@ export default class My extends Vue{
     //TODO:要改为中间页
     this.$router.push({path:'/bindPhone'})
   }
+  listenerSetting(){
+    this.$router.push({path:"/listenerSettings"});
+  }
   goBaseInfo(){
     this.$router.push({path:'/baseInfo',query:{from:"my"}})
   }
   created(){
     document.title = "我的";
-    (<any>this).getUserInfo('oRtVK09SoIKSYUYqP3RHV2aOyHr8')
+    (<any>this).getUserInfo('oRtVK09h7Nsv19qD4eCjDsS0hB2E')
   }
 }
 

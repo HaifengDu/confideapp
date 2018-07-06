@@ -1,11 +1,13 @@
 "use strict";
 var _a;
+// tslint:disable-next-line:no-unused-expression
 const MongoChatModel_1 = require("../model/mongo/MongoChatModel");
 const EChatMsgStatus_1 = require("../enum/EChatMsgStatus");
 const util_1 = require("./util");
 const ERole_1 = require("../enum/ERole");
 const EChatMsgType_1 = require("../enum/EChatMsgType");
 const _ = require("lodash");
+const syncHelper_1 = require("./syncHelper");
 module.exports = (_a = class SocketHelper {
         constructor(socketio) {
             this.chatPath = "/chat";
@@ -13,6 +15,7 @@ module.exports = (_a = class SocketHelper {
             this.sendEvent = "send";
             this.notifyEvent = "notify";
             this.createOwnRoom = "createOwn";
+            this.syncHelper = syncHelper_1.default.getInstance();
             this.socketio = socketio;
             this.initEvent();
         }
@@ -55,7 +58,12 @@ module.exports = (_a = class SocketHelper {
                     if (roomDic[roomid].length >= SocketHelper.MAX_MSG_LENGTH) {
                         setTimeout(() => {
                             const shouldInsertedRecord = roomDic[roomid].splice(0, SocketHelper.MAX_MSG_LENGTH);
-                            util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, shouldInsertedRecord);
+                            util_1.retryInsertMongo(SocketHelper.RETRY_COUNT)(MongoChatModel_1.default, shouldInsertedRecord, (err, docs) => {
+                                const ids = docs.filter(item => item.type === EChatMsgType_1.default.Audio).map(item => item._id);
+                                if (ids.length) {
+                                    this.syncHelper.syncAudio(ids);
+                                }
+                            });
                         });
                     }
                     socket.to(roomid).broadcast.emit(this.sendEvent, msgObj);

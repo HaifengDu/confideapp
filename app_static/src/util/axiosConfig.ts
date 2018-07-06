@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-const host = "http://47.93.50.205:3001/";
+const host = "/";
 _.extend(axios.defaults,{
     baseURL: host,
     timeout: 300000,

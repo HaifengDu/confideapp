@@ -1,5 +1,5 @@
 import * as request from "request";
-class SyncHelper {
+export default class SyncHelper {
 
     private static _instance: SyncHelper;
     private readonly syncUrl = "http://127.0.0.1:3003";
@@ -12,7 +12,7 @@ class SyncHelper {
      * @param ids 
      */
     public syncAudio(ids:number[]){
-        const url = this.syncUrl+"?cids="+JSON.stringify(ids);
+        const url = this.syncUrl+"/chatsync?cids="+JSON.stringify(ids);
         return new Promise<any>(function(resolve,reject){
             request.get(url,(err,res)=>{
                 if(err){

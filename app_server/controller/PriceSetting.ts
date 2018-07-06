@@ -135,7 +135,7 @@ export default class PriceSettingService {
                     promise = checkPromise.then(res=>{
                         return this.listenerMediator.checkChangePriceMaxCount(userid,type);
                     }).then(res=>{
-                        return PriceSetting.update(pricesettings[0]).then(res=>{
+                        return PriceSetting.update(pricesettings[0],{where:{id:pricesettings[0].id}}).then(res=>{
                             return this.listenerMediator.syncMinPrice(userid,pricesettings[0].price,type);
                         });
                     });

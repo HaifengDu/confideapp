@@ -34,3 +34,10 @@ export const getAllBaseData:Action<IRootState,IRootState> = ({dispatch,commit})=
         }
     });   
 }
+
+export const setPrices: Action<IRootState, IRootState> = (
+    { dispatch, commit },
+    prices
+  ) => {
+    commit(mutation_type.UPDATE_PRICES, prices);
+  };

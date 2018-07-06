@@ -65,6 +65,14 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
       const tempData = Object.assign({},data);
       delete tempData.success;
       Object.assign(state.baseData,tempData);
+    },
+    [MType.UPDATE_PRICES](state,prices:any){
+      prices.forEach((price:any)=>{
+        if(state.user.pricesettings){
+          let oriPrice = state.user.pricesettings.find(item=>item.id==price.id);
+          Object.assign(oriPrice,price);
+        }
+      });
     }
   },
   modules:{

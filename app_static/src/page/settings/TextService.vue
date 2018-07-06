@@ -32,28 +32,35 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import ListenerService from "../../api/ListenerService.ts";
 import {EPriceType} from "../../enum/EPriceType.ts";
-import {EPriceCircle} from "../../enum/EPriceCircle.ts"
+import {EPriceCircle} from "../../enum/EPriceCircle.ts";
+import {mapGetters,mapActions} from 'vuex';
 const listenerService = ListenerService.getInstance();
 
 @Component({
-
+    methods:{
+        ...mapActions({
+            setPrices:'setPrices'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class TextService extends Vue{
     private priceDatas:any = [];
     private titles = ['15分钟文字服务','30分钟文字服务','45分钟文字服务','60分钟文字服务'];
     //TODO:计算税后价格
     created(){
-        listenerService.getPrice({type:EPriceType.EWord}).then((res:any)=>{
-            if(res.data.success){
-                let data = res.data.data;
-                data.forEach((item:any)=>{
-                    item.available = item.status==1;
-                });
-                this.priceDatas = res.data.data;
-            }else{
-                this.$toast('获取文字服务费用设置数据失败');
-            }
-        });
+        if((<any>this).user.pricesettings){
+            let prices = (<any>this).user.pricesettings.filter((price:any)=>price.type==EPriceType.EWord);
+            prices.forEach((item:any)=>{
+                let tempData = Object.assign({},item);
+                tempData.available = tempData.status==1;
+                this.priceDatas.push(tempData);
+            });
+        }
     }
 
     pricesCheck(prices:any){
@@ -92,6 +99,7 @@ export default class TextService extends Vue{
         let prices:any = [];
         this.priceDatas.forEach((price:any)=>{
             prices.push({
+                id:price.id,
                 type:price.type,
                 status:price.available?1:0,
                 timecircle:price.timecircle,
@@ -103,9 +111,10 @@ export default class TextService extends Vue{
             this.$toast(result.msg);
             return;
         }
-        listenerService.updatePrice(prices).then((res:any)=>{
+        listenerService.updatePrice({prices:JSON.stringify(prices),type:EPriceType.EWord}).then((res:any)=>{
             if(res.data.success){
-                console.log(res);
+                this.$toast('保存成功');
+                (<any>this).setPrices(prices);
             }else{
                 this.$toast(res.data.message);
             }

@@ -7,6 +7,7 @@ export interface IListener{
     id?:number,
     uid?:number,
     job?:number,
+    jobName?:string,
     family?:number,
     edu?:number,
     labelids?:string|any[],

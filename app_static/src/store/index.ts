@@ -96,6 +96,9 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
         if(data.edu){
           listener.edu = parseInt(data.edu);
         }
+        if(data.jobName){
+          listener.jobName = data.jobName;
+        }
       }
     }
   },

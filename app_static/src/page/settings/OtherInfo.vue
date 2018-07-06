@@ -43,7 +43,7 @@ import {Component} from 'vue-property-decorator';
 import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
 import TwoLevelMenu from "@/components/TwoLevelMenu.vue";
-import {mapActions} from "vuex";
+import {mapActions,mapGetters} from "vuex";
 import {INoopPromise} from "../../util/methods"
 
 @Component({
@@ -52,6 +52,11 @@ import {INoopPromise} from "../../util/methods"
     },
     methods:{
         ...mapActions(["updateOther"])
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
     }
 })
 export default class OtherInfo extends Vue{
@@ -65,26 +70,43 @@ export default class OtherInfo extends Vue{
     private updateOther:INoopPromise;
     created(){
         this.service.getBase(EBaseDataType.Job).then(res=>{
-            this.jobs = res.data.data;
+            if(res.data.success){
+                this.jobs = res.data.data;
+                this.jobName = (<any>this).user.listener.jobName;
+                console.log((<any>this).user.listener);
+            }else{
+                this.$toast('获取职业信息失败');
+            }
         });
         this.service.getBase(EBaseDataType.Family).then(res=>{
-            let data = res.data.data;
-            for(var key in data){
-                this.familyDatas.push({
-                    code:key,
-                    name:data[key].name
-                });
+            if(res.data.success){
+                let data = res.data.data;
+                for(var key in data){
+                    this.familyDatas.push({
+                        code:key,
+                        name:data[key].name
+                    });
+                }
+            }else{
+                this.$toast('获取家庭状况失败');
             }
         });
         this.service.getBase(EBaseDataType.Edu).then(res=>{
-            let data = res.data.data;
-            for(var key in data){
-                this.educateDatas.push({
-                    code:key,
-                    name:data[key].name
-                });
+            if(res.data.success){
+                let data = res.data.data;
+                for(var key in data){
+                    this.educateDatas.push({
+                        code:key,
+                        name:data[key].name
+                    });
+                }
+            }else{
+                this.$toast('获取教育水平失败');
             }
         });
+        this.informations.family = (<any>this).user.listener.family;
+        this.informations.edu = (<any>this).user.listener.edu;
+        this.informations.job = (<any>this).user.listener.job;
     }
 
     selectJob(){
@@ -98,11 +120,11 @@ export default class OtherInfo extends Vue{
             this.showMenu = false;
             this.jobName = menu.name;
             this.informations.job = menu.id;
+            this.informations.jobName = this.jobName;
         }
     }
 
     submitInfo(){
-        console.log(this.informations);
         this.updateOther(this.informations).then(res=>{
             const data = res.data;
             if(data.success){

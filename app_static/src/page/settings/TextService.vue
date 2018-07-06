@@ -115,6 +115,7 @@ export default class TextService extends Vue{
             if(res.data.success){
                 this.$toast('保存成功');
                 (<any>this).setPrices(prices);
+                this.$router.back();
             }else{
                 this.$toast(res.data.message);
             }

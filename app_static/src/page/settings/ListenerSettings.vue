@@ -10,7 +10,7 @@
                     <!-- <span class="cell-text">情感挽回,婚姻关系,人际关系,个人成长,情绪疏导</span> -->
                 </mt-cell>
             </div>
-            <div @click="toPage('my')" class="cell-box">
+            <div @click="toPage('personalInfo')" class="cell-box">
                 <mt-cell title="个人信息" is-link class="cell-con"></mt-cell>
             </div>
             <div @click="toPage('otherInfo')" class="cell-box">
@@ -31,10 +31,23 @@
                     <span class="cell-text">9.8元/15分钟</span>
                 </mt-cell>
             </div>
+            <mt-cell title="暂不接单" class="cell-con" @click.native.prevent="changeBusinessStatus">
+                <mt-switch v-model="isNotSuspension"></mt-switch>
+            </mt-cell>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="cancelListener">取消倾听者身份</mt-button>
             </div>
-            <!-- <mt-button type="primary" size="large" class="cancel-btn">取消倾听者身份</mt-button> -->
+            <mt-popup
+                v-model="showAlertWin" 
+                class="custom">
+                <div class="custom-title">提示</div>
+                <div class="content">
+                    开启后，接单状态将变为休息中，且倾诉者无法向您下单
+                </div>
+                <div class="button-box">
+                    <mt-button size="normal" type="primary" @click.native="doNotBusiness">确定</mt-button>
+                </div>
+            </mt-popup>
         </div>
     </div>
 </template>
@@ -47,13 +60,30 @@ import {Component} from 'vue-property-decorator';
  
 })
 export default class ListenerSettings extends Vue{
+    private isNotSuspension = false;
+    private showAlertWin = false;
    
     created(){
         console.log(666);
+
+    }
+
+    changeBusinessStatus(){
+        if(!this.isNotSuspension){
+            //TODO:向后台发请求，设置接单状态
+            this.showAlertWin = true;
+            return;
+        }
+        this.isNotSuspension = false;
+    }
+
+    doNotBusiness(){
+        this.isNotSuspension = true;
+        this.showAlertWin = false;
     }
 
     cancelListener(){
-
+        //TODO:向后台发请求，取消倾听者身份
     }
 
     toPage(route:string){
@@ -89,9 +119,18 @@ export default class ListenerSettings extends Vue{
             padding-left:0;
         }
     }
-    // .cancel-btn{
-    //     border-radius:0;
-    //     position:fixed;
-    //     bottom:0;
-    // }
+    div.mint-popup.custom{
+        border-radius:10px;
+        width:280px;
+        background:#fff;
+        padding-bottom:65px;
+        .custom-title{
+            padding: 15px 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .content{
+            text-align:left;
+            padding:10px;
+        }
+    }
 </style>

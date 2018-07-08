@@ -344,8 +344,8 @@ export default class MyTags extends Vue{
     div.mint-popup.custom{
         border-radius:10px;
         width:280px;
-        height:280px;
         background:#fff;
+        padding-bottom:65px;
         .title{
             padding: 15px 10px;
             border-bottom: 1px solid #ccc;

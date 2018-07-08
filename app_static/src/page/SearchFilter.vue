@@ -38,7 +38,7 @@
 
             </radio-button>
         </div>
-        
+
         <div @click="toggleMore('family')">展开
             <i class="fa" :class="{'fa-angle-up':toggleModel.family,'fa-angle-down':!toggleModel.family}"></i>
         </div>
@@ -96,12 +96,12 @@
         <mt-button size="normal" class="half-btn" @click="filter" type="primary">筛  选</mt-button>
     </div>
 </div>
-    
+
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import {Component} from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import RadioButton from "@/components/RadioButton.vue"
 import LabelService from "@/api/LabelService"
 import { mapActions, mapGetters } from 'vuex';
@@ -124,6 +124,9 @@ const labelService = LabelService.getInstance();
     }
 })
 export default class SearchFilter extends Vue{
+  @Prop()
+  private from:string
+
     private filterModel = {
         labelid:-1,
         price:-1,
@@ -232,6 +235,10 @@ export default class SearchFilter extends Vue{
     }
     filter(){
         this.setConds(this.filterModel);
+        if(this.from==='list'){
+          this.$emit('filter')
+          return
+        }
         this.$router.push("/searchResult")
     }
     private getAllBaseData:INoop;
@@ -253,13 +260,13 @@ export default class SearchFilter extends Vue{
     margin:15px 0;
     position: relative;
     div:first-child{
-       text-align: left; 
+       text-align: left;
        margin-bottom: 3px;
        font-size: 1.5rem;
     }
     div:nth-child(2){
-        width:95%;      
-        margin: 0 auto; 
+        width:95%;
+        margin: 0 auto;
         &.collose{
             overflow: hidden;
             max-height:2.5rem;

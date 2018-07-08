@@ -5,3 +5,12 @@
 .fs(@size){
   font-size: @size;
 }
+.slide-fade-leave-active, .slide-fade-enter-active {
+	transition: transform .3s
+}
+.slide-fade-enter, .slide-fade-leave-to{
+	transform: translateX(100%);
+}
+.slide-fade-leave .slide-fade-enter-to {
+	transform: translateX(0);
+}

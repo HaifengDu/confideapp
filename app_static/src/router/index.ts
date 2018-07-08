@@ -5,6 +5,7 @@ import Login from "@/page/Login.vue";
 import Index from "@/page/Index.vue";
 import Home from "@/page/Home.vue";
 import My from "@/page/my/My.vue";
+import List from "@/page/List.vue";
 import ApplyListener from "@/page/ApplyListener.vue";
 import BindPhone from "@/page/my/BindPhone.vue";
 import BaseInfo from "@/page/my/BaseInfo.vue";
@@ -111,6 +112,10 @@ const router = new Router({
       path:"/personalInfo",
       name:"PersonalInfo",
       component:PersonalInfo
+    },{
+      path:"/list",
+      name:"List",
+      component:List
     }
   ]
 });

@@ -33,6 +33,16 @@ export default class LabelService {
         });
     }
 
+    public deleteLabel(id:number):Promise<AxiosResponse<IResponse<IMainLabel>>>{
+        if(!id){
+            return Promise.reject(new ErrorMsg(false,"id不能为空"));
+        }
+        let data:any = {};
+        data.stype = ELabelSType.Label;
+        data.id=id;
+        return Axios.delete("/base/label",{params:data});
+    }
+
     static createInstance() {
         LabelService.getInstance();
     }

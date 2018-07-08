@@ -12,13 +12,21 @@ const mysqlSeq_1 = require("../mysqlSeq");
 const User_2 = require("./User");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
-const MongoSortFilterModel_1 = require("../model/mongo/MongoSortFilterModel");
+const PriceSetting_1 = require("../model/PriceSetting");
+const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
+const _ = require("lodash");
+const EListenerLabelStatus_1 = require("../enum/EListenerLabelStatus");
+const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
+const ERole_1 = require("../enum/ERole");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
+        this.pricesettingMediator = ListenerPriceMediator_1.default.getInstance();
+        this.pricesettingMediator.setListener(this);
         this.biz = ListenerBiz_1.default.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
         this.mainlabelService = MainLabel_1.default.getInstance();
-        this.userService = User_2.default.getInstance();
+        this.userService = User_2.default.getInstance(this);
     }
     bindListener(listenerp) {
         const listener = objectHelper_1.default.serialize(listenerp);
@@ -42,11 +50,13 @@ class ListenerService {
             return mysqlSeq_1.default.transaction(tran => {
                 listener.user.status = ERoleStatus_1.ERoleStatus.审核中;
                 listener.user.id = listener.uid;
+                listener.user.role = ERole_1.ERole.Listener;
                 const updateUserPromise = this.userService.update(listener.user, tran);
                 // listener.uid = listener.user.id;
                 // delete listener.user;
                 const createListenerPromise = Listener_1.default.create(listener, { transaction: tran });
-                return Bluebird.all([updateUserPromise, createListenerPromise]);
+                const createDefaultPricePromise = this.pricesettingMediator.createDefaultPrice(listener.uid, { transaction: tran });
+                return Bluebird.all([updateUserPromise, createListenerPromise, createDefaultPricePromise]);
             });
         });
     }
@@ -55,7 +65,8 @@ class ListenerService {
     }
     parseLabels(labelids, labeldesc) {
         labelids = objectHelper_1.default.parseJSON(labelids) || [];
-        const labels = this.mainlabelService.findLabel(labelids);
+        let labels = this.mainlabelService.findLabel(labelids);
+        labels = objectHelper_1.default.serialize(labels);
         if (labels.length && labeldesc) {
             const descObj = objectHelper_1.default.parseJSON(labeldesc) || [];
             if (descObj && descObj.length) {
@@ -63,6 +74,7 @@ class ListenerService {
                     const current = descObj.find(item => item.id === label.id);
                     if (current) {
                         label.desc = current.desc;
+                        label.lsstatus = current.lsstatus || EListenerLabelStatus_1.EListenerLabelStatus.正常;
                     }
                 });
             }
@@ -84,12 +96,7 @@ class ListenerService {
         promise.then(res => {
             this.syncMongo(id);
         });
-    }
-    updateUser(user) {
-        const promise = this.userService.update(user);
-        promise.then(res => {
-            this.syncMongo(user.id);
-        });
+        return promise;
     }
     updateListener(listener) {
         const uid = listener.uid;
@@ -99,25 +106,33 @@ class ListenerService {
                 uid: uid
             }
         });
-        promise.then(res => {
-            this.syncMongo(listener.uid);
+        promise.then((res) => {
+            if (res[0] > 0) {
+                listener.uid = uid;
+                return this.mongoSyncbiz.updateByListener(listener);
+            }
+            return res;
         });
+        return promise;
     }
-    syncMongo(id) {
-        this.findByUserid(id).then(res => {
-            MongoSortFilterModel_1.default.create({
-                uid: id,
-                generalprice: Math.min(res.phoneprice, res.wordprice),
-                auth: res.labelids,
-                praisepercent: 0,
-                sex: res.user.sex,
-                family: res.family,
-                birthday: res.user.birthday,
-                edu: res.edu,
-                sealtimes: 0,
-                receivestatus: res.recievestatus,
-                labelids: res.labelids
-            });
+    updateListenerById(userid, listener) {
+        const promise = Listener_1.default.update(listener, {
+            where: {
+                uid: userid
+            }
+        });
+        promise.then((res) => {
+            if (res[0] > 0) {
+                listener.uid = userid;
+                return this.mongoSyncbiz.updateByListener(listener);
+            }
+            return res;
+        });
+        return promise;
+    }
+    syncMongo(uid) {
+        this.findByUserid(uid).then(res => {
+            this.mongoSyncbiz.create(res);
         });
     }
     findByUserid(id) {
@@ -125,21 +140,22 @@ class ListenerService {
             include: [{
                     model: User_1.default,
                     as: 'user',
+                    include: [{
+                            model: PriceSetting_1.default
+                        }],
                     where: { id: id }
                 }]
         }).then(res => {
             if (!res || !res.user) {
-                Bluebird.reject({ message: "未查到对应的用户" });
+                Bluebird.reject(new ErrorMsg_1.default(false, "未查到对应的用户"));
                 return;
             }
+            const listener = objectHelper_1.default.serialize(res);
             const labels = this.parseLabels(res.labelids, res.labeldesc);
-            objectHelper_1.default.merge(res, {
+            objectHelper_1.default.merge(listener, {
                 labels: labels
             });
-            // if(res){
-            //     ObjectHelper.mergeChildToSource(res);
-            // }
-            return Promise.resolve(res);
+            return Promise.resolve(listener);
         });
     }
     findInUserids(ids) {
@@ -148,9 +164,12 @@ class ListenerService {
                     model: User_1.default,
                     as: 'user',
                     where: { id: { [sequelize_1.Op.in]: ids } }
+                }, {
+                    model: PriceSetting_1.default
                 }]
         }).then(res => {
-            res.forEach(item => {
+            const listeners = objectHelper_1.default.serialize(res);
+            listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
                 objectHelper_1.default.merge(item, {
                     labels: labels
@@ -159,7 +178,7 @@ class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
         });
     }
     findByName(name, page) {
@@ -188,7 +207,8 @@ class ListenerService {
                     }
                 }]
         }).then(res => {
-            res.forEach(item => {
+            const listeners = objectHelper_1.default.serialize(res);
+            listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
                 objectHelper_1.default.merge(item, {
                     labels: labels
@@ -197,7 +217,62 @@ class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
+        });
+    }
+    /**
+     * 更新标签
+     * @param labels
+     * @param userid
+     */
+    updateLabels(labels, userid) {
+        if (!userid) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "用户id不能为空"));
+        }
+        if (!labels || !labels.length) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "更新的标签不能为空"));
+        }
+        const result = labels.filter(item => !!item.id).reduce((ori, item) => {
+            ori.ids.push(item.id);
+            ori.descs.push({ id: item.id, desc: item.desc });
+            return ori;
+        }, {
+            ids: [],
+            descs: []
+        });
+        return this.updateListener({
+            uid: userid,
+            labelids: JSON.stringify(result.ids),
+            labeldesc: JSON.stringify(result.descs)
+        });
+    }
+    deleteLabels(userid, labelid) {
+        this.findByUserid(userid).then(res => {
+            let isChange = false;
+            if (res && res.labelids) {
+                const labelids = objectHelper_1.default.parseJSON(res.labelids) || [];
+                if (_.isArray(labelids)) {
+                    _.remove(labelids, item => item === labelid);
+                }
+                res.labelids = JSON.stringify(labelids);
+                isChange = true;
+            }
+            if (res && res.labeldesc) {
+                const labeldescs = objectHelper_1.default.parseJSON(res.labeldesc) || [];
+                if (_.isArray(labeldescs)) {
+                    _.remove(labeldescs, item => item.id === labelid);
+                }
+                res.labeldesc = JSON.stringify(labeldescs);
+                ;
+                isChange = true;
+            }
+            if (isChange) {
+                return this.updateListener({
+                    uid: userid,
+                    labelids: res.labelids,
+                    labeldesc: res.labeldesc
+                });
+            }
         });
     }
     static createInstance() {

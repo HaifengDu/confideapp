@@ -5,9 +5,7 @@ import ErrorMsg from "../model/ErrorMsg";
 const router = express.Router();
 const listCtl = ListService.getInstance();
 
-router.get("/",[
-    query("labelid").isNumeric().withMessage("标签id不能为空并且必须是数字")
-],function(req:express.Request,res:express.Response){
+router.get("/",function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));

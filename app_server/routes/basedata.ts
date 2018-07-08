@@ -8,6 +8,7 @@ import { IMainLabel } from "../interface/model/IMainLabel";
 import { ELabelCType, ELabelSType } from "../enum/ELabelType";
 import { ELabelStatus } from "../enum/ELabelStatus";
 import ListenerService from "../controller/Listener";
+import { EBaseDataType } from "../enum/EBaseDataType";
 const router = express.Router();
 const service = BaseDataService.getInstance();
 const listenService = ListenerService.getInstance();
@@ -27,6 +28,19 @@ router.get("/",[
         return;
     }
     res.json(new ErrorMsg(false,"未找到该记录"));
+});
+router.get("/getAll",function(req,res){
+    const job = service.getBaseData(EBaseDataType.Job);
+    const area = service.getBaseData(EBaseDataType.Area);
+    const family = service.getBaseData(EBaseDataType.Family);
+    const edu = service.getBaseData(EBaseDataType.Edu);
+    res.json({
+        success:true,
+        job,
+        family,
+        area,
+        edu
+    });
 });
 router.get("/label",[
     query("userid").isNumeric().withMessage("userid不能为空")
@@ -70,7 +84,7 @@ router.put("/label",[
     });
 });
 router.post("/label",[
-    body("id").isNumeric().withMessage("标签id能为空"),
+    body("id").isNumeric().withMessage("标签id不能为空"),
     body("name").isEmpty().withMessage("标签名称不能为空")
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
@@ -81,6 +95,26 @@ router.post("/label",[
         id:req.body.id,
         name:req.body.name
     }).then(data=>{
+        res.json(new ErrorMsg(true));
+    },err=>{
+        res.json(new ErrorMsg(true,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(true,err.message,err));
+    });
+});
+
+router.delete("/label",[
+    query("id").isNumeric().withMessage("标签id不能为空"),
+    query("stype").isNumeric().withMessage("标签类型不能为空")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    mainLabelCtl.deleteLabel(req.query.id,req.query.stype).then(data=>{
+        if(data&&data.cuid){
+            listenService.deleteLabels(data.cuid,req.query.id);
+        }
         res.json(new ErrorMsg(true));
     },err=>{
         res.json(new ErrorMsg(true,err.message,err));

@@ -7,6 +7,8 @@ import ListenerService from "./Listener";
 import { IListener } from "../interface/model/IListener";
 import { ERecieveStatus } from "../enum/ERecieveStatus";
 import { IPager } from "../interface/IPager";
+import ObjectHelper from "../helper/objectHelper";
+import _ = require("lodash");
 
 export default class ListService {
 
@@ -27,35 +29,42 @@ export default class ListService {
         if(!filter){
             return Bluebird.reject(new ErrorMsg(false,"筛选参数不能为空！"));
         }
-        if(!filter.labelid){
-            return Bluebird.reject(new ErrorMsg(false,"标签id不能为空！"));
-        }
+        // if(!filter.labelid){
+        //     return Bluebird.reject(new ErrorMsg(false,"标签id不能为空！"));
+        // }
         const whereOption:any = {
-            labelids:filter.labelid
+            // labelids:filter.labelid
         };
 
-        ["edu","auth","sex","family"].forEach(item=>{
+        ["labelid","edu","auth","sex","family"].forEach(item=>{
             if(filter[item]){
                 whereOption[item] = filter[item];
             }
         })
         
-        if(filter.generalprice){
-            whereOption.generalprice = {
-                '$gte':filter.generalprice
-            };
+        if (filter.price) {
+            const price = ObjectHelper.parseJSON(<any>filter.price);
+            if(price){
+                if (price.min&&_.isNumber(price.min)) {
+                    whereOption.generalprice = whereOption.generalprice||{};
+                    whereOption.generalprice["$gte"] =  price.min;
+                }
+                if (price.max&&_.isNumber(price.max)) {
+                    whereOption.generalprice = whereOption.generalprice||{};
+                    whereOption.generalprice["$lte"] = price.max;
+                }
+            }
         }
         if(filter.age){
-            whereOption.birthday = {
-
-            }
-            if(filter.age[0]&&typeof filter.age[0]==="number"){
+            if(filter.age[0]){
                 const min = moment(new Date).subtract(filter.age[0],"year").toDate();
-                whereOption.birthday["$gte"]=min;
+                whereOption.birthday = whereOption.birthday || {}
+                whereOption.birthday["$lte"]=min;
             }
-            if(filter.age[1]&&typeof filter.age[1]==="number"){
+            if(filter.age[1]){
                 const max = moment(new Date).subtract(filter.age[1],"year").toDate();
-                whereOption.birthday["$lt"]=max;
+                whereOption.birthday = whereOption.birthday || {}
+                whereOption.birthday["$gte"]=max;
             }
         }
         whereOption.receivestatus = ERecieveStatus.可接单;

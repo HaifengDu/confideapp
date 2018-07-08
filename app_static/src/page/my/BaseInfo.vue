@@ -64,7 +64,7 @@ import UpdateName from '@/components/UpdateName'
 import UserService from "../../api/UserService";
 import { EBaseDataType } from '../../enum/EBaseDataType';
 import { mapActions, mapGetters } from 'vuex';
-import {INoop} from "../../util/methods"
+import {INoop, INoopPromise} from "../../util/methods"
 
 @Component({
   components:{
@@ -73,6 +73,7 @@ import {INoop} from "../../util/methods"
   methods:{
     ...mapActions({
       setBaseInfo:'my/setBaseInfo',
+      rootSetBaseInfo:"setBaseInfo"
     })
   },
   computed:{
@@ -86,6 +87,7 @@ export default class BaseInfo extends Vue{
   private areas:Array<{code:string,name:string}> = []
   private showName = false
   private setBaseInfo:INoop;
+  private rootSetBaseInfo:INoopPromise;
   private buttonName = '下一步'
   private sexOptions = [{
       label: '男',
@@ -144,11 +146,14 @@ export default class BaseInfo extends Vue{
     this.$router.replace({path:'/exprience'})
   }
   saveBaseInfo(){
-    this.service.updateUserInfo(this.baseInfo).then(data=>{
-      this.$toast("修改成功");
-      setTimeout(() => {
-        this.$router.replace({path:'/my'})
-      }, 1000);
+    this.rootSetBaseInfo(this.baseInfo).then(res=>{
+      const data = res.data;
+      if(data.success){
+        this.$toast("修改成功");
+        this.$router.back();
+      }else{
+        this.$toast(data.message);
+      }
     })
   }
 }

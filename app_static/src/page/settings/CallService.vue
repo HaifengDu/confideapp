@@ -1,23 +1,23 @@
 <template>
     <div class="container">
         <div class="body">
-            <mt-cell title="修改服务价格需平台审核，每月可修改2次" is-link class="cell-con info"></mt-cell>
+            <mt-cell title="修改服务价格需平台审核，每月可修改3次" is-link class="cell-con info"></mt-cell>
             <mt-cell title="通话服务" class="cell-con">
-                <mt-switch v-model="isSetCall"></mt-switch>
+                <mt-switch v-model="priceData.available"></mt-switch>
             </mt-cell>
-            <mt-cell title="价格" class="cell-con" v-if="isSetCall">
+            <mt-cell title="价格" class="cell-con" v-if="priceData.available">
                 <div class="price-wrapper">
                     <span>设定价</span>
-                    <input class="entry" type="number" min="0.6" max="20" v-model="callPrice"/>元
-                    <p class="tax-price">显示价(含税)：0.66元</p>
+                    <input class="entry" type="number" min="0.6" max="20" v-model="priceData.price"/>元
+                    <p class="tax-price">显示价(含税)：{{priceData.taxprice}}元</p>
                 </div>
             </mt-cell>
-            <mt-cell title="最低服务时长" class="cell-con" v-if="isSetCall">
+            <mt-cell title="最低服务时长" class="cell-con" v-if="priceData.available">
                 <div class="price-wrapper">
-                    <input class="entry" type="number" min="15" v-model="minCallTime"/>分钟
+                    <input class="entry" type="number" min="15" v-model="priceData.timecircle"/>分钟
                 </div>
             </mt-cell>
-            <mt-cell title="起步价" class="cell-con" value="9.9元" v-if="isSetCall">
+            <mt-cell title="起步价" class="cell-con" value="9.9元" v-if="priceData.available">
                 
             </mt-cell>
             <div class="reminder">
@@ -34,21 +34,88 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import ListenerService from "../../api/ListenerService.ts";
+import {EPriceType} from "../../enum/EPriceType.ts";
+import {mapGetters,mapActions} from 'vuex';
+const listenerService = ListenerService.getInstance();
 
 @Component({
-
+    methods:{
+        ...mapActions({
+            setPrices:'setPrices'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class CallService extends Vue{
     //是否设置通话服务
-    private isSetCall = true;
-    private callPrice = 0.66;
-    private minCallTime = 15;
+    private priceData:any = {};
+    //TODO:设置最低价格、计算税后价格
     created(){
-        console.log(888);
+        if((<any>this).user.pricesettings){
+            let priceData = (<any>this).user.pricesettings.find((price:any)=>price.type==EPriceType.ECall);
+            if(priceData){
+                priceData.available = priceData.status==1;
+                this.priceData = Object.assign({},priceData);
+            }
+            
+        }
+    }
+
+    checkPrice(price:any){
+        if(isNaN(price.price)){
+           return {
+                success : false,
+                msg : '设定价格必须是数字'
+            };
+        }
+        if(isNaN(price.timecircle)){
+            return {
+                success : false,
+                msg : '最低时长必须是数字'
+            };
+        }
+        if(price.price<0.6||price.price>20){
+            return {
+                success : false,
+                msg : '通话服务价格需大于等于0.6小于等于20'
+            };
+        }
+        if(price.timecircle<15){
+            return {
+                success : false,
+                msg : '最低服务时长需大于15分钟'
+            };
+        }
+        return {success:true,msg:''};
     }
 
     save(){
-       
+        const prices:any = {
+            id:this.priceData.id,
+            type:this.priceData.type,
+            status:this.priceData.available?1:0,
+            price:parseFloat(this.priceData.price),
+            timecircle:parseInt(this.priceData.timecircle)
+        };
+        const result = this.checkPrice(prices);
+        if(!result.success){
+            this.$toast(result.msg);
+            return;
+        }
+        listenerService.updatePrice({prices:JSON.stringify([prices]),type:EPriceType.ECall}).then((res:any)=>{
+            if(res.data.success){
+                this.$toast('保存成功');
+                (<any>this).setPrices([prices]);
+                this.$router.back();
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 }
 </script>
@@ -63,6 +130,7 @@ export default class CallService extends Vue{
     }
     .body{
         .info{
+            .f-nm;
             background: rgb(255,253,228);
             color: rgb(230,162,92);
         }
@@ -70,6 +138,8 @@ export default class CallService extends Vue{
             line-height: 20px;
             .entry{
                 outline: none;
+                border:none;
+                border-bottom:1px solid @mainColor;
                 width: 50px;
             }
             .tax-price{

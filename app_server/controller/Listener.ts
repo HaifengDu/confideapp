@@ -13,9 +13,13 @@ import sequelize from "../mysqlSeq";
 import UserService from "./User";
 import ErrorMsg from "../model/ErrorMsg";
 import { ERoleStatus } from "../enum/ERoleStatus";
-import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
-import { IUser } from "../interface/model/IUser";
 import IPager from "../interface/IPager";
+import PriceSetting from "../model/PriceSetting";
+import MongoSyncBiz from "../biz/MongoSyncBiz";
+import _ = require("lodash");
+import { EListenerLabelStatus } from "../enum/EListenerLabelStatus";
+import ListenerPriceMediator from "./ListenerPriceMediator";
+import { ERole } from "../enum/ERole";
 
 export default class ListenerService {
 
@@ -23,11 +27,16 @@ export default class ListenerService {
     private biz:ListenerBiz;
     private mainlabelService:MainLabelService;
     private userService:UserService;
+    private mongoSyncbiz:MongoSyncBiz;
+    private pricesettingMediator:ListenerPriceMediator;
     private readonly PAGE_SIZE = 20;
     private constructor() {
+        this.pricesettingMediator = ListenerPriceMediator.getInstance();
+        this.pricesettingMediator.setListener(this);
         this.biz = ListenerBiz.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz.getInstance(); 
         this.mainlabelService = MainLabelService.getInstance();
-        this.userService = UserService.getInstance();
+        this.userService = UserService.getInstance(this);
     }
 
     public bindListener(listenerp:IListener):Bluebird<IErrorMsg>{
@@ -54,11 +63,13 @@ export default class ListenerService {
             return sequelize.transaction(tran=>{
                 listener.user.status = ERoleStatus.审核中;
                 listener.user.id = listener.uid;
+                listener.user.role = ERole.Listener;
                 const updateUserPromise = this.userService.update(listener.user,tran);
                 // listener.uid = listener.user.id;
                 // delete listener.user;
                 const createListenerPromise = ListenerModel.create(listener,{transaction:tran});
-                return Bluebird.all([updateUserPromise,createListenerPromise]);
+                const createDefaultPricePromise = this.pricesettingMediator.createDefaultPrice(listener.uid,{transaction:tran});
+                return Bluebird.all([updateUserPromise,createListenerPromise,createDefaultPricePromise]);
             });
         });
     }
@@ -69,7 +80,8 @@ export default class ListenerService {
 
     private parseLabels(labelids:string|number[],labeldesc:string){
         labelids = ObjectHelper.parseJSON(<string>labelids)||[];
-        const labels = <IListenLabel[]>this.mainlabelService.findLabel(<number[]>labelids);
+        let labels = <IListenLabel[]>this.mainlabelService.findLabel(<number[]>labelids);
+        labels = ObjectHelper.serialize<IListenLabel[]>(labels);
         if(labels.length&&labeldesc){
             const descObj = <any[]>ObjectHelper.parseJSON(labeldesc)||[];
             if(descObj&&descObj.length){
@@ -77,6 +89,7 @@ export default class ListenerService {
                     const current = descObj.find(item=>item.id===label.id);
                     if(current){
                         label.desc = current.desc;
+                        label.lsstatus = current.lsstatus||EListenerLabelStatus.正常;
                     }
                 })
             }
@@ -100,13 +113,7 @@ export default class ListenerService {
         promise.then(res=>{
             this.syncMongo(id);
         });
-    }
-
-    public updateUser(user:IUser){
-        const promise = this.userService.update(user);
-        promise.then(res=>{
-            this.syncMongo(user.id);
-        });
+        return promise;
     }
 
     public updateListener(listener:IListener){
@@ -117,26 +124,35 @@ export default class ListenerService {
                 uid:uid
             }
         });
-        promise.then(res=>{
-            this.syncMongo(listener.uid);
+        promise.then((res)=>{
+            if(res[0]>0){
+                listener.uid = uid;
+                return this.mongoSyncbiz.updateByListener(listener);
+            }
+            return res;
         });
+        return promise;
     }
 
-    private syncMongo(id:number){
-        this.findByUserid(id).then(res=>{
-            MongoSortFilterModel.create({
-                uid:id,
-                generalprice:Math.min(res.phoneprice,res.wordprice),
-                auth:res.labelids,
-                praisepercent:0,
-                sex:res.user.sex,
-                family:res.family,
-                birthday:res.user.birthday,
-                edu:res.edu,
-                sealtimes:0,
-                receivestatus:res.recievestatus,
-                labelids:res.labelids
-            });
+    public updateListenerById(userid:number,listener:IListener){
+        const promise = ListenerModel.update(listener,{
+            where:{
+                uid:userid
+            }
+        });
+        promise.then((res)=>{
+            if(res[0]>0){
+                listener.uid = userid;
+                return this.mongoSyncbiz.updateByListener(listener);
+            }
+            return res;
+        });
+        return promise;
+    }
+
+    private syncMongo(uid:number){
+        this.findByUserid(uid).then(res=>{
+            this.mongoSyncbiz.create(res);
         });
     }
 
@@ -145,33 +161,37 @@ export default class ListenerService {
             include: [{
                 model: User,
                 as: 'user',
+                include:[{
+                    model:PriceSetting
+                }],
                 where: { id:id }
             }]
         }).then(res=>{
             if(!res||!res.user){
-                Bluebird.reject({ message: "未查到对应的用户" });
+                Bluebird.reject(new ErrorMsg(false,"未查到对应的用户"));
                 return;
             }
+            const listener = <IListener>ObjectHelper.serialize(res);
             const labels = this.parseLabels(res.labelids,<string>res.labeldesc);
-            ObjectHelper.merge(res,{
+            ObjectHelper.merge(listener,{
                 labels:labels
             });
-            // if(res){
-            //     ObjectHelper.mergeChildToSource(res);
-            // }
-            return Promise.resolve(res);
+            return Promise.resolve(listener);
         });
     }
-
+    
     public findInUserids(ids:number[]){
         return ListenerModel.findAll({
             include: [{
                 model: User,
                 as: 'user',
                 where: { id:{[Op.in] :ids}}
+            },{
+                model:PriceSetting
             }]
         }).then(res=>{
-            res.forEach(item=>{
+            const listeners = <IListener[]>ObjectHelper.serialize(res);
+            listeners.forEach(item=>{
                 const labels = this.parseLabels(item.labelids,<string>item.labeldesc);
                 ObjectHelper.merge(item,{
                     labels:labels
@@ -180,7 +200,7 @@ export default class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
         });
     }
 
@@ -210,7 +230,8 @@ export default class ListenerService {
                 }
             }]
         }).then(res=>{
-            res.forEach(item=>{
+            const listeners = <IListener[]>ObjectHelper.serialize(res);
+            listeners.forEach(item=>{
                 const labels = this.parseLabels(item.labelids,<string>item.labeldesc);
                 ObjectHelper.merge(item,{
                     labels:labels
@@ -219,8 +240,65 @@ export default class ListenerService {
                 //     ObjectHelper.mergeChildToSource(item);
                 // }
             });
-            return Bluebird.resolve(res);
+            return Bluebird.resolve(listeners);
         });
+    }
+
+    /**
+     * 更新标签
+     * @param labels 
+     * @param userid 
+     */
+    public updateLabels(labels:IListenLabel[],userid:number){
+        if(!userid){
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
+        }
+        if(!labels||!labels.length){
+            return Bluebird.reject(new ErrorMsg(false,"更新的标签不能为空"));
+        }
+        const result = labels.filter(item=>!!item.id).reduce((ori,item)=>{
+            ori.ids.push(item.id);
+            ori.descs.push({id:item.id,desc:item.desc});
+            return ori;
+        },{
+            ids:[],
+            descs:[]
+        });
+
+        return this.updateListener({
+            uid:userid,
+            labelids:JSON.stringify(result.ids),
+            labeldesc:JSON.stringify(result.descs)
+        });
+    }
+
+    public deleteLabels(userid:number,labelid:number){
+        this.findByUserid(userid).then(res=>{
+            let isChange = false;
+            if(res&&res.labelids){
+                const labelids = ObjectHelper.parseJSON(<string>res.labelids)||[];
+                if(_.isArray(labelids)){
+                    _.remove(labelids,item=>item===labelid);
+                }
+                res.labelids = JSON.stringify(labelids);
+                isChange = true;
+            }
+            if(res&&res.labeldesc){
+                const labeldescs = ObjectHelper.parseJSON(<string>res.labeldesc)||[];
+                if(_.isArray(labeldescs)){
+                    _.remove(labeldescs,item=>item.id===labelid);
+                }
+                res.labeldesc = JSON.stringify(labeldescs);;
+                isChange = true;
+            }
+            if(isChange){
+                return this.updateListener({
+                    uid:userid,
+                    labelids:res.labelids,
+                    labeldesc:res.labeldesc
+                });
+            }
+        })
     }
 
     static createInstance() {

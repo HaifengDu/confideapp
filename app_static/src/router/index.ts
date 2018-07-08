@@ -15,7 +15,10 @@ import ListenerSettings from "@/page/settings/ListenerSettings.vue";
 import MyTags from "@/page/settings/MyTags.vue";
 import OtherInfo from "@/page/settings/OtherInfo.vue";
 import TextService from "@/page/settings/TextService.vue";
+import SearchFilter from "@/page/SearchFilter.vue";
 import CallService from "@/page/settings/CallService.vue";
+import SearchResult from "@/page/SearchResult.vue";
+import PersonalInfo from "@/page/settings/PersonalInfo.vue";
 
 Vue.use(Router)
 
@@ -63,6 +66,15 @@ const router = new Router({
       path: "/exprience",
       name: "Exprience",
       component: Exprience
+    },{
+      path:"/searchFilter",
+      name:"SearchFilter",
+      component:SearchFilter
+    },
+    {
+      path:"/searchResult",
+      name:"SearchResult",
+      component:SearchResult
     },
     {
       path: "/tag",
@@ -95,6 +107,10 @@ const router = new Router({
       path:"/callService",
       name:"CallService",
       component:CallService
+    },{
+      path:"/personalInfo",
+      name:"PersonalInfo",
+      component:PersonalInfo
     }
   ]
 });

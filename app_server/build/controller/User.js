@@ -10,8 +10,10 @@ const areaHelper_1 = require("../helper/areaHelper");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const mailHelper_1 = require("../helper/mailHelper");
 const EBindPhoneStatus_1 = require("../enum/EBindPhoneStatus");
+const objectHelper_1 = require("../helper/objectHelper");
 class UserService {
-    constructor() {
+    constructor(listenerService) {
+        this.listenerService = listenerService;
         this._mailHelper = mailHelper_1.default.getInstance();
         this._areaHelper = areaHelper_1.default.getInstance();
     }
@@ -26,7 +28,7 @@ class UserService {
                 sex: res.sex
             };
             //查看是否绑定了微信
-            return this.findByWeixin(userModel.weixinid).then(res => {
+            return this.findByWeixin(userModel.weixinid).then((res) => {
                 if (res) {
                     return Bluebird.resolve(res);
                 }
@@ -65,6 +67,17 @@ class UserService {
             where: {
                 weixinid: weixinid
             }
+        }).then(user => {
+            if (user.role === ERole_1.ERole.Listener) {
+                return this.listenerService.findByUserid(user.id).then(listener => {
+                    const userTemp = objectHelper_1.default.serialize(user);
+                    userTemp.listener = objectHelper_1.default.serialize(listener);
+                    userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                    delete userTemp.listener.user;
+                    return userTemp;
+                });
+            }
+            return user;
         });
     }
     delete(id) {
@@ -119,11 +132,11 @@ class UserService {
             });
         });
     }
-    static createInstance() {
-        UserService.getInstance();
+    static createInstance(listenerService) {
+        UserService.getInstance(listenerService);
     }
-    static getInstance() {
-        return this._instance || (this._instance = new this());
+    static getInstance(listenerService) {
+        return this._instance || (this._instance = new this(listenerService));
     }
 }
 exports.default = UserService;

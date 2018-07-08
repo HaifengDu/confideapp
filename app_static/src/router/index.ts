@@ -20,6 +20,7 @@ import SearchFilter from "@/page/SearchFilter.vue";
 import CallService from "@/page/settings/CallService.vue";
 import SearchResult from "@/page/SearchResult.vue";
 import PersonalInfo from "@/page/settings/PersonalInfo.vue";
+import Follow from "@/page/userInfo/Follow.vue";
 
 Vue.use(Router)
 
@@ -116,6 +117,10 @@ const router = new Router({
       path:"/list",
       name:"List",
       component:List
+    },{
+      path:'/follow',
+      name:'Follow',
+      component:Follow
     }
   ]
 });

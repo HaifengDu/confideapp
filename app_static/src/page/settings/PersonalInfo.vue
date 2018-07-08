@@ -1,7 +1,6 @@
 <template>
     <div class="container">
         <div class="body">
-            <div class="divider"></div>
             <div class="title">简介</div>
             <div class="listen">
                 <input type="text" placeholder="请输入简介" v-model="myIntro"/>
@@ -16,6 +15,26 @@
                 <span class="add" @click="showAddExperience">+</span>
             </div>
             <div class="divider"></div>
+            <div class="title">上传资质</div>
+            <div class="cert-container">
+                <div>
+                    <div class="cert-upload" :key="index" v-for="(item,index) in imageList">
+                        <img :src="item"/>
+                    </div>
+                    <div class="cert-upload" @click="uploadClick">
+                        <div>+</div>
+                        <div>添加资质</div>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+                <div class="cert-explain">
+                    上传资质证书照片（最多六张）
+                </div>
+                <input style="display:none;" multiple accept="image/png,image/jpeg,image/gif" maxlength="8" type="file" name="certs" @change="fileChange" ref="certsfile"/>
+            </div>
+            <div class="button-box">
+                <mt-button size="normal" type="primary" @click.native="submitCer">提交资质</mt-button>
+            </div>
         </div>
         <mt-popup style="width:100%;height:100%;"
             v-model="isShowExpWin"
@@ -62,13 +81,15 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import FileReaderHelper from "../../helper/FileReaderHelper.ts";
 
-const MAX_EXPERIENCE_COUNT = 60;
-const MAX_EXP_LENGTH = 5;
 @Component({
  
 })
 export default class PersonalInfo extends Vue{
+    private static readonly MAX_EXPERIENCE_COUNT = 60;
+    private static readonly MAX_EXP_LENGTH = 5;
+    private static readonly MAX_FILE_COUNT = 8;
     private isShowExpWin = false;
     private isShowAddExp = false;
     private isShowDelWin = false;
@@ -86,6 +107,8 @@ export default class PersonalInfo extends Vue{
     private expIntro = '';
     private myIntro = '心灵倾听者';
     private newExp:any = {name:''};
+    private imageList:any[] = [];
+    private files:Blob[];
    
     created(){
         let tempData = [
@@ -133,7 +156,7 @@ export default class PersonalInfo extends Vue{
     }
 
     addCustomExp(){
-        if(this.newExp.name.length > MAX_EXP_LENGTH){
+        if(this.newExp.name.length > PersonalInfo.MAX_EXP_LENGTH){
             this.$toast('经历名称不能多于5个字符');
             return;
         }
@@ -166,7 +189,7 @@ export default class PersonalInfo extends Vue{
             this.$toast('请选择经历');
             return;
         }
-        if(this.expIntro.length > MAX_EXPERIENCE_COUNT){
+        if(this.expIntro.length > PersonalInfo.MAX_EXPERIENCE_COUNT){
             this.$toast('介绍不能多于60字符');
             return;
         }
@@ -176,6 +199,26 @@ export default class PersonalInfo extends Vue{
         this.experiences.push(data);
         this.expIntro = '';
         this.isShowExpWin = false;
+    }
+
+    fileChange(){
+        if(this.imageList.length>=PersonalInfo.MAX_FILE_COUNT){
+            this.$toast(`最多上传${PersonalInfo.MAX_FILE_COUNT}张图片`);
+            (<any>this.$refs.certsfile).value = "";
+            return;
+        }
+        const files = this.files = Array.prototype.slice.call((<any>this.$refs.certsfile).files);
+        FileReaderHelper.readFiles(files).then((res:any)=>{
+            this.imageList.push(res);
+        });
+    }
+    uploadClick(){
+        (<any>this.$refs.certsfile).click();
+    }
+
+    submitCer(){
+        //TODO:向服务器保存上传的资质证书
+        console.log(this.files);
     }
 }
 </script>
@@ -187,6 +230,7 @@ export default class PersonalInfo extends Vue{
     }
     .container{
         .p-rl;
+        padding-bottom:65px;
     }
     .title{
         .v-middle(40px);
@@ -317,5 +361,33 @@ export default class PersonalInfo extends Vue{
     div.mint-popup.custom.edit-win{
         padding:0;
     }
+    .cert-container{
+    text-align: left;
+    padding: 5px;
+    .cert-explain{
+      font-size: 1rem;
+      color: #f00;
+    }
+    .cert-upload{
+      color:#fff;
+      background-color: @mainColor;
+      text-align: center;
+      width:7rem;
+      height: 8.5rem;
+      margin-bottom:5px;
+      float: left;
+      margin:2px 4px;
+      &:first-child{
+        margin-left: 0;
+      }
+      div:first-child{
+        font-size: 6rem;
+      }
+      img{
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
     
 </style>

@@ -24,7 +24,6 @@
             <div v-if="!isSelf&&isListener" class="order" @click="order">
                 <img src="static/images/userInfo/order.png">
             </div>
-            <div class="back" @click="back"></div>
             <div class="register">
                 2018.05.28注册
             </div>
@@ -148,7 +147,8 @@ export default class UserInfo extends Vue{
         {name:'帮我分析问题'}
     ]
     created(){
-        console.log(666);
+        //获取用户id
+        console.log((<any>this).$route.query.id);
         (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s');
     }
 
@@ -178,10 +178,6 @@ export default class UserInfo extends Vue{
             this.msgVisible = false;
         },SHOW_MSG_TIME);
         console.log('to talk');
-    }
-
-    back(){
-        (<any>this).$router.go(-1);
     }
 }
 </script>
@@ -282,14 +278,6 @@ export default class UserInfo extends Vue{
                     .p-rl;
                     top: 9px;
                 }
-            }
-            .back{
-                width:20px;
-                height:20px;
-                .p-ab;
-                top:20px;
-                left:20px;
-                background:url(../../../static/images/userInfo/arrow-left.png) no-repeat center center;
             }
              .register{
                 height:16px;

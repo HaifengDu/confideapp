@@ -14,7 +14,7 @@ const objectHelper_1 = require("../helper/objectHelper");
 const rankRandomGen = rankRandomHelper_1.rankRandom([80, 95]);
 class RecommendService {
     constructor() {
-        this.Count = 6;
+        this.Count = 100;
         this.labelService = MainLabel_1.default.getInstance();
     }
     getHomeRecommend() {
@@ -102,6 +102,48 @@ class RecommendService {
                 }
             }
             return Bluebird.resolve(res);
+        });
+    }
+    getListRecommend() {
+        //可接单状态
+        return GeneralSetting_1.default.findAll({
+            include: [{
+                    model: Listener_1.default,
+                    where: {
+                        recievestatus: ERecieveStatus_1.ERecieveStatus.可接单
+                    },
+                    as: 'listener'
+                }],
+            where: {
+                status: EGeneralStatus_1.EGeneralStatus.Enable
+            }
+        }).then(res => {
+            const obj = _.groupBy(res, (item) => {
+                if (item.price >= 5) {
+                    return 1;
+                }
+                if (item.price >= 2 && item.price < 5) {
+                    return 2;
+                }
+                return 3;
+            });
+            const randomKeys = rankRandomGen(this.Count);
+            let randomArr = getArrayItems(obj[1] || [], randomKeys[80]);
+            randomArr = randomArr.concat(getArrayItems(obj[2] || [], randomKeys[95]));
+            randomArr = randomArr.concat(getArrayItems(obj[3] || [], randomKeys[100]));
+            const sortedArr = res.sort((a, b) => a.price > b.price ? -1 : 1);
+            if (randomArr.length < this.Count) {
+                //从第一级补齐
+                for (let i = 0, count = sortedArr.length; i < count; i++) {
+                    if (randomArr.length >= this.Count) {
+                        break;
+                    }
+                    if (!randomArr.find(model => model.uid === sortedArr[i].uid)) {
+                        randomArr.push(sortedArr[i]);
+                    }
+                }
+            }
+            return randomArr;
         });
     }
     static createInstance() {

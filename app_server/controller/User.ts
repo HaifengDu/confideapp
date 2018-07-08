@@ -82,6 +82,9 @@ export default class UserService {
                 weixinid:weixinid
             }
         }).then(user=>{
+            if(!user){
+                return Bluebird.reject(new ErrorMsg(false,"未找到对应用户"));
+            }
             if(user.role===ERole.Listener){
                 return this.listenerService.findByUserid(user.id).then(listener=>{
                     const userTemp:any = ObjectHelper.serialize(user);

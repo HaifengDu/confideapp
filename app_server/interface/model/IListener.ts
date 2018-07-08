@@ -18,7 +18,7 @@ export interface IListener{
     certificateurls?:string,
     authstatus?:EAuthStatus,
     minprice?:number,
-
+    money?:number,
     labels?:IListenLabel[],//标签整合后的数据
     user?:IUser,
 }

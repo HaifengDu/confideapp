@@ -10,9 +10,13 @@ import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
 import _ = require("lodash");
 import PriceSettingService from "../controller/PriceSetting";
+import { ERecieveStatus } from "../enum/ERecieveStatus";
+import { IGeneralSetting } from "../interface/model/IGeneralSetting";
+import GeneralSettingService from "../controller/GeneralSetting";
 const router = express.Router();
 const listenCtrl = ListenerService.getInstance();
 const priceSettingCtrl = PriceSettingService.getInstance();
+const generalSettingCtrl = GeneralSettingService.getInstance();
 const execPath = process.cwd();
 const storage = multer.diskStorage({
     destination: function (req:express.Request, file, cb) {
@@ -146,6 +150,56 @@ router.get("/price",[
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
     priceSettingCtrl.getPrice(req.query.type,req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.post("/",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("status").isNumeric().withMessage("状态不能为空")
+],function(req:express.Request,res:express.Response){
+    const values = _.values(ERecieveStatus);
+    if(values.indexOf(req.body.status)===-1){
+        res.json(new ErrorMsg(false,"非法的状态"));
+    }
+    listenCtrl.updateListenerById(req.query.userid,{
+        recievestatus:req.body.status
+    });
+});
+
+router.post("/setgeneralsetting",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("price").isNumeric().withMessage("价格设置非法")
+],function(req:express.Request,res:express.Response){
+    const generalSetting:IGeneralSetting = {
+        uid:req.query.userid,
+        price:req.body.price
+    };
+    if(req.body.limitprice){
+        generalSetting.limitprice = req.body.limitprice;
+    }
+    generalSettingCtrl.setGeneral(generalSetting).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.get("/recordclick",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    query("lid").isNumeric().withMessage("倾听者id不能为空")
+],function(req:express.Request,res:express.Response){
+    generalSettingCtrl.checkGeneral(req.query.userid,req.query.lid).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
         });

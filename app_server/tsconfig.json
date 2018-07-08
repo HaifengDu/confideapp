@@ -6,7 +6,8 @@
       "sourceMap": false,         
     //   "rootDir":"./",         
     //   "outDir":"./",   
-      "watch":true             
+      "watch":true,           
+      "declaration": true  
   },    
   "include":[  
       "./**/*"    

@@ -10,9 +10,12 @@ const Listener_1 = require("../controller/Listener");
 const objectHelper_1 = require("../helper/objectHelper");
 const _ = require("lodash");
 const PriceSetting_1 = require("../controller/PriceSetting");
+const ERecieveStatus_1 = require("../enum/ERecieveStatus");
+const GeneralSetting_1 = require("../controller/GeneralSetting");
 const router = express.Router();
 const listenCtrl = Listener_1.default.getInstance();
 const priceSettingCtrl = PriceSetting_1.default.getInstance();
+const generalSettingCtrl = GeneralSetting_1.default.getInstance();
 const execPath = process.cwd();
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -128,6 +131,49 @@ router.get("/price", [
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
     priceSettingCtrl.getPrice(req.query.type, req.query.userid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.post("/", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("status").isNumeric().withMessage("状态不能为空")
+], function (req, res) {
+    const values = _.values(ERecieveStatus_1.ERecieveStatus);
+    if (values.indexOf(req.body.status) === -1) {
+        res.json(new ErrorMsg_1.default(false, "非法的状态"));
+    }
+    listenCtrl.updateListenerById(req.query.userid, {
+        recievestatus: req.body.status
+    });
+});
+router.post("/setgeneralsetting", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("price").isNumeric().withMessage("价格设置非法")
+], function (req, res) {
+    const generalSetting = {
+        uid: req.query.userid,
+        price: req.body.price
+    };
+    if (req.body.limitprice) {
+        generalSetting.limitprice = req.body.limitprice;
+    }
+    generalSettingCtrl.setGeneral(generalSetting).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/recordclick", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.query("lid").isNumeric().withMessage("倾听者id不能为空")
+], function (req, res) {
+    generalSettingCtrl.checkGeneral(req.query.userid, req.query.lid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

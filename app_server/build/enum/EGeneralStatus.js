@@ -7,5 +7,6 @@ var EGeneralStatus;
 (function (EGeneralStatus) {
     EGeneralStatus[EGeneralStatus["Disable"] = 1] = "Disable";
     EGeneralStatus[EGeneralStatus["Enable"] = 2] = "Enable";
+    EGeneralStatus[EGeneralStatus["DayDisable"] = 3] = "DayDisable";
 })(EGeneralStatus = exports.EGeneralStatus || (exports.EGeneralStatus = {}));
 exports.default = EGeneralStatus;

@@ -10,7 +10,10 @@ const baseDataService = BaseDataService.getInstance()
 
 export const getUserInfo:Action<IRootState,IRootState> = ({commit},WXid:string)=>{
     return myService.getUserInfobyWXid(WXid).then(res => {
-        commit(mutation_type.UPDATE_USER, res.data);
+        const data = res.data;
+        if(data.success){
+            commit(mutation_type.UPDATE_USER, data.data);
+        }
         return res;
     });
 }

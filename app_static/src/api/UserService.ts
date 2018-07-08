@@ -1,6 +1,8 @@
 import Axios, { AxiosPromise } from "axios";
 import { EBaseDataType } from "../enum/EBaseDataType";
 import ErrorMsg from "../model/ErrorMsg";
+import { IResponse } from "../interface/model/IResponse";
+import { IUser } from "../interface/model/IUser";
 
 export default class MyService {
     private static _instance: MyService;
@@ -16,7 +18,7 @@ export default class MyService {
     * getUserInfobyWXid
     weixinid:string
     */
-    public getUserInfobyWXid(weixinid: string): AxiosPromise<any> {
+    public getUserInfobyWXid(weixinid: string): AxiosPromise<IResponse<IUser>> {
       return Axios.get("user", {
         params: { weixinid }
       });

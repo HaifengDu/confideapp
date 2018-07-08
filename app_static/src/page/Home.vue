@@ -5,7 +5,7 @@
       <div class="icon"></div>
       搜索倾听者/话题
     </div>
-    <div class="button"></div>
+    <div @click="toSearchFilter" class="button"></div>
   </div>
   <div class="banner">
     <mt-swipe :auto="4000">
@@ -34,7 +34,11 @@ import {Component} from 'vue-property-decorator';
 
 @Component
 export default class Home extends Vue{
-
+  toSearchFilter(){
+    this.$router.push({
+      path:"/searchFilter"
+    })
+  }
 }
 
 </script>

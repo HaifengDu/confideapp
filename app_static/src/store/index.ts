@@ -60,7 +60,7 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
   },
   mutations:{
     [MType.UPDATE_USER](state,user:any){
-      state.user = user.data;
+      state.user = user;
     },
     [MType.SET_BASE_DATA](state,data:any){
       const tempData = Object.assign({},data);

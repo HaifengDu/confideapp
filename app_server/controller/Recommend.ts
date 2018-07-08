@@ -15,7 +15,7 @@ export default class RecommendService {
 
     private static _instance: RecommendService;
     private labelService:MainLabelService;
-    private readonly Count =6;
+    private readonly Count = 100;
 
     private constructor() {
         this.labelService = MainLabelService.getInstance();
@@ -110,6 +110,49 @@ export default class RecommendService {
         });
     }
 
+    public getListRecommend(){
+            //可接单状态
+        return GeneralSetting.findAll({
+                include:[{
+                    model:Listener,
+                    where:{
+                        recievestatus:ERecieveStatus.可接单
+                    },
+                    as: 'listener'
+                }],
+                where:{
+                    status:EGeneralStatus.Enable
+                }
+        }).then(res=>{
+            const obj = _.groupBy(res,(item:IGeneralSetting)=>{
+                if(item.price>=5){
+                    return 1;
+                }
+                if(item.price>=2&&item.price<5){
+                    return 2;
+                }
+                return 3;
+             });
+            const randomKeys = rankRandomGen(this.Count);
+            let randomArr = getArrayItems(obj[1]||[],randomKeys[80]);
+            randomArr = randomArr.concat(getArrayItems(obj[2]||[],randomKeys[95]));
+            randomArr = randomArr.concat(getArrayItems(obj[3]||[],randomKeys[100]));
+            const sortedArr = res.sort((a,b)=>a.price>b.price?-1:1);
+            if(randomArr.length<this.Count){
+                //从第一级补齐
+                for(let i=0,count=sortedArr.length;i<count;i++){
+                    if(randomArr.length>=this.Count){
+                        break;
+                    }
+                    if(!randomArr.find(model=>model.uid===sortedArr[i].uid)){
+                        randomArr.push(sortedArr[i]);
+                    }
+                }
+            }
+
+            return randomArr;
+        });
+    }
     static createInstance() {
         RecommendService.getInstance();
     }

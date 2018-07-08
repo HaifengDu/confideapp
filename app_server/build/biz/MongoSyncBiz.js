@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const MongoSortFilterModel_1 = require("../model/mongo/MongoSortFilterModel");
 const objectHelper_1 = require("../helper/objectHelper");
+const ErrorMsg_1 = require("../model/ErrorMsg");
 class MongoSyncBiz {
     constructor() {
     }
@@ -32,9 +33,12 @@ class MongoSyncBiz {
         if ("address" in user) {
             doc.address = user.address;
         }
-        return MongoSortFilterModel_1.default.update({
-            uid: user.id,
-        }, doc);
+        if (Object.keys(doc).length > 0) {
+            return MongoSortFilterModel_1.default.update({
+                uid: user.id,
+            }, doc);
+        }
+        return Promise.resolve(new ErrorMsg_1.default(true));
     }
     updateByListener(listener) {
         const doc = {};
@@ -56,9 +60,12 @@ class MongoSyncBiz {
         if ("labelids" in listener) {
             doc.labelids = objectHelper_1.default.parseJSON(listener.labelids);
         }
-        return MongoSortFilterModel_1.default.update({
-            uid: listener.uid,
-        }, doc);
+        if (Object.keys(doc).length > 0) {
+            return MongoSortFilterModel_1.default.update({
+                uid: listener.uid,
+            }, doc);
+        }
+        return Promise.resolve(new ErrorMsg_1.default(true));
     }
     static createInstance() {
         MongoSyncBiz.getInstance();

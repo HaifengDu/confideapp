@@ -2,6 +2,7 @@ import MongoSortFilterModel from "../model/mongo/MongoSortFilterModel";
 import { IListener } from "../interface/model/IListener";
 import ObjectHelper from "../helper/objectHelper";
 import IUser from "../interface/model/IUser";
+import ErrorMsg from "../model/ErrorMsg";
 
 export default class MongoSyncBiz {
 
@@ -38,9 +39,12 @@ export default class MongoSyncBiz {
         if("address" in user){
             doc.address = user.address;
         }
-        return MongoSortFilterModel.update({
-            uid:user.id,
-        },doc);
+        if(Object.keys(doc).length>0){
+            return MongoSortFilterModel.update({
+                uid:user.id,
+            },doc);
+        }
+        return Promise.resolve(new ErrorMsg(true));
     }
 
     public updateByListener(listener:IListener){
@@ -63,9 +67,12 @@ export default class MongoSyncBiz {
         if("labelids" in listener){
             doc.labelids = ObjectHelper.parseJSON(<string>listener.labelids);
         }
-        return MongoSortFilterModel.update({
-            uid:listener.uid,
-        },doc);
+        if(Object.keys(doc).length>0){
+            return MongoSortFilterModel.update({
+                uid:listener.uid,
+            },doc);
+        }
+        return Promise.resolve(new ErrorMsg(true));
     }
 
     static createInstance() {

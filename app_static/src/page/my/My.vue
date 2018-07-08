@@ -75,6 +75,7 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 // import MyService from "../../api/UserService";
 import { mapActions, mapGetters } from 'vuex';
+import { INoopPromise } from '../../util/methods';
 @Component({
   methods:{
     ...mapActions({
@@ -151,8 +152,15 @@ export default class My extends Vue{
   }
   created(){
     document.title = "我的";
-    (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s')
+    this.getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s').then(res=>{
+      const data = res.data;
+      if(!data.success){
+        this.$toast(data.message);
+      }
+    });
   }
+
+  private getUserInfo:INoopPromise;
 }
 
 </script>

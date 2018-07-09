@@ -53,8 +53,18 @@ export default class ListenerService {
         if(!prices){
             return Promise.reject(new ErrorMsg(false,"参数不正确"));
         }
-        // let data = JSON.stringify(prices);
         return Axios.post("/listener/setprice",prices);
+    }
+
+    /**
+     * 设置倾听者接单状态
+     * @param params 
+     */
+    setReceiveStatus(status:any):Promise<AxiosResponse<IResponse<any>>>{
+        if(!status){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.post("/listener/setrecievestatus",status);
     }
 
     static createInstance() {

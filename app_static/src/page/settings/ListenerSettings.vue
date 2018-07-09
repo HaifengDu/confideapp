@@ -57,6 +57,8 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
 import {ERecieveStatus} from '../../enum/ERecieveStatus';
+import ListenerService from "../../api/ListenerService.ts";
+const listenerService = ListenerService.getInstance();
 
 @Component({
     computed:{
@@ -81,12 +83,27 @@ export default class ListenerSettings extends Vue{
             this.showAlertWin = true;
             return;
         }
-        this.isNotReceive = false;
+        listenerService.setReceiveStatus({status:ERecieveStatus.可接单}).then((res:any)=>{
+            if(res.data.success){
+                this.$toast('设置成功');
+                //TODO:设置成功后，将该字段更新到store里，单写一个更新store字段的方法
+                this.isNotReceive = false;
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 
     doNotBusiness(){
-        this.isNotReceive = true;
-        this.showAlertWin = false;
+        listenerService.setReceiveStatus({status:ERecieveStatus.休息中}).then((res:any)=>{
+            if(res.data.success){
+                this.$toast('设置成功');
+                this.isNotReceive = true;
+                this.showAlertWin = false;
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 
     cancelListener(){

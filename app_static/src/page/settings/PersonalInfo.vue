@@ -5,7 +5,6 @@
             <div class="listen">
                 <input type="text" placeholder="请输入简介" v-model="myIntro"/>
             </div>
-            <div class="divider"></div>
             <div class="title">经历</div>
             <div class="my-experience" v-for="(experience,index) in experiences" :key="index">
                 <span class="title">{{experience.name}}</span>
@@ -14,7 +13,6 @@
             <div class="add-box">
                 <span class="add" @click="showAddExperience">+</span>
             </div>
-            <div class="divider"></div>
             <div class="title">上传资质</div>
             <div class="cert-container">
                 <div>

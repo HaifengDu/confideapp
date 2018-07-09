@@ -75,6 +75,12 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
         }
       });
     },
+    [MType.SET_LISTENER_DATA](state,data:any){
+      let listener:any = state.user.listener;
+      if(listener){
+        Object.assign(listener,data);
+      }
+    },
     [MType.UPDATE_BASEINFO](state,baseinfo){
       const user = state.user;
       user.nickname =baseinfo.nickname;

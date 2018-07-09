@@ -54,15 +54,21 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import { mapGetters } from 'vuex';
+import { mapGetters,mapActions } from 'vuex';
 import {ELabelCType} from '@/enum/ELabelType.ts';
 import LabelService from "../../api/LabelService.ts";
 import ListenerService from "../../api/ListenerService.ts";
 import {IListenLabel} from "@/interface/model/IMainLabel.ts";
+import { ELabelStatus } from '../../enum/ELabelStatus';
 const labelService = LabelService.getInstance();
 const listenerService = ListenerService.getInstance();
 
 @Component({
+    methods:{
+        ...mapActions({
+            setListenerData:'setListenerData'
+        })
+    },
     computed:{
         ...mapGetters({
             user:'user'
@@ -128,11 +134,6 @@ export default class MyTags extends Vue{
      * 添加自定义标签
      */
     customTag(){
-        //TODO:添加自定义标签参数，name,stype(用ELabelSType.Label)
-        /**
-         * 添加自定义标签成功后，将该标签的active设为true
-         * 将该标签添加到myTags数组中
-         */
         this.newLabel = {};
         this.showAddTagsWin = true;
     }
@@ -180,13 +181,7 @@ export default class MyTags extends Vue{
      * 保存选择的标签
      */
     addTopic(){
-        /**
-         * 将选中的标签数组传给后台   例：  [{id:3,desc:'我的测试宣言'}]
-         * 保存成功后，将数据存入store
-         * 更新myTags数组
-         */
         let data = this.tags.filter(tag=>tag.active);
-
         //向后台发送数据 labels
         const labels = data.map(item=>{
             return {
@@ -207,6 +202,13 @@ export default class MyTags extends Vue{
                     }
                 }); 
                 this.showAddTags = !this.showAddTags;
+                //将数据同步到store上
+                let tempData:any = [];
+                data.forEach((item:any)=>{
+                    tempData.push(item);
+                });
+                (<any>this).setListenerData({labels:tempData});
+                //TODO:设置isAuditing状态
             }else{
                 this.$toast(res.data.message);
             }

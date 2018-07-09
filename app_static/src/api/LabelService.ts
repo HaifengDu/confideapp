@@ -15,12 +15,34 @@ export default class LabelService {
         return Axios.get("/base/label");
     }
 
+    public getExperiences():Promise<AxiosResponse<any>>{
+        return Axios.get("/base/exprience");
+    }
+
     public addLabel(data:IMainLabel):Promise<AxiosResponse<IResponse<IMainLabel>>>{
         if(!data){
             return Promise.reject(new ErrorMsg(false,"数据不能为空"));
         }
         data.stype = ELabelSType.Label;
         return Axios.put("/base/label",data);
+    }
+
+    public addExperice(data:IMainLabel):Promise<AxiosResponse<IResponse<IMainLabel>>>{
+        if(!data){
+            return Promise.reject(new ErrorMsg(false,"数据不能为空"));
+        }
+        data.stype = ELabelSType.Experience;
+        return Axios.put("/base/label",data);
+    }
+
+    public deleteExperice(id:number):Promise<AxiosResponse<IResponse<IMainLabel>>>{
+        if(!id){
+            return Promise.reject(new ErrorMsg(false,"id不能为空"));
+        }
+        let data:any = {};
+        data.stype = ELabelSType.Experience;
+        data.id=id;
+        return Axios.delete("/base/label",{params:data});
     }
 
     public updateLabel(id:number,name:string):Promise<AxiosResponse<IResponse<String>>>{

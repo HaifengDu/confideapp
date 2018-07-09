@@ -202,14 +202,14 @@ export default class PersonalInfo extends Vue{
     }
 
     fileChange(){
-        if(this.imageList.length>=PersonalInfo.MAX_FILE_COUNT){
+        if((<any>this.$refs.certsfile).files.length>=PersonalInfo.MAX_FILE_COUNT){
             this.$toast(`最多上传${PersonalInfo.MAX_FILE_COUNT}张图片`);
             (<any>this.$refs.certsfile).value = "";
             return;
         }
         const files = this.files = Array.prototype.slice.call((<any>this.$refs.certsfile).files);
         FileReaderHelper.readFiles(files).then((res:any)=>{
-            this.imageList.push(res);
+            this.imageList = res;
         });
     }
     uploadClick(){

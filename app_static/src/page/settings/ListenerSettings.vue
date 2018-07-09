@@ -32,7 +32,7 @@
                 </mt-cell>
             </div>
             <mt-cell title="暂不接单" class="cell-con" @click.native.prevent="changeBusinessStatus">
-                <mt-switch v-model="isNotSuspension"></mt-switch>
+                <mt-switch v-model="isNotReceive"></mt-switch>
             </mt-cell>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="cancelListener">取消倾听者身份</mt-button>
@@ -55,30 +55,37 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import { mapGetters } from 'vuex';
+import {ERecieveStatus} from '../../enum/ERecieveStatus';
 
 @Component({
- 
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class ListenerSettings extends Vue{
-    private isNotSuspension = false;
+    private isNotReceive = false;
     private showAlertWin = false;
    
     created(){
-        console.log(666);
-
+        if((<any>this).user&&(<any>this).user.listener){
+            this.isNotReceive = (<any>this).user.listener.recievestatus === ERecieveStatus.休息中;
+        }
     }
 
     changeBusinessStatus(){
-        if(!this.isNotSuspension){
+        if(!this.isNotReceive){
             //TODO:向后台发请求，设置接单状态
             this.showAlertWin = true;
             return;
         }
-        this.isNotSuspension = false;
+        this.isNotReceive = false;
     }
 
     doNotBusiness(){
-        this.isNotSuspension = true;
+        this.isNotReceive = true;
         this.showAlertWin = false;
     }
 

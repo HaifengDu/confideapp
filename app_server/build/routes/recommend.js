@@ -5,7 +5,7 @@ const ErrorMsg_1 = require("../model/ErrorMsg");
 const recommendCtrl = Recommend_1.default.getInstance();
 const router = express.Router();
 router.get("/home", function (req, res) {
-    recommendCtrl.getHomeRecommend().then(data => {
+    recommendCtrl.getListRecommend().then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

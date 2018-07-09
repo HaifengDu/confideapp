@@ -20,6 +20,7 @@ export interface IListener{
     minprice?:number,
     money?:number,
     labels?:IListenLabel[],//标签整合后的数据
+    exps?:IListenLabel[],
     user?:IUser,
 }
 export default IListener;

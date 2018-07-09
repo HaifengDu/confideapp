@@ -8,6 +8,7 @@ const weixinHelper_1 = require("../helper/weixinHelper");
 const ERole_1 = require("../enum/ERole");
 const areaHelper_1 = require("../helper/areaHelper");
 const ErrorMsg_1 = require("../model/ErrorMsg");
+const Sequelize = require("sequelize");
 const mailHelper_1 = require("../helper/mailHelper");
 const EBindPhoneStatus_1 = require("../enum/EBindPhoneStatus");
 const objectHelper_1 = require("../helper/objectHelper");
@@ -59,6 +60,15 @@ class UserService {
     find(id) {
         return User_1.default.findById(id);
     }
+    findInIds(ids) {
+        return User_1.default.findAll({
+            where: {
+                id: {
+                    [Sequelize.Op.in]: ids
+                }
+            }
+        });
+    }
     findByWeixin(weixinid) {
         if (!weixinid) {
             return Bluebird.reject({ message: "微信id不能为空" });
@@ -72,13 +82,15 @@ class UserService {
                 return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
             }
             if (user.role === ERole_1.ERole.Listener) {
-                return this.listenerService.findByUserid(user.id).then(listener => {
-                    const userTemp = objectHelper_1.default.serialize(user);
-                    userTemp.listener = objectHelper_1.default.serialize(listener);
-                    userTemp.pricesettings = userTemp.listener.user.pricesettings;
-                    delete userTemp.listener.user;
-                    return userTemp;
-                });
+                if (this.listenerService) {
+                    return this.listenerService.findByUserid(user.id).then(listener => {
+                        const userTemp = objectHelper_1.default.serialize(user);
+                        userTemp.listener = objectHelper_1.default.serialize(listener);
+                        userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                        delete userTemp.listener.user;
+                        return userTemp;
+                    });
+                }
             }
             return user;
         });

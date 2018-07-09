@@ -13,6 +13,7 @@
     "@types/sequelize": "^4.27.23",
     "@types/socket.io": "^1.4.36",
     "@types/uuid": "^3.4.3",
+    "@types/xml2js": "^0.4.3",
     "body-parser": "~1.17.1",
     "connect": "^3.6.6",
     "connect-multiparty": "^2.1.1",
@@ -38,7 +39,8 @@
     "serve-favicon": "~2.4.2",
     "socket.io": "^2.1.1",
     "typescript": "^2.9.2",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "tslint-eslint-rules": "^5.3.1"

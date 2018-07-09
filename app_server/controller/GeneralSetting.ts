@@ -9,8 +9,7 @@ import ErrorMsg from "../model/ErrorMsg";
 import _ = require("lodash");
 import { EGeneralStatus } from "../enum/EGeneralStatus";
 import ListenerService from "./Listener";
-import MongoClickRate from "../model/mongo/MongoClickRate";
-import { IClickRate } from "../interface/mongomodel/IClickRate";
+import MongoHomeClickRate from "../model/mongo/MongoHomeClickRate";
 import { Query } from "mongoose";
 import CalucateService from "../helper/CalucateService";
 
@@ -80,7 +79,7 @@ export default class GeneralSettingService {
         if(pid===lid){
             return Promise.resolve(new ErrorMsg(true));
         }
-        return MongoClickRate.findOne({
+        return MongoHomeClickRate.findOne({
             pid:pid,
             lid:lid
         }).then(res=>{
@@ -90,14 +89,14 @@ export default class GeneralSettingService {
                 if((<any>res.ldate).format("yyyy-MM-dd")===(<any>new Date()).format('yyyy-MM-dd')){
                     return Promise.resolve<any>(new ErrorMsg(true));
                 }
-                promise = MongoClickRate.update({
+                promise = MongoHomeClickRate.update({
                     pid:pid,
                     lid:lid
                 },{
                     ldate:new Date()
                 });
             }else{
-                promise = <Promise<any>>MongoClickRate.create({
+                promise = <Promise<any>>MongoHomeClickRate.create({
                     pid:pid,
                     lid:lid,
                     ldate:new Date()

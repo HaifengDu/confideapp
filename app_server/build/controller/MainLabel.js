@@ -7,6 +7,7 @@ const ELabelStatus_1 = require("../enum/ELabelStatus");
 const ELabelType_1 = require("../enum/ELabelType");
 const objectHelper_1 = require("../helper/objectHelper");
 const _ = require("lodash");
+const ErrorMsg_1 = require("../model/ErrorMsg");
 class MainLabelService {
     constructor() {
         this._labelList = [];
@@ -16,10 +17,13 @@ class MainLabelService {
     findSystemLabel() {
         return this._labelList.filter(item => item.ctype === ELabelType_1.ELabelCType.Admin && item.status === ELabelStatus_1.ELabelStatus.正常) || [];
     }
-    findLabel(ids) {
-        return this._labelList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > 1) || [];
+    findLabelNoStatus(ids) {
+        return this._labelList.filter(item => ids.indexOf(item.id) > -1) || [];
     }
-    findSystemUnionUser(uid) {
+    findLabel(ids) {
+        return this._labelList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > -1) || [];
+    }
+    findSystemLabelUnionUser(uid) {
         return this._labelList.filter(item => (item.ctype === ELabelType_1.ELabelCType.Admin || item.cuid === uid) && item.status === ELabelStatus_1.ELabelStatus.正常) || [];
     }
     /**
@@ -29,8 +33,22 @@ class MainLabelService {
     findLabelByMyself(ids) {
         return this._labelList.filter(item => (item.status === ELabelStatus_1.ELabelStatus.正常 || item.status === ELabelStatus_1.ELabelStatus.审核中) && ids.indexOf(item.id) > -1) || [];
     }
+    /**
+     * 查找自己的经历（包含审核中）
+     * @param ids
+     */
+    findExprienceNoStatus(ids) {
+        return this._expList.filter(item => ids.indexOf(item.id) > -1) || [];
+    }
+    /**
+     * 查找系统和包含用户自定义的标签
+     * @param uid
+     */
+    findExprienceUnionUser(uid) {
+        return this._expList.filter(item => (item.ctype === ELabelType_1.ELabelCType.Admin || item.cuid === uid) && item.status === ELabelStatus_1.ELabelStatus.正常) || [];
+    }
     findExprience(ids) {
-        return this._expList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > 1) || [];
+        return this._expList.filter(item => item.status === ELabelStatus_1.ELabelStatus.正常 && ids.indexOf(item.id) > -1) || [];
     }
     addLabel(model) {
         if (!model) {
@@ -71,21 +89,35 @@ class MainLabelService {
         return promise;
     }
     deleteLabel(id, stype) {
-        const promise = MainLabel_1.default.destroy({
-            where: {
-                id: id
-            }
-        });
-        return promise.then(res => {
-            let current;
-            if (stype === ELabelType_1.ELabelSType.Label) {
-                current = _.remove(this._labelList, item => item.id === id)[0];
-            }
-            else {
-                current = _.remove(this._expList, item => item.id === id)[0];
-            }
-            return current;
-        });
+        let current;
+        if (stype === ELabelType_1.ELabelSType.Label) {
+            current = this._labelList.find(item => item.id === id);
+        }
+        else {
+            current = this._expList.find(item => item.id === id);
+        }
+        if (!current) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应标签"));
+        }
+        let promise = Bluebird.resolve(current);
+        //自定义状态删除
+        if (current.ctype === ELabelType_1.ELabelCType.Custom) {
+            promise = MainLabel_1.default.destroy({
+                where: {
+                    id: id
+                }
+            }).then(res => {
+                let current;
+                if (stype === ELabelType_1.ELabelSType.Label) {
+                    current = _.remove(this._labelList, item => item.id === id)[0];
+                }
+                else {
+                    current = _.remove(this._expList, item => item.id === id)[0];
+                }
+                return current;
+            });
+        }
+        return promise;
     }
     initMainLabel() {
         MainLabel_1.default.findAll().then(res => {

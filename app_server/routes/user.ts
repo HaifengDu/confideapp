@@ -7,9 +7,11 @@ import { IUser } from "../interface/model/IUser";
 import ListenerService from "../controller/Listener";
 import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
+import ClickRateService from "../controller/ClickRate";
 const router = express.Router();
 const listenerCtrl = ListenerService.getInstance();
 const userContrl = UserService.getInstance(listenerCtrl);
+const clickRateCtrl = ClickRateService.getInstance();
 
 router.put("/",[
     body("code").not().isEmpty().withMessage('微信code不能为空'),
@@ -149,5 +151,62 @@ router.post("/bindphone",[
     });
 });
 
+router.get("/addvisitrecord",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    query("lid").isNumeric().withMessage("倾听者id不能为空")
+],function(req:express.Request,res:express.Response){
+    clickRateCtrl.recordClickRate(req.query.userid,req.query.lid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.get("/addfavorite",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    query("lid").isNumeric().withMessage("倾听者id不能为空")
+],function(req:express.Request,res:express.Response){
+    clickRateCtrl.addFavorite(req.query.userid,req.query.lid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.get("/getvisitrecords",[
+    query("userid").isNumeric().withMessage("用户id不能为空")
+],function(req:express.Request,res:express.Response){
+    clickRateCtrl.getVisitRecords(req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+router.get("/getfavorites",[
+    query("userid").isNumeric().withMessage("用户id不能为空")
+],function(req:express.Request,res:express.Response){
+    clickRateCtrl.getFavorites(req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
 
 export = router;

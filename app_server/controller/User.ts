@@ -21,7 +21,7 @@ export default class UserService {
     private _areaHelper:AreaHelper;
     private _mailHelper:MailHelper;
 
-    private constructor(private listenerService:ListenerService) {
+    private constructor(private listenerService?:ListenerService) {
         this._mailHelper = MailHelper.getInstance();
         this._areaHelper = AreaHelper.getInstance();
     }
@@ -72,6 +72,16 @@ export default class UserService {
         return UserModel.findById(id);
     }
 
+    public findInIds(ids:number[]){
+        return UserModel.findAll({
+            where:{
+                id:{
+                    [Sequelize.Op.in]:ids
+                }
+            }
+        });
+    }
+
     public findByWeixin(weixinid:string){
         if(!weixinid){
             
@@ -86,13 +96,15 @@ export default class UserService {
                 return Bluebird.reject(new ErrorMsg(false,"未找到对应用户"));
             }
             if(user.role===ERole.Listener){
-                return this.listenerService.findByUserid(user.id).then(listener=>{
-                    const userTemp:any = ObjectHelper.serialize(user);
-                    userTemp.listener = ObjectHelper.serialize<IListener>(listener);
-                    userTemp.pricesettings = userTemp.listener.user.pricesettings;
-                    delete userTemp.listener.user;
-                    return userTemp;
-                });
+                if(this.listenerService){
+                    return this.listenerService.findByUserid(user.id).then(listener=>{
+                        const userTemp:any = ObjectHelper.serialize(user);
+                        userTemp.listener = ObjectHelper.serialize<IListener>(listener);
+                        userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                        delete userTemp.listener.user;
+                        return userTemp;
+                    });
+                }
             }
             return user;
         });
@@ -156,11 +168,11 @@ export default class UserService {
         })
     }
 
-    static createInstance(listenerService:ListenerService) {
+    static createInstance(listenerService?:ListenerService) {
         UserService.getInstance(listenerService);
     }
 
-    static getInstance(listenerService:ListenerService) {
+    static getInstance(listenerService?:ListenerService) {
         return this._instance || (this._instance = new this(listenerService));
     }
 

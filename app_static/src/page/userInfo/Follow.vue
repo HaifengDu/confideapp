@@ -98,7 +98,7 @@ export default class Follow extends Vue{
             border-radius: 17px;
             justify-content: center;
             color:#fff;
-            background:rgb(204,204,204);
+            background:#f3a843;
             .p-ab;
             right: 20px;
             top: 17px;

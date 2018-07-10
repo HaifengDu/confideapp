@@ -1,12 +1,15 @@
 <template>
-    <div class="container">
-        <div class="list" v-for="(item,index) in followDatas" :key="index" @click="toUserInfo(item.id)">
-            <img class="head-img" :src="item.src"/>
+    <div class="container" 
+        v-infinite-scroll="loadMore"
+        infinite-scroll-disabled="loading"
+        infinite-scroll-distance="10">
+        <div class="list" v-for="(item,index) in followDatas" :key="index" @click="toUserInfo(item)">
+            <img class="head-img" :src="item.headimgurl"/>
             <div class="content">
-                <p class="name">{{item.name}}</p>
-                <p v-if="type==2" class="date">{{item.date}}</p>
+                <p class="name">{{item.nickname}}</p>
+                <p v-if="type==2" class="date">{{item.clickdate}}</p>
             </div>
-            <div v-if="type==2" class="button" @click.stop="followMe(item)">{{item.isFollow?'已关注':'关注'}}</div>
+            <div v-if="type==2" class="button" @click.stop="followMe(item)">{{item.record?'已关注':'关注'}}</div>
         </div>
     </div>
 </template>
@@ -15,45 +18,102 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EFollowType} from "@/enum/EFollowType";
+import Pager from "@/helper/Pager.ts"; 
+import MyService from "../../api/UserService.ts";
+const userService = MyService.getInstance();
 
 @Component({
    
 })
 export default class Follow extends Vue{
+    private pager = new Pager().setLimit(20);
     //1代表关注，2代表访客
     private type = 1;
-    private followDatas:any = [
-        {
-            id:1,
-            name:'重新的开始',
-            date:'2018-06-26 18:09',
-            isFollow:true,
-            src:'http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIkkg9icSGleYN53EtQiaOuxCkTnicpibicOgRicZS2iaGzCYOh2TLA4Wh86mFDCbmamZ9c7WibGXiaveK47Og/132'
-        },
-        {
-            id:2,
-            name:'星空下的嗳',
-            date:'2018-06-26 18:09',
-            isFollow:false,
-            src:'http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIkkg9icSGleYN53EtQiaOuxCkTnicpibicOgRicZS2iaGzCYOh2TLA4Wh86mFDCbmamZ9c7WibGXiaveK47Og/132'
-        }
-    ];
+    private followDatas:any = [];
     
     created(){
-        //获取页面类型，关注还是访客
-        //TODO:根据页面类型，获取关注列表数据或访客列表数据
+        /**
+         * 先获取列表数据，然后根据ids获取对应的关注数据
+         * 需分页
+         */
         this.type = (<any>this).$route.query.type;
-        console.log(this.type);
+        this.initData();
     }
 
-    toUserInfo(id:number){
-        //TODO:跳转到userInfo页面，获取id对应的用户信息
-        (<any>this).$router.push({path:'/userInfo',query:{id:id}});
+    initData(){
+        if(this.type == EFollowType.Follow){
+            this.getFavoriteData();
+        }else{
+            this.getVisitorData();
+        }
+    }
+
+    getRecordStatus(){
+        const tempData = this.followDatas.slice(this.pager.getPage().limit*(this.pager.getPage().page-2));
+        let params = tempData.reduce((ori:any,item:any)=>{   
+            return ori?ori + ',' + item.id:item.id;
+        },'').split(',');
+        userService.getCheckRecord(params).then((res:any)=>{
+            if(res.data.success){   
+                res.data.data.forEach((item:any)=>{
+                    const temp = this.followDatas.find((follow:any)=>follow.id==item.id);
+                    if(temp){
+                        temp.record = item.record;
+                    }
+                })
+            }
+        });
+    }
+
+    getFavoriteData(){
+        userService.getFavorites(this.pager).then((res:any)=>{
+            if(res.data.success){   
+                const data = res.data.data;
+                data.forEach((item:any)=>item.record=true);
+                if(this.pager.getPage().page==1){
+                    this.followDatas = data;
+                }else{
+                    this.followDatas.concat(data);
+                }
+                this.pager.setNext();
+            }
+        });
+    }
+
+    getVisitorData(){
+        userService.getVisitVecords(this.pager).then((res:any)=>{
+            if(res.data.success){   
+                const data = res.data.data;
+                data.forEach((item:any)=>item.record=true);
+                if(this.pager.getPage().page==1){
+                    this.followDatas = data;
+                }else{
+                    this.followDatas.concat(data);
+                }
+                this.getRecordStatus();
+                this.pager.setNext();
+            }
+        });
+    }
+
+    toUserInfo(item:any){
+        if(item.weixinid){
+            (<any>this).$router.push({path:'/userInfo',query:{weixinid:item.weixinid}});
+        }
     }
 
     followMe(item:any){
         //TODO:向后台发送请求，关注或者取消关注
-        item.isFollow = !item.isFollow;
+        item.record = !item.record;
+    }
+
+    loadMore(){
+        if(this.pager.getPage().page===1)return;
+        if(this.type === EFollowType.Follow){
+            this.getFavoriteData();
+        }else{
+            this.getVisitorData();
+        }
     }
     
 }

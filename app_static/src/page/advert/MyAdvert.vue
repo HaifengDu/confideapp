@@ -36,12 +36,11 @@ export default class MyAdvert extends Vue{
     }
 
     toSetAdvert(){
-        //TODO:推广设置
         this.$router.push('/advertSetting');
     }
 
     toAdvRecords(){
-        //TODO:去查看推广记录
+        this.$router.push('/advertRecord');
     }
 
     toAdvertise(){

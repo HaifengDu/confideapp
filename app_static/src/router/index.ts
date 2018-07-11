@@ -23,6 +23,7 @@ import PersonalInfo from "@/page/settings/PersonalInfo.vue";
 import Follow from "@/page/userInfo/Follow.vue";
 import MyAdvert from "@/page/advert/MyAdvert.vue";
 import AdvertSetting from "@/page/advert/AdvertSetting.vue";
+import AdvertRecord from "@/page/advert/AdvertRecord.vue";
 
 Vue.use(Router)
 
@@ -131,6 +132,10 @@ const router = new Router({
       path:"/advertSetting",
       name:"AdvertSetting",
       component:AdvertSetting
+    },{
+      path:'/advertRecord',
+      name:'AdvertRecord',
+      component:AdvertRecord
     }
   ]
 });

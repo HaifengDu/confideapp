@@ -1,12 +1,13 @@
 <template>
     <div class="container">
         <div class="body">
-            <div class="title">用户单价（元）</div>
+            <div class="title">用户单价（元）
+                <input class="custom-price" type="number" v-model="price" min="0" step="0.1" max="10"/>
+            </div>
             <div class="price">
                 <div class="content">
                     同等服务质量的，单价越高曝光越多，同一用户当日所有访问只记一次（只扣一次费用）。
                 </div>
-
             </div>
             <div class="divider"></div>
             <div class="title">推广排名</div>
@@ -29,7 +30,7 @@
             </mt-cell>
             <mt-cell title="当日预算金额" class="cell-con" v-if="isOpenAdvLimit">
                 <div class="price-wrapper">
-                    <input class="entry" type="number" v-model="limitPrice"/>元
+                    <input class="entry" type="number" v-model="limitPrice"/> 元
                 </div>
             </mt-cell>
             <div class="reminder">
@@ -52,6 +53,7 @@ import {Component} from 'vue-property-decorator';
 export default class AdvertSetting extends Vue{
     private isOpenAdvLimit = false;
     private limitPrice = 0;
+    private price = 0.1;
 }
 </script>
 
@@ -62,8 +64,10 @@ export default class AdvertSetting extends Vue{
     }
     .container{
         .p-rl;
+        padding-bottom:65px;
     }
     .title{
+        .p-rl;
         .v-middle(40px);
         background:rgb(247,247,247);
         color:rgb(173,173,173);
@@ -73,6 +77,18 @@ export default class AdvertSetting extends Vue{
     .divider{
         height:10px;
         background:#eee;
+    }
+    .custom-price{
+        .p-ab;
+        right:20px;
+        top:10px;
+        outline: none;
+        border:none;
+        border-bottom:1px solid @mainColor;
+        width: 50px;
+        border-radius:0;
+        background: rgb(247,247,247);
+
     }
     .info{
         width:100%;
@@ -93,8 +109,9 @@ export default class AdvertSetting extends Vue{
     .body{
         .price{
             .content{
-                width:200px;
-                text-align:left;
+                text-align: left;
+                padding: 10px 20px;
+                color:rgb(181,181,181);
             }
         }
         .cell-con .price-wrapper{
@@ -102,6 +119,7 @@ export default class AdvertSetting extends Vue{
             .entry{
                 outline: none;
                 border:none;
+                border-radius:0;
                 border-bottom:1px solid @mainColor;
                 width: 50px;
             }

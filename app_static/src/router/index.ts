@@ -26,10 +26,10 @@ Vue.use(Router)
 const router = new Router({
   routes: [
     {
-      path:"/login",
-      component:Login,
-      meta:{
-        noRequireAuth:true
+      path: "/login",
+      component: Login,
+      meta: {
+        noRequireAuth: true
       }
     },
     {
@@ -67,15 +67,16 @@ const router = new Router({
       path: "/exprience",
       name: "Exprience",
       component: Exprience
-    },{
-      path:"/searchFilter",
-      name:"SearchFilter",
-      component:SearchFilter
     },
     {
-      path:"/searchResult",
-      name:"SearchResult",
-      component:SearchResult
+      path: "/searchFilter",
+      name: "SearchFilter",
+      component: SearchFilter
+    },
+    {
+      path: "/searchResult",
+      name: "SearchResult",
+      component: SearchResult
     },
     {
       path: "/tag",
@@ -93,29 +94,34 @@ const router = new Router({
       component: ListenerSettings
     },
     {
-      path:"/myTags",
-      name:"MyTags",
-      component:MyTags
-    },{
-      path:"/otherInfo",
-      name:"OtherInfo",
-      component:OtherInfo
-    },{
-      path:"/textService",
-      name:"TextService",
-      component:TextService
-    },{
-      path:"/callService",
-      name:"CallService",
-      component:CallService
-    },{
-      path:"/personalInfo",
-      name:"PersonalInfo",
-      component:PersonalInfo
-    },{
-      path:"/list",
-      name:"List",
-      component:List
+      path: "/myTags",
+      name: "MyTags",
+      component: MyTags
+    },
+    {
+      path: "/otherInfo",
+      name: "OtherInfo",
+      component: OtherInfo
+    },
+    {
+      path: "/textService",
+      name: "TextService",
+      component: TextService
+    },
+    {
+      path: "/callService",
+      name: "CallService",
+      component: CallService
+    },
+    {
+      path: "/personalInfo",
+      name: "PersonalInfo",
+      component: PersonalInfo
+    },
+    {
+      path: "/list",
+      name: "List",
+      component: List
     }
   ]
 });

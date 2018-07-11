@@ -90,14 +90,18 @@ export default class ListenerSettings extends Vue{
         if(user&&user.listener){
             const otherInfos = ['familyname','eduname','jobname'];
             this.isNotReceive = user.listener.recievestatus === ERecieveStatus.休息中;
-            user.listener.labels.forEach((label:any)=>{
-                this.myTagsPreview.push(label.name);
-            });
-            user.listener.exps.forEach((exp:any)=>{
-                this.myExpPreview.push(exp.name);
-            });
+            if(user.listener.labels&&user.listener.labels.length){
+                user.listener.labels.forEach((label:any)=>{
+                    this.myTagsPreview.push(label.name);
+                });
+            }
+            if(user.listener.exps&&user.listener.exps.length){
+                user.listener.exps.forEach((exp:any)=>{
+                    this.myExpPreview.push(exp.name);
+                });
+            }
             otherInfos.forEach((key:string)=>{
-                this.myOtherPreview.push(user.listener[key]||'');
+                user.listener[key]&&this.myOtherPreview.push(user.listener[key]);
             });
         }
         if(user&&user.pricesettings){

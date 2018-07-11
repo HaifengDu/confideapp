@@ -21,6 +21,8 @@ import CallService from "@/page/settings/CallService.vue";
 import SearchResult from "@/page/SearchResult.vue";
 import PersonalInfo from "@/page/settings/PersonalInfo.vue";
 import Follow from "@/page/userInfo/Follow.vue";
+import MyAdvert from "@/page/advert/MyAdvert.vue";
+import AdvertSetting from "@/page/advert/AdvertSetting.vue";
 
 Vue.use(Router)
 
@@ -121,6 +123,14 @@ const router = new Router({
       path:'/follow',
       name:'Follow',
       component:Follow
+    },{
+      path:"/myAdvert",
+      name:"MyAdvert",
+      component:MyAdvert
+    },{
+      path:"/advertSetting",
+      name:"AdvertSetting",
+      component:AdvertSetting
     }
   ]
 });

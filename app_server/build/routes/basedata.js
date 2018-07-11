@@ -51,7 +51,23 @@ router.get("/label", [
     }
     let labels;
     try {
-        labels = mainLabelCtl.findSystemUnionUser(req.query.userid);
+        labels = mainLabelCtl.findSystemLabelUnionUser(req.query.userid);
+    }
+    catch (error) {
+        labels = [];
+    }
+    res.json(Object.assign({ data: labels }, new ErrorMsg_1.default(true)));
+});
+router.get("/exprience", [
+    check_1.query("userid").isNumeric().withMessage("userid不能为空")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    let labels;
+    try {
+        labels = mainLabelCtl.findExprienceUnionUser(req.query.userid);
     }
     catch (error) {
         labels = [];
@@ -67,10 +83,11 @@ router.put("/label", [
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
+    const stype = parseInt(req.body.stype);
     mainLabelCtl.addLabel({
         name: req.body.name,
         ctype: ELabelType_1.ELabelCType.Custom,
-        stype: req.body.type === ELabelType_1.ELabelSType.Experience ? ELabelType_1.ELabelSType.Experience : ELabelType_1.ELabelSType.Label,
+        stype: stype === ELabelType_1.ELabelSType.Experience ? ELabelType_1.ELabelSType.Experience : ELabelType_1.ELabelSType.Label,
         status: ELabelStatus_1.ELabelStatus.审核中,
         cuid: req.query.userid
     }).then(data => {
@@ -101,6 +118,7 @@ router.post("/label", [
     });
 });
 router.delete("/label", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
     check_1.query("id").isNumeric().withMessage("标签id不能为空"),
     check_1.query("stype").isNumeric().withMessage("标签类型不能为空")
 ], function (req, res) {
@@ -108,9 +126,11 @@ router.delete("/label", [
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
-    mainLabelCtl.deleteLabel(req.query.id, req.query.stype).then(data => {
-        if (data && data.cuid) {
-            listenService.deleteLabels(data.cuid, req.query.id);
+    const stype = parseInt(req.query.stype);
+    const id = parseInt(req.query.id);
+    mainLabelCtl.deleteLabel(id, stype).then(data => {
+        if (data) {
+            listenService.deleteLabels(req.query.userid, id, stype);
         }
         res.json(new ErrorMsg_1.default(true));
     }, err => {

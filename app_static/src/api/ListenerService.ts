@@ -53,8 +53,43 @@ export default class ListenerService {
         if(!prices){
             return Promise.reject(new ErrorMsg(false,"参数不正确"));
         }
-        // let data = JSON.stringify(prices);
         return Axios.post("/listener/setprice",prices);
+    }
+
+    /**
+     * 设置倾听者接单状态
+     * @param params 
+     */
+    setReceiveStatus(status:any):Promise<AxiosResponse<IResponse<any>>>{
+        if(!status){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.post("/listener/setrecievestatus",status);
+    }
+
+    public updateExp(id:number,desc:string):Promise<AxiosResponse<IResponse<any>>>{
+        if(!id){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.post("/listener/updateExp",{
+            exp:JSON.stringify({id,desc})
+        });
+    }
+
+    public uploadcert(files:any):Promise<AxiosResponse<IResponse<any>>>{
+        if(!files){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }
+        const formData = new FormData();
+        Array.prototype.slice.call(files).forEach((item:any)=>{
+            formData.append("files",item);
+        }); 
+        return Axios.post("/listener/uploadcert",formData,config);
     }
 
     static createInstance() {

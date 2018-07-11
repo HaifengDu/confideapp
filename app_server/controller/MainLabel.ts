@@ -6,6 +6,7 @@ import { ELabelStatus } from "../enum/ELabelStatus";
 import { ELabelCType,ELabelSType } from "../enum/ELabelType";
 import ObjectHelper from "../helper/objectHelper";
 import _ = require("lodash");
+import ErrorMsg from "../model/ErrorMsg";
 
 export default class MainLabelService {
 
@@ -21,12 +22,16 @@ export default class MainLabelService {
         return this._labelList.filter(item=>item.ctype===ELabelCType.Admin&&item.status===ELabelStatus.正常)||[];
     }
 
+    public findLabelNoStatus(ids:Array<number>){
+        return this._labelList.filter(item=>ids.indexOf(item.id)>-1)||[];
+    }
+
     public findLabel(ids:Array<number>){
-        return this._labelList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1)||[];
+        return this._labelList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>-1)||[];
     }
 
 
-    public findSystemUnionUser(uid:number){
+    public findSystemLabelUnionUser(uid:number){
         return this._labelList.filter(item=>(item.ctype===ELabelCType.Admin||item.cuid===uid)&&item.status===ELabelStatus.正常)||[];
     }
 
@@ -38,8 +43,24 @@ export default class MainLabelService {
         return this._labelList.filter(item=>(item.status===ELabelStatus.正常||item.status===ELabelStatus.审核中)&&ids.indexOf(item.id)>-1)||[];
     }
 
+    /**
+     * 查找自己的经历（包含审核中）
+     * @param ids 
+     */
+    public findExprienceNoStatus(ids:number[]){
+        return this._expList.filter(item=>ids.indexOf(item.id)>-1)||[];
+    }
+
+    /**
+     * 查找系统和包含用户自定义的标签
+     * @param uid 
+     */
+    public findExprienceUnionUser(uid:number){
+        return this._expList.filter(item=>(item.ctype===ELabelCType.Admin||item.cuid===uid)&&item.status===ELabelStatus.正常)||[];
+    }
+
     public findExprience(ids:number[]){
-        return this._expList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>1)||[];
+        return this._expList.filter(item=>item.status===ELabelStatus.正常&&ids.indexOf(item.id)>-1)||[];
     }
 
     public addLabel(model:IMainLabel){
@@ -81,20 +102,33 @@ export default class MainLabelService {
     }
 
     public deleteLabel(id:number,stype:ELabelSType){
-        const promise = MainLabelModel.destroy({
-            where:{
-                id:id
-            }
-        });
-        return promise.then(res=>{
-            let current:IMainLabel;
-            if(stype===ELabelSType.Label){
-                current = _.remove(this._labelList,item=>item.id===id)[0];
-            }else{ 
-                current = _.remove(this._expList,item=>item.id===id)[0];
-            }
-            return current;
-        });
+        let current:IMainLabel;
+        if(stype===ELabelSType.Label){
+            current = this._labelList.find(item=>item.id===id);
+        }else{
+            current = this._expList.find(item=>item.id===id);
+        }
+        if(!current){
+            return Bluebird.reject(new ErrorMsg(false,"未找到对应标签"));
+        }
+        let promise:Bluebird<any> = Bluebird.resolve(current);
+        //自定义状态删除
+        if(current.ctype===ELabelCType.Custom){
+            promise = MainLabelModel.destroy({
+                where:{
+                    id:id
+                }
+            }).then(res=>{
+                let current:IMainLabel;
+                if(stype===ELabelSType.Label){
+                    current = _.remove(this._labelList,item=>item.id===id)[0];
+                }else{ 
+                    current = _.remove(this._expList,item=>item.id===id)[0];
+                }
+                return current;
+            });
+        }
+        return promise;
     }
 
     private initMainLabel(){

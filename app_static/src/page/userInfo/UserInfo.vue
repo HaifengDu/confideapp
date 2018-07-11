@@ -24,7 +24,6 @@
             <div v-if="!isSelf&&isListener" class="order" @click="order">
                 <img src="static/images/userInfo/order.png">
             </div>
-            <div class="back" @click="back"></div>
             <div class="register">
                 2018.05.28注册
             </div>
@@ -117,6 +116,7 @@ const SHOW_MSG_TIME = 2000;
     }
 })
 export default class UserInfo extends Vue{
+    private weixinid = '';
     private stepPrice = 9.9;
     private helpNum = 1;
     private saledHours = 0.3;
@@ -148,13 +148,12 @@ export default class UserInfo extends Vue{
         {name:'帮我分析问题'}
     ]
     created(){
-        console.log(666);
-        (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s');
+        this.weixinid = (<any>this).$route.query.weixinid||'oRtVK06i1JN_GkUA5NPk7pXzOJ3s';
+        (<any>this).getUserInfo(this.weixinid);
     }
 
     expend(){
         this.isExpended = !this.isExpended;
-        console.log((<any>this));
     }
 
     addConcern(){
@@ -178,10 +177,6 @@ export default class UserInfo extends Vue{
             this.msgVisible = false;
         },SHOW_MSG_TIME);
         console.log('to talk');
-    }
-
-    back(){
-        (<any>this).$router.go(-1);
     }
 }
 </script>
@@ -282,14 +277,6 @@ export default class UserInfo extends Vue{
                     .p-rl;
                     top: 9px;
                 }
-            }
-            .back{
-                width:20px;
-                height:20px;
-                .p-ab;
-                top:20px;
-                left:20px;
-                background:url(../../../static/images/userInfo/arrow-left.png) no-repeat center center;
             }
              .register{
                 height:16px;

@@ -5,9 +5,11 @@ const check_1 = require("express-validator/check");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const Listener_1 = require("../controller/Listener");
 const objectHelper_1 = require("../helper/objectHelper");
+const ClickRate_1 = require("../controller/ClickRate");
 const router = express.Router();
 const listenerCtrl = Listener_1.default.getInstance();
 const userContrl = User_1.default.getInstance(listenerCtrl);
+const clickRateCtrl = ClickRate_1.default.getInstance();
 router.put("/", [
     check_1.body("code").not().isEmpty().withMessage('微信code不能为空'),
     check_1.body("code").isString().withMessage('微信code必须是字符串')
@@ -130,6 +132,52 @@ router.post("/bindphone", [
         code: req.body.code,
     }, req.query.userid).then(response => {
         res.json(new ErrorMsg_1.default(true));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/addvisitrecord", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.query("lid").isNumeric().withMessage("倾听者id不能为空")
+], function (req, res) {
+    clickRateCtrl.recordClickRate(req.query.userid, req.query.lid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/addfavorite", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.query("lid").isNumeric().withMessage("倾听者id不能为空")
+], function (req, res) {
+    clickRateCtrl.addFavorite(req.query.userid, req.query.lid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/getvisitrecords", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空")
+], function (req, res) {
+    clickRateCtrl.getVisitRecords(req.query.userid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get("/getfavorites", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空")
+], function (req, res) {
+    clickRateCtrl.getFavorites(req.query.userid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {

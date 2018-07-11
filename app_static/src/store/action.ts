@@ -55,6 +55,13 @@ export const setPrices: Action<IRootState, IRootState> = (
     commit(mutation_type.UPDATE_PRICES, prices);
 };
 
+export const setListenerData: Action<IRootState, IRootState> = (
+    { dispatch, commit },
+    data
+  ) => {
+    commit(mutation_type.SET_LISTENER_DATA, data);
+};
+
 export const updateOther:Action<IRootState,IRootState> = ({dispatch,commit},payload)=>{
     return myService.updateListenerOther(payload).then(res=>{
         const data = res.data;

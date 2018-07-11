@@ -7,7 +7,7 @@ const recommendCtrl = RecommendService.getInstance();
 const router = express.Router();
 
 router.get("/home",function(req,res){
-    recommendCtrl.getHomeRecommend().then(data=>{
+    recommendCtrl.getListRecommend().then(data=>{
         res.json({
             data,...new ErrorMsg(true)
         })

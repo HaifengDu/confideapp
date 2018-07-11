@@ -6,5 +6,5 @@ const MongoClickRateModel = new Mongoose.Schema({
     lid: Number,
     ldate: String
 });
-const MongoClickRate = Mongoose.model('clickrate', MongoClickRateModel);
+const MongoClickRate = Mongoose.model('homeclickrate', MongoClickRateModel);
 exports.default = MongoClickRate;

@@ -6,7 +6,7 @@ const ErrorMsg_1 = require("../model/ErrorMsg");
 const _ = require("lodash");
 const EGeneralStatus_1 = require("../enum/EGeneralStatus");
 const Listener_1 = require("./Listener");
-const MongoClickRate_1 = require("../model/mongo/MongoClickRate");
+const MongoHomeClickRate_1 = require("../model/mongo/MongoHomeClickRate");
 const CalucateService_1 = require("../helper/CalucateService");
 /**
  * 推广设置
@@ -66,7 +66,7 @@ class GeneralSettingService {
         if (pid === lid) {
             return Promise.resolve(new ErrorMsg_1.default(true));
         }
-        return MongoClickRate_1.default.findOne({
+        return MongoHomeClickRate_1.default.findOne({
             pid: pid,
             lid: lid
         }).then(res => {
@@ -76,7 +76,7 @@ class GeneralSettingService {
                 if (res.ldate.format("yyyy-MM-dd") === new Date().format('yyyy-MM-dd')) {
                     return Promise.resolve(new ErrorMsg_1.default(true));
                 }
-                promise = MongoClickRate_1.default.update({
+                promise = MongoHomeClickRate_1.default.update({
                     pid: pid,
                     lid: lid
                 }, {
@@ -84,7 +84,7 @@ class GeneralSettingService {
                 });
             }
             else {
-                promise = MongoClickRate_1.default.create({
+                promise = MongoHomeClickRate_1.default.create({
                     pid: pid,
                     lid: lid,
                     ldate: new Date()

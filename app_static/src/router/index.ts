@@ -20,6 +20,10 @@ import SearchFilter from "@/page/SearchFilter.vue";
 import CallService from "@/page/settings/CallService.vue";
 import SearchResult from "@/page/SearchResult.vue";
 import PersonalInfo from "@/page/settings/PersonalInfo.vue";
+import Follow from "@/page/userInfo/Follow.vue";
+import MyAdvert from "@/page/advert/MyAdvert.vue";
+import AdvertSetting from "@/page/advert/AdvertSetting.vue";
+import AdvertRecord from "@/page/advert/AdvertRecord.vue";
 
 Vue.use(Router)
 
@@ -94,34 +98,45 @@ const router = new Router({
       component: ListenerSettings
     },
     {
-      path: "/myTags",
-      name: "MyTags",
-      component: MyTags
-    },
-    {
-      path: "/otherInfo",
-      name: "OtherInfo",
-      component: OtherInfo
-    },
-    {
-      path: "/textService",
-      name: "TextService",
-      component: TextService
-    },
-    {
-      path: "/callService",
-      name: "CallService",
-      component: CallService
-    },
-    {
-      path: "/personalInfo",
-      name: "PersonalInfo",
-      component: PersonalInfo
-    },
-    {
-      path: "/list",
-      name: "List",
-      component: List
+      path:"/myTags",
+      name:"MyTags",
+      component:MyTags
+    },{
+      path:"/otherInfo",
+      name:"OtherInfo",
+      component:OtherInfo
+    },{
+      path:"/textService",
+      name:"TextService",
+      component:TextService
+    },{
+      path:"/callService",
+      name:"CallService",
+      component:CallService
+    },{
+      path:"/personalInfo",
+      name:"PersonalInfo",
+      component:PersonalInfo
+    },{
+      path:"/list",
+      name:"List",
+      component:List
+    },{
+      path:'/follow',
+      name:'Follow',
+      component:Follow
+    },{
+      path:"/myAdvert",
+      name:"MyAdvert",
+      component:MyAdvert
+    },{
+      path:"/advertSetting",
+      name:"AdvertSetting",
+      component:AdvertSetting
+    },{
+      path:'/advertRecord',
+      name:'AdvertRecord',
+      component:AdvertRecord
     }
   ]
 });

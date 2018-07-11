@@ -3,7 +3,7 @@
         <div class="body">
             <div class="topic">擅长话题<span class="num">7/24</span><span v-if="isAuditing" class="auditing">审核中</span></div>
             <div class="my-tag" v-for="(tag,index) in myTags" :key="index">
-                <span class="title">{{tag.name}}</span>
+                <span class="title" :class="{'custom':tag.active&&tag.ctype==1}">{{tag.name}}</span>
                 <p class="content">{{tag.desc||'暂无个性宣言'}}</p>
             </div>
             <div class="add-box">
@@ -54,16 +54,26 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import { mapActions, mapGetters } from 'vuex';
+import { mapGetters,mapActions } from 'vuex';
 import {ELabelCType} from '@/enum/ELabelType.ts';
 import LabelService from "../../api/LabelService.ts";
 import ListenerService from "../../api/ListenerService.ts";
 import {IListenLabel} from "@/interface/model/IMainLabel.ts";
+import { ELabelStatus } from '../../enum/ELabelStatus';
 const labelService = LabelService.getInstance();
 const listenerService = ListenerService.getInstance();
 
 @Component({
-    
+    methods:{
+        ...mapActions({
+            setListenerData:'setListenerData'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class MyTags extends Vue{
     private static readonly MAX_COUNT = 21;
@@ -89,7 +99,9 @@ export default class MyTags extends Vue{
                 this.tags = data.data;
             }
         });
-        //TODO:从store中获取listener下的label数据
+        if((<any>this).user&&(<any>this).user.listener){
+            this.myTags = (<any>this).user.listener.labels;
+        }
     }
 
     showAddTagPage(){
@@ -97,6 +109,12 @@ export default class MyTags extends Vue{
             this.$toast('标签审核中，暂时无法添加标签');
             return;
         }
+        this.myTags.forEach((label:any)=>{
+            const tempLabel = this.tags.find(item=>item.id===label.id);
+            if(tempLabel){
+                tempLabel.active = true;
+            }
+        });
         this.showAddTags = true;
     }
 
@@ -116,11 +134,6 @@ export default class MyTags extends Vue{
      * 添加自定义标签
      */
     customTag(){
-        //TODO:添加自定义标签参数，name,stype(用ELabelSType.Label)
-        /**
-         * 添加自定义标签成功后，将该标签的active设为true
-         * 将该标签添加到myTags数组中
-         */
         this.newLabel = {};
         this.showAddTagsWin = true;
     }
@@ -168,13 +181,7 @@ export default class MyTags extends Vue{
      * 保存选择的标签
      */
     addTopic(){
-        /**
-         * 将选中的标签数组传给后台   例：  [{id:3,desc:'我的测试宣言'}]
-         * 保存成功后，将数据存入store
-         * 更新myTags数组
-         */
         let data = this.tags.filter(tag=>tag.active);
-
         //向后台发送数据 labels
         const labels = data.map(item=>{
             return {
@@ -195,6 +202,13 @@ export default class MyTags extends Vue{
                     }
                 }); 
                 this.showAddTags = !this.showAddTags;
+                //将数据同步到store上
+                let tempData:any = [];
+                data.forEach((item:any)=>{
+                    tempData.push(item);
+                });
+                (<any>this).setListenerData({labels:tempData});
+                //TODO:设置isAuditing状态
             }else{
                 this.$toast(res.data.message);
             }
@@ -279,6 +293,9 @@ export default class MyTags extends Vue{
             background:@light-blue;
             border-radius:5px;
             padding:5px 10px;
+        }
+        .title.custom{
+            background:#11b7f3;
         }
         .content{
             .t-ellipsis(3);

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import UserModel from "../model/User";
-const Listener_1 = require("../model/Listener");
+const _ = require("lodash");
 const Bluebird = require("bluebird");
-const User_1 = require("../model/User");
 const sequelize_1 = require("sequelize");
+const Listener_1 = require("../model/Listener");
+const User_1 = require("../model/User");
 const objectHelper_1 = require("../helper/objectHelper");
 const MainLabel_1 = require("./MainLabel");
 const ListenerBiz_1 = require("../biz/ListenerBiz");
@@ -14,15 +14,17 @@ const ErrorMsg_1 = require("../model/ErrorMsg");
 const ERoleStatus_1 = require("../enum/ERoleStatus");
 const PriceSetting_1 = require("../model/PriceSetting");
 const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
-const _ = require("lodash");
 const EListenerLabelStatus_1 = require("../enum/EListenerLabelStatus");
 const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
 const ERole_1 = require("../enum/ERole");
+const baseDataHelper_1 = require("../helper/baseDataHelper");
+const ELabelType_1 = require("../enum/ELabelType");
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
         this.pricesettingMediator = ListenerPriceMediator_1.default.getInstance();
         this.pricesettingMediator.setListener(this);
+        this.baseDataHelper = baseDataHelper_1.default.getInstance();
         this.biz = ListenerBiz_1.default.getInstance();
         this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
         this.mainlabelService = MainLabel_1.default.getInstance();
@@ -63,10 +65,12 @@ class ListenerService {
     find(id) {
         return Listener_1.default.findById(id);
     }
-    parseLabels(labelids, labeldesc) {
-        labelids = objectHelper_1.default.parseJSON(labelids) || [];
-        let labels = this.mainlabelService.findLabel(labelids);
-        labels = objectHelper_1.default.serialize(labels);
+    /**
+     * 获取带有描述的标签
+     * @param labels
+     * @param labeldesc
+     */
+    getLabels(labels, labeldesc) {
         if (labels.length && labeldesc) {
             const descObj = objectHelper_1.default.parseJSON(labeldesc) || [];
             if (descObj && descObj.length) {
@@ -80,6 +84,42 @@ class ListenerService {
             }
         }
         return labels;
+    }
+    /**
+     * 转换标签
+     * @param labelids
+     * @param labeldesc
+     * @param hasStatus 是否包含状态（当前用户取不包含状态）
+     */
+    parseLabels(labelids, labeldesc, hasStatus = true) {
+        labelids = objectHelper_1.default.parseJSON(labelids) || [];
+        let labels = [];
+        if (hasStatus) {
+            labels = this.mainlabelService.findLabel(labelids);
+        }
+        else {
+            labels = this.mainlabelService.findLabelNoStatus(labelids);
+        }
+        labels = objectHelper_1.default.serialize(labels);
+        return this.getLabels(labels, labeldesc);
+    }
+    /**
+     * 转换经历
+     * @param labelids
+     * @param labeldesc
+     * @param hasStatus
+     */
+    parseExprience(labelids, labeldesc, hasStatus = true) {
+        labelids = objectHelper_1.default.parseJSON(labelids) || [];
+        let labels = [];
+        if (hasStatus) {
+            labels = this.mainlabelService.findExprience(labelids);
+        }
+        else {
+            labels = this.mainlabelService.findExprienceNoStatus(labelids);
+        }
+        labels = objectHelper_1.default.serialize(labels);
+        return this.getLabels(labels, labeldesc);
     }
     /**
      * 审核
@@ -135,7 +175,18 @@ class ListenerService {
             this.mongoSyncbiz.create(res);
         });
     }
-    findByUserid(id) {
+    /**
+     * 根据用户id仅获取倾听者
+     * @param userid
+     */
+    findOnlyListenerByUserid(userid) {
+        return Listener_1.default.find({
+            where: {
+                uid: userid
+            }
+        });
+    }
+    findByUserid(userid) {
         return Listener_1.default.find({
             include: [{
                     model: User_1.default,
@@ -143,7 +194,7 @@ class ListenerService {
                     include: [{
                             model: PriceSetting_1.default
                         }],
-                    where: { id: id }
+                    where: { id: userid }
                 }]
         }).then(res => {
             if (!res || !res.user) {
@@ -151,10 +202,24 @@ class ListenerService {
                 return;
             }
             const listener = objectHelper_1.default.serialize(res);
-            const labels = this.parseLabels(res.labelids, res.labeldesc);
+            const labels = this.parseLabels(res.labelids, res.labeldesc, false);
+            const exps = this.parseExprience(res.expids, res.expdesc, false);
             objectHelper_1.default.merge(listener, {
-                labels: labels
+                labels,
+                exps
             });
+            const job = this.baseDataHelper.getJob(listener.job);
+            if (job) {
+                listener.jobname = job.name;
+            }
+            const edu = this.baseDataHelper.getEdu(listener.edu);
+            if (edu) {
+                listener.eduname = edu.name;
+            }
+            const family = this.baseDataHelper.getFamily(listener.family);
+            if (edu) {
+                listener.familyname = family.name;
+            }
             return Promise.resolve(listener);
         });
     }
@@ -163,16 +228,19 @@ class ListenerService {
             include: [{
                     model: User_1.default,
                     as: 'user',
-                    where: { id: { [sequelize_1.Op.in]: ids } }
-                }, {
-                    model: PriceSetting_1.default
+                    where: { id: { [sequelize_1.Op.in]: ids } },
+                    include: [{
+                            model: PriceSetting_1.default
+                        }],
                 }]
         }).then(res => {
             const listeners = objectHelper_1.default.serialize(res);
             listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
+                const exps = this.parseExprience(item.expids, item.expdesc);
                 objectHelper_1.default.merge(item, {
-                    labels: labels
+                    labels: labels,
+                    exps
                 });
                 // if(item){
                 //     ObjectHelper.mergeChildToSource(item);
@@ -210,8 +278,10 @@ class ListenerService {
             const listeners = objectHelper_1.default.serialize(res);
             listeners.forEach(item => {
                 const labels = this.parseLabels(item.labelids, item.labeldesc);
+                const exps = this.parseExprience(item.expids, item.expdesc);
                 objectHelper_1.default.merge(item, {
-                    labels: labels
+                    labels: labels,
+                    exps
                 });
                 // if(item){
                 //     ObjectHelper.mergeChildToSource(item);
@@ -234,7 +304,7 @@ class ListenerService {
         }
         const result = labels.filter(item => !!item.id).reduce((ori, item) => {
             ori.ids.push(item.id);
-            ori.descs.push({ id: item.id, desc: item.desc });
+            ori.descs.push({ id: item.id, desc: item.desc, lsstatus: EListenerLabelStatus_1.EListenerLabelStatus.审核中 });
             return ori;
         }, {
             ids: [],
@@ -246,33 +316,66 @@ class ListenerService {
             labeldesc: JSON.stringify(result.descs)
         });
     }
-    deleteLabels(userid, labelid) {
-        this.findByUserid(userid).then(res => {
+    deleteLabels(userid, labelid, stype) {
+        return this.findByUserid(userid).then(res => {
             let isChange = false;
+            const temp = {};
             if (res && res.labelids) {
-                const labelids = objectHelper_1.default.parseJSON(res.labelids) || [];
-                if (_.isArray(labelids)) {
-                    _.remove(labelids, item => item === labelid);
+                const key = stype === ELabelType_1.ELabelSType.Label ? "labelids" : "expids";
+                const keyids = objectHelper_1.default.parseJSON(res[key]) || [];
+                if (_.isArray(keyids)) {
+                    _.remove(keyids, item => item === labelid);
                 }
-                res.labelids = JSON.stringify(labelids);
+                temp[key] = JSON.stringify(keyids);
                 isChange = true;
             }
             if (res && res.labeldesc) {
-                const labeldescs = objectHelper_1.default.parseJSON(res.labeldesc) || [];
-                if (_.isArray(labeldescs)) {
-                    _.remove(labeldescs, item => item.id === labelid);
+                const key = stype === ELabelType_1.ELabelSType.Label ? "labeldesc" : "expdesc";
+                const keydescs = objectHelper_1.default.parseJSON(res[key]) || [];
+                if (_.isArray(keydescs)) {
+                    _.remove(keydescs, item => item.id === labelid);
                 }
-                res.labeldesc = JSON.stringify(labeldescs);
+                temp[key] = JSON.stringify(keydescs);
                 ;
                 isChange = true;
             }
             if (isChange) {
-                return this.updateListener({
-                    uid: userid,
-                    labelids: res.labelids,
-                    labeldesc: res.labeldesc
-                });
+                return this.updateListener(Object.assign({ uid: userid }, temp));
             }
+        });
+    }
+    /**
+     * 更新经历
+     */
+    updateExp(userid, exp) {
+        if (!exp.id) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "经历id不能为空"));
+        }
+        exp.lsstatus = EListenerLabelStatus_1.EListenerLabelStatus.审核中;
+        return this.findOnlyListenerByUserid(userid).then(listener => {
+            if (!listener) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
+            }
+            const expids = objectHelper_1.default.parseJSON(listener.expids) || [];
+            const expdesc = objectHelper_1.default.parseJSON(listener.expdesc) || [];
+            if (expids.indexOf(exp.id) > -1) {
+                const current = expdesc.find(item => item.id);
+                if (current) {
+                    Object.assign(current, exp);
+                }
+                else {
+                    expdesc.push(exp);
+                }
+            }
+            else {
+                expids.push(exp.id);
+                expdesc.push(exp);
+            }
+            return this.updateListener({
+                uid: userid,
+                expids: JSON.stringify(expids),
+                expdesc: JSON.stringify(expdesc)
+            });
         });
     }
     static createInstance() {

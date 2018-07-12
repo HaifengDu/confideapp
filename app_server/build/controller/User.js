@@ -95,6 +95,35 @@ class UserService {
             return user;
         });
     }
+    /**
+     * findByUserid 根据用户id查找
+     */
+    findByUserid(userid) {
+        if (!userid) {
+            return Bluebird.reject({ message: "用户id不能为空" });
+        }
+        return User_1.default.find({
+            where: {
+                id: userid
+            }
+        }).then(user => {
+            if (!user) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
+            }
+            if (user.role === ERole_1.ERole.Listener) {
+                if (this.listenerService) {
+                    return this.listenerService.findByUserid(user.id).then(listener => {
+                        const userTemp = objectHelper_1.default.serialize(user);
+                        userTemp.listener = objectHelper_1.default.serialize(listener);
+                        userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                        delete userTemp.listener.user;
+                        return userTemp;
+                    });
+                }
+            }
+            return user;
+        });
+    }
     delete(id) {
         return User_1.default.update({
             status: -1

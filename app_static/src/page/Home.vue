@@ -1,7 +1,7 @@
 <template>
 <div class="home-container">
   <div class="search">
-    <div class="input">
+    <div class="input" @click="toSearchPanel">
       <div class="icon"></div>
       搜索倾听者/话题
     </div>
@@ -68,6 +68,11 @@ export default class Home extends Vue{
   toSearchFilter(){
     this.$router.push({
       path:"/searchFilter"
+    })
+  }
+  toSearchPanel(){
+    this.$router.push({
+      path:"/searchPanel"
     })
   }
   private summaryOpen = false;

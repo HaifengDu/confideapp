@@ -18,6 +18,7 @@
     "dependencies": {
         "@riophae/vue-treeselect": "0.0.28",
         "@types/lodash": "^4.14.104",
+        "@types/socket.io": "^1.4.36",
         "axios": "^0.17.1",
         "babel-polyfill": "^6.26.0",
         "element-ui": "^2.0.10",

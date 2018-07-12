@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const xml2js = require("xml2js");
 const querystring_1 = require("querystring");
 const ErrorMsg_1 = require("../model/ErrorMsg");
+const objectHelper_1 = require("./objectHelper");
 const wxconfig = require("../../config/wxconfig.json");
 const globalconfig = require("../../config/globalconfig.json");
 const appid = wxconfig.appid;
@@ -260,6 +261,42 @@ class WeixinHelper {
         const str = querystring_1.stringify(dic);
         const hash = crypto.createHash('md5').update(str, 'utf8').digest('hex');
         return sign === hash;
+    }
+    static getJsTicket(access_token) {
+        // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token={$access_token}&type=jsapi
+        if (!access_token) {
+            return Promise.reject(new ErrorMsg_1.default(false, "access_token为空"));
+        }
+        return new Promise(function (resolve, reject) {
+            request(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${access_token}&type=jsapi`, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                if (res.statusCode != 200) {
+                    reject(res);
+                }
+                resolve(res.body);
+            });
+        });
+    }
+    static getJsConfig(access_token, url) {
+        if (!url) {
+            return Promise.reject(new ErrorMsg_1.default(false, "url为空"));
+        }
+        return this.getJsTicket(access_token).then(data => {
+            const obj = objectHelper_1.default.parseJSON(data);
+            const timestamp = Date.now();
+            console.log(obj);
+            const signStr = `jsapi_ticket=${obj.ticket}&noncestr=${nonce_str}&timestamp=${timestamp}&url=${url}`;
+            console.log(signStr);
+            const sign = crypto.createHash('sha1').update(signStr).digest('hex');
+            return Promise.resolve({
+                appid: appid,
+                nonceStr: nonce_str,
+                timestamp: timestamp,
+                signature: sign
+            });
+        });
     }
 }
 exports.default = WeixinHelper;

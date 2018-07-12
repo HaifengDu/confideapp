@@ -29,6 +29,18 @@ router.get("/", function(req, res, next) {
     }
 });
 
+router.get("/getConfig",function(req,res){
+    WeixinHelper.getJsConfig(req.query.accesstoken,req.query.url).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
 router.get("/getAccesstoken",[
     query("code").not().isEmpty().withMessage("code不能为空"),
     query("code").isString().withMessage("code必须是字符串")

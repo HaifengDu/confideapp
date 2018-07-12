@@ -1,0 +1,149 @@
+import IChatRecord, { IOnlyChatRecord } from "../interface/mongomodel/IChatRecord";
+import { ERole } from "../enum/ERole";
+import EChatMsgStatus from "../enum/EChatMsgStatus";
+import EChatMsgType from "../enum/EChatMsgType";
+import { retryInsertMongo } from "../helper/util";
+import MongoChatRecord from "../model/mongo/MongoChatModel";
+import SyncHelper from "../helper/syncHelper";
+import _ = require("lodash");
+import IChatModel from "../interface/IChatModel";
+
+export class ChatSocket{
+    private static readonly joinEvent = "join";
+    private static readonly sendEvent = "send";
+    private static readonly notifyEvent = "notify";
+    private static readonly MAX_MSG_LENGTH = 100;
+    private static readonly RETRY_COUNT = 5;
+    private syncHelper: SyncHelper;
+    private roomDic:{[index:string]:Array<IOnlyChatRecord>}={};
+    constructor(private socket:SocketIO.Socket,private role:ERole){
+        this.syncHelper = SyncHelper.getInstance();
+        this.initEvent();
+    }
+
+    private static createRoom(source:number,target:number){
+        return source+"_"+target;
+    }
+
+    private initEvent(){
+        this.socket.on(ChatSocket.joinEvent,this.joinRoom.bind(this));
+        this.socket.on(ChatSocket.sendEvent,this.sendMsg.bind(this));
+        this.socket.on('disconnect',this.disconnectInsetAll.bind(this));
+        this.socket.on("leave",this.leaveInsertRoomRecords.bind(this));
+        this.socket.on("error",()=>{
+            for(let key in this.roomDic){
+                delete this.roomDic[key];
+            }
+        });       
+    }
+
+    /**
+     * 加入房间事件
+     * @param data 
+     */
+    private joinRoom(data:{pid:number,lid:number,name:string}){
+        const pid = data.pid;//倾诉者
+        const lid = data.lid;//倾听者
+        const roomid = ChatSocket.createRoom(pid,lid);
+        this.socket.join(roomid);
+        this.socket.to(roomid).emit(ChatSocket.joinEvent,{msg:`${data.name}加入房间`,roomid});   
+    }
+
+    /**
+     * 发送消息事件
+     * @param res 
+     */
+    private sendMsg(res:IChatModel){
+        let tempsenduid = res.pid;
+        let temptouid = res.lid;
+        if(!tempsenduid||!temptouid){
+            return;
+        }
+        if(this.role===ERole.Listener){
+            tempsenduid = res.lid;
+            temptouid = res.pid;
+        }
+        const roomid = ChatSocket.createRoom(res.pid,res.lid);
+        const msgObj:IOnlyChatRecord = {
+            roomid,
+            senduid:tempsenduid,
+            touid:temptouid,
+            date:new Date(),
+            status:EChatMsgStatus.Send,
+            type:EChatMsgType.Text,
+            msg:res.msg
+        }
+        if(res.type===EChatMsgType.Audio){
+            msgObj.isload=false;
+            msgObj.mediaid = res.mediaid;
+            msgObj.type = EChatMsgType.Audio
+        }
+        if (!this.roomDic[roomid]) {
+            this.roomDic[roomid] = [];
+        }
+        this.roomDic[roomid].push(msgObj);
+        //当消息长度大于最大限制时，插入库中并删除
+        if(this.roomDic[roomid].length>=ChatSocket.MAX_MSG_LENGTH){
+            setTimeout(()=>{
+                const shouldInsertedRecord = this.roomDic[roomid].splice(0,ChatSocket.MAX_MSG_LENGTH);
+                retryInsertMongo(ChatSocket.RETRY_COUNT)
+                (MongoChatRecord,<IChatRecord[]>shouldInsertedRecord,(err,docs)=>{
+                    this.syncAudio(docs);
+                });
+            });
+        }
+        this.socket.to(roomid).broadcast.emit(ChatSocket.sendEvent,msgObj);
+        //去指定的用户通知
+        this.socket.to(temptouid.toString()).broadcast.emit(ChatSocket.notifyEvent,msgObj);
+    }
+
+    /**
+     * 端口链接事件
+     */
+    private disconnectInsetAll(){
+        const values = _.values(this.roomDic);
+        const records = _.flatten(values);
+        if(records.length){
+            retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatRecord,<IChatRecord[]>records,(err,docs)=>{
+                for(let key in this.roomDic){
+                    delete this.roomDic[key];
+                }
+                this.syncAudio(docs);
+            });
+        }
+    }
+
+    /**
+     * 离开房间事件
+     * @param data 
+     */
+    private leaveInsertRoomRecords(data:{roomid:string}){
+        const roomid = data.roomid;
+            if(roomid){
+                this.socket.leave(roomid);
+                if(this.roomDic[roomid]&&this.roomDic[roomid].length){
+                    retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatRecord,<IChatRecord[]>this.roomDic[roomid],(err,docs)=>{
+                        delete this.roomDic[roomid];
+                        this.syncAudio(docs);
+                    });
+                }
+            }
+    }
+
+    /**
+     * 同步音频
+     * @param docs 
+     */
+    private syncAudio(docs:IChatRecord[]){
+        const ids = docs.filter(item=>item.type===EChatMsgType.Audio).map(item=>item._id);
+        if(ids.length){
+            this.syncHelper.syncAudio(ids);
+        }
+    }
+
+    static getInstance(socket:SocketIO.Socket,role:ERole){
+        return new ChatSocket(socket,role);
+    }
+}
+
+export default ChatSocket;

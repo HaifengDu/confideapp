@@ -4,6 +4,7 @@ import * as xml2js from "xml2js";
 import {stringify} from "querystring";
 import { IWeixinModel } from '../interface/IWeixinModel';
 import ErrorMsg from '../model/ErrorMsg';
+import ObjectHelper from './objectHelper';
 const wxconfig = require("../../config/wxconfig.json");
 const globalconfig = require("../../config/globalconfig.json");
 const appid = wxconfig.appid;
@@ -276,5 +277,44 @@ export default class WeixinHelper{
         const str = stringify(dic);
         const hash = crypto.createHash('md5').update(str,'utf8').digest('hex');
         return sign===hash;
+    }
+
+    public static getJsTicket(access_token:string){
+        // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token={$access_token}&type=jsapi
+        if(!access_token){
+            return Promise.reject(new ErrorMsg(false,"access_token为空"));
+        }
+        return new Promise<string>(function(resolve,reject){
+            request(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${access_token}&type=jsapi`,(err,res)=>{
+                if(err){
+                    reject(err);
+                }
+                if(res.statusCode!=200){
+                    reject(res);
+                }
+                resolve(res.body);
+            });
+        });
+    }
+
+    public static getJsConfig(access_token:string,url:string){
+        if(!url){
+            return Promise.reject(new ErrorMsg(false,"url为空"));
+        }
+        return this.getJsTicket(access_token).then(data=>{
+            const obj = ObjectHelper.parseJSON(data);
+            const timestamp = Date.now();
+            console.log(obj);
+            const signStr = `jsapi_ticket=${obj.ticket}&noncestr=${nonce_str}&timestamp=${timestamp}&url=${url}`;
+            console.log(signStr);
+            const sign = crypto.createHash('sha1').update(signStr).digest('hex');
+
+            return Promise.resolve({
+                appid:appid,
+                nonceStr:nonce_str,
+                timestamp:timestamp,
+                signature:sign
+            })
+        });
     }
 }

@@ -21,7 +21,7 @@ export default class Login extends Vue{
         this.checkCode().then((res:IUser)=>{
             this.$router.replace("/");
         },(err:ErrorMsg)=>{
-            const originUrl = encodeURIComponent(location.origin);
+            const originUrl = encodeURIComponent("http://qxqt.applinzi.com:8080");//location.host
             const appid = config.appid;
             // location.href = `https://open.weixin.qq.com/connect/qrconnect?appid=${appid}&redirect_uri=${originUrl}&response_type=code&scope=snsapi_login&state=STATE#wechat_redirect;`;
             location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${originUrl}&response_type=code&scope=snsapi_userinfo&state=State#wechat_redirect`;

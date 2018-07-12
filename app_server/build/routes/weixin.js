@@ -25,6 +25,15 @@ router.get("/", function (req, res, next) {
         res.send('mismatch');
     }
 });
+router.get("/getConfig", function (req, res) {
+    weixinHelper_1.default.getJsConfig(req.query.accesstoken, req.query.url).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
 router.get("/getAccesstoken", [
     check_1.query("code").not().isEmpty().withMessage("code不能为空"),
     check_1.query("code").isString().withMessage("code必须是字符串")

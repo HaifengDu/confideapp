@@ -21,6 +21,8 @@ import CallService from "@/page/settings/CallService.vue";
 import SearchResult from "@/page/SearchResult.vue";
 import PersonalInfo from "@/page/settings/PersonalInfo.vue";
 import Follow from "@/page/userInfo/Follow.vue";
+import SearchPanel from "@/page/SearchPanel.vue";
+import Chat from "@/page/Chat.vue";
 
 Vue.use(Router)
 
@@ -121,6 +123,14 @@ const router = new Router({
       path:'/follow',
       name:'Follow',
       component:Follow
+    },{
+      path:"/searchPanel",
+      name:"SearchPanel",
+      component:SearchPanel
+    },{
+      path:"/chat",
+      name:"Chat",
+      component:Chat
     }
   ]
 });

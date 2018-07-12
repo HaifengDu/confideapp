@@ -1,13 +1,14 @@
 <template>
     <div class="container">
         <div class="body">
-            <div class="title">用户单价（元）
-                <input class="custom-price" type="number" v-model="price" min="0" step="0.1" max="10"/>
-            </div>
+            <div class="title">用户单价（元）</div>
             <div class="price">
                 <div class="content">
                     同等服务质量的，单价越高曝光越多，同一用户当日所有访问只记一次（只扣一次费用）。
                 </div>
+            </div>
+            <div class="title price-number">
+                <el-input-number v-model="price" :min="0.1" :step="0.1"></el-input-number>
             </div>
             <div class="divider"></div>
             <div class="title">推广排名</div>
@@ -16,10 +17,10 @@
                     <p class="count">66~99</p>
                     <p class="content">预计首页排名</p>
                 </div>
-                <div>
+                <!-- <div>
                     <p class="count">11.3倍</p>
                     <p class="content">预计曝光增长</p>
-                </div>
+                </div> -->
             </div>
             <div class="reminder">
                 <p>推广排名由用户单价决定，提高单价有利于您获得更靠前的排名。</p>
@@ -38,7 +39,7 @@
             </div>
         </div>
         <div class="button-box">
-            <mt-button size="normal" type="primary" @click.native="toAdvertise">开始推广</mt-button>
+            <mt-button size="normal" type="primary" @click.native="save">保存设置</mt-button>
         </div>
     </div>
 </template>
@@ -54,6 +55,10 @@ export default class AdvertSetting extends Vue{
     private isOpenAdvLimit = false;
     private limitPrice = 0;
     private price = 0.1;
+
+    save(){
+        console.log('save settings...');
+    }
 }
 </script>
 
@@ -73,6 +78,11 @@ export default class AdvertSetting extends Vue{
         color:rgb(173,173,173);
         text-align:left;
         padding-left:20px;
+    }
+    .title.price-number{
+        padding: 10px 20px;
+        text-align: right;
+        background: #fff;
     }
     .divider{
         height:10px;

@@ -132,6 +132,7 @@ export default class AdvertSetting extends Vue{
                 border-radius:0;
                 border-bottom:1px solid @mainColor;
                 width: 50px;
+                text-align:center;
             }
         }
         .reminder{

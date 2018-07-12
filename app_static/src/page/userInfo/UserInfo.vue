@@ -61,6 +61,11 @@
                 <div class="information" :class="{'close':!isExpended}">
                     {{resume}}
                 </div>
+                <div class="title">经历</div>
+                <div class="experience" v-for="(exp,index) in exps" :key="index">
+                    <span class="exp-name">{{exp.name}}</span>
+                    <span class="exp-content">{{exp.desc}}</span>
+                </div>
                 <span @click="expend" class="expend-btn">[{{isExpended?'收起':'展开'}}]</span>
             </div>
             <div class="attentions">
@@ -128,6 +133,7 @@ export default class UserInfo extends Vue{
     private isListener = false;
     //是否已关注该用户
     private isFollowed = true;
+    private exps:any = [];
 
     //TODO:测试数据
     
@@ -167,6 +173,8 @@ export default class UserInfo extends Vue{
                 }
             });
             this.tags = listener.labels;
+            //TODO:将经历名称与desc描述数据组合到一起循环展示
+            // this.exps = JSON.parse(listener.labeldesc);
         }
         this.resume = data.resume;
         this.checkFollow(data.id);
@@ -385,9 +393,16 @@ export default class UserInfo extends Vue{
                     padding-right:30px;
                     .p-rl;
                     text-align: justify;
+                    color:#b5b5b5;
                 }
                 .close{
                     .t-ellipsis(3);
+                }
+                .experience{
+                    color:#b5b5b5;
+                    .exp-name{
+                        font-weight: bold;
+                    }
                 }
                 .expend-btn{
                     .p-ab;

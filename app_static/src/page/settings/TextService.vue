@@ -11,7 +11,7 @@
                     <div class="price-wrapper">
                         <span>设定价</span>
                         <input class="entry" type="number" min="5" max="100" v-model="item.price"/>元
-                        <p class="tax-price">显示价(含税)：{{item.taxprice}}元</p>
+                        <p class="tax-price">显示价(含税)：{{calPriceWithTax(item.price)}}元</p>
                     </div>
                 </mt-cell>
             </div>
@@ -52,7 +52,6 @@ const listenerService = ListenerService.getInstance();
 export default class TextService extends Vue{
     private priceDatas:any = [];
     private titles = ['15分钟文字服务','30分钟文字服务','45分钟文字服务','60分钟文字服务'];
-    //TODO:计算税后价格
     created(){
         if((<any>this).user.pricesettings){
             let prices = (<any>this).user.pricesettings.filter((price:any)=>price.type==EPriceType.EWord);
@@ -94,6 +93,10 @@ export default class TextService extends Vue{
             }
         }
         return result;
+    }
+
+    calPriceWithTax(price:number){
+        return (price*(1+0.066)).toFixed(2);
     }
 
     save(){
@@ -148,6 +151,7 @@ export default class TextService extends Vue{
                 border-radius:0;
                 border-bottom:1px solid @mainColor;
                 width: 50px;
+                text-align:center;
             }
             .tax-price{
                 padding-left:10px;

@@ -1,19 +1,16 @@
 <template>
   <div class="lists-container">
     <div class="tab">
-      <div class="item sort" :class="{'active':tab=='sort'}" @click="showSlide('sort')">排序</div>
-      <div class="item filter" :class="{'active':tab=='filter'}" @click="showSlide('filter')">筛选</div>
+      <div :class="['item','all',{'active':tab==''}]" @click="setSorter('')">综合排序</div>
+      <div :class="['item','time',{'active':tab=='sealtimes'}]" @click="setSorter('sealtimes')">月售时长</div>
+      <div :class="['item','comments',{'active':tab=='praisepercent'}]" @click="setSorter('praisepercent')">好评率</div>
+      <div class="item filter" :class="{'active':filter=='active'}" @click="showSlide"></div>
     </div>
     <div class="lists">
       <list-item v-for="(item,i) in lists" :key="i" :user="item"></list-item>
     </div>
     <slide-page ref="slidePage">
-      <search-filter from="list" @filter="closeSlide" v-if="tab=='filter'"></search-filter>
-      <div class="sort-list" v-else>
-        <div :class="['time',{'active':sorter=='time'}]" @click="setSorter('')">综合排序</div>
-        <div :class="['time',{'active':sorter=='time'}]" @click="setSorter('sealtimes')">月售时长</div>
-        <div :class="['comments',{'active':sorter=='comments'}]" @click="setSorter('praisepercent')">好评率</div>
-      </div>
+      <search-filter from="list" @filter="closeSlide"></search-filter>
     </slide-page>
   </div>
 </template>
@@ -41,21 +38,23 @@ const listService = ListService.getInstance();
 export default class List extends Vue{
   private lists = []
   private tab = ''
+  private filter = 's'
   private sorter = ''
   created() {
     this.getLists()
   }
-  showSlide(item:any){
-    this.tab = item;
+  showSlide(){
     (<any>this.$refs.slidePage).show();
   }
   closeSlide(){
+    this.filter = 'active';
     (<any>this.$refs.slidePage).close();
     this.getLists()
   }
   setSorter(item:any){
+    this.tab = item
     this.sorter = item
-    this.closeSlide()
+    this.getLists()
   }
   getLists(){
     const searchConds = (<any>this).searchConds;
@@ -94,9 +93,15 @@ export default class List extends Vue{
       }
     }
     .sort{
-      border-right:1px solid #d3d3d3;
+      // border-right:1px solid #d3d3d3;
     }
     .filter{
+      background:url(../../static/images/list/filter.png) no-repeat center;
+      background-size:2rem;
+      &.active{
+        background:url(../../static/images/list/filter-active.png) no-repeat center;
+        background-size:2rem;
+      }
     }
   }
   .lists{

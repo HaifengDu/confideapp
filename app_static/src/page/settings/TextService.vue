@@ -33,6 +33,7 @@ import {Component} from 'vue-property-decorator';
 import ListenerService from "../../api/ListenerService.ts";
 import {EPriceType} from "../../enum/EPriceType.ts";
 import {EPriceCircle} from "../../enum/EPriceCircle.ts";
+import {EPriceStatus} from "../../enum/EPriceStatus.ts";
 import {mapGetters,mapActions} from 'vuex';
 const listenerService = ListenerService.getInstance();
 
@@ -57,7 +58,7 @@ export default class TextService extends Vue{
             let prices = (<any>this).user.pricesettings.filter((price:any)=>price.type==EPriceType.EWord);
             prices.forEach((item:any)=>{
                 let tempData = Object.assign({},item);
-                tempData.available = tempData.status==1;
+                tempData.available = tempData.status==EPriceStatus.Enable;
                 this.priceDatas.push(tempData);
             });
         }
@@ -101,7 +102,7 @@ export default class TextService extends Vue{
             prices.push({
                 id:price.id,
                 type:price.type,
-                status:price.available?1:0,
+                status:price.available?EPriceStatus.Enable:EPriceStatus.Disable,
                 timecircle:price.timecircle,
                 price:parseFloat(price.price)
             });

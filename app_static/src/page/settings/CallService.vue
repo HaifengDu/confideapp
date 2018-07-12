@@ -36,6 +36,7 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import ListenerService from "../../api/ListenerService.ts";
 import {EPriceType} from "../../enum/EPriceType.ts";
+import {EPriceStatus} from "../../enum/EPriceStatus.ts";
 import {mapGetters,mapActions} from 'vuex';
 const listenerService = ListenerService.getInstance();
 
@@ -59,7 +60,7 @@ export default class CallService extends Vue{
         if((<any>this).user.pricesettings){
             let priceData = (<any>this).user.pricesettings.find((price:any)=>price.type==EPriceType.ECall);
             if(priceData){
-                priceData.available = priceData.status==1;
+                priceData.available = priceData.status==EPriceStatus.Enable;
                 this.priceData = Object.assign({},priceData);
             }
             
@@ -98,7 +99,7 @@ export default class CallService extends Vue{
         const prices:any = {
             id:this.priceData.id,
             type:this.priceData.type,
-            status:this.priceData.available?1:0,
+            status:this.priceData.available?EPriceStatus.Enable:EPriceStatus.Disable,
             price:parseFloat(this.priceData.price),
             timecircle:parseInt(this.priceData.timecircle)
         };

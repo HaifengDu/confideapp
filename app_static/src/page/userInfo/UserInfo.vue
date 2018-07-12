@@ -116,6 +116,7 @@ const SHOW_MSG_TIME = 2000;
     }
 })
 export default class UserInfo extends Vue{
+    private weixinid = '';
     private stepPrice = 9.9;
     private helpNum = 1;
     private saledHours = 0.3;
@@ -147,14 +148,12 @@ export default class UserInfo extends Vue{
         {name:'帮我分析问题'}
     ]
     created(){
-        //获取用户id
-        console.log((<any>this).$route.query.id);
-        (<any>this).getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s');
+        this.weixinid = (<any>this).$route.query.weixinid||'oRtVK06i1JN_GkUA5NPk7pXzOJ3s';
+        (<any>this).getUserInfo(this.weixinid);
     }
 
     expend(){
         this.isExpended = !this.isExpended;
-        console.log((<any>this));
     }
 
     addConcern(){

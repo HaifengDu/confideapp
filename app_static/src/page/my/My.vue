@@ -9,8 +9,8 @@
         </div>
         <div class="nick-name">{{user.nickname}}</div>
         <div class="follows">
-          <div class="follow">收藏<span class="num">10w+</span></div>
-          <div class="like">关注<span class="num">666</span></div>
+          <div class="follow" @click="toFollow">关注<span class="num">10w+</span></div>
+          <div class="like" @click="toVisitor">访客<span class="num">666</span></div>
         </div>
       </div>
     </div>
@@ -76,6 +76,7 @@ import {Component} from 'vue-property-decorator';
 // import MyService from "../../api/UserService";
 import { mapActions, mapGetters } from 'vuex';
 import { INoopPromise } from '../../util/methods';
+import {EFollowType} from "../../enum/EFollowType.ts";
 @Component({
   methods:{
     ...mapActions({
@@ -149,6 +150,12 @@ export default class My extends Vue{
   }
   goBaseInfo(){
     this.$router.push({path:'/baseInfo',query:{from:"my"}})
+  }
+  toFollow(){
+    this.$router.push({path:'/follow',query:{type:String(EFollowType.Follow)}});
+  }
+  toVisitor(){
+    this.$router.push({path:'/follow',query:{type:String(EFollowType.Visitor)}});
   }
   created(){
     document.title = "我的";

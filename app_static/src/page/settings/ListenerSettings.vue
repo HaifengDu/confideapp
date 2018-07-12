@@ -6,29 +6,31 @@
                 <mt-cell title="基本资料" is-link class="cell-con"></mt-cell>
             </div>
             <div @click="toPage('myTags')" class="cell-box">
-                <mt-cell title="我的标签" is-link class="cell-con">
-                    <!-- <span class="cell-text">情感挽回,婚姻关系,人际关系,个人成长,情绪疏导</span> -->
+                <mt-cell title="我的标签" is-link class="cell-con cell-prev">
+                    <span class="cell-text">{{myTagsPreview.join(',')}}</span>
                 </mt-cell>
             </div>
             <div @click="toPage('personalInfo')" class="cell-box">
-                <mt-cell title="个人信息" is-link class="cell-con"></mt-cell>
+                <mt-cell title="个人信息" is-link class="cell-con cell-prev">
+                    <span class="cell-text">{{myExpPreview.join(',')}}</span>
+                </mt-cell>
             </div>
             <div @click="toPage('otherInfo')" class="cell-box">
-                <mt-cell title="其他资料" is-link class="cell-con">
-                    <!-- <span class="cell-text">已婚,本科</span> -->
+                <mt-cell title="其他资料" is-link class="cell-con cell-prev">
+                    <span class="cell-text">{{myOtherPreview.join(',')}}</span>
                 </mt-cell>
             </div>
             <div class="title">
                 费用设置
             </div>
             <div @click="toPage('textService')" class="cell-box">
-                <mt-cell title="文字服务" is-link class="cell-con">
-                    <span class="cell-text">0.1元/条</span>
+                <mt-cell title="文字服务" is-link class="cell-con cell-prev">
+                    <span v-if="this.textPrice.price" class="cell-text">{{this.textPrice.price}}元/{{this.textPrice.timecircle*15}}分钟</span>
                 </mt-cell>
             </div>
             <div @click="toPage('callService')" class="cell-box">
-                <mt-cell title="通话服务" is-link class="cell-con">
-                    <span class="cell-text">9.8元/15分钟</span>
+                <mt-cell title="通话服务" is-link class="cell-con cell-prev">
+                    <span v-if="this.callPrice.price" class="cell-text">{{this.callPrice.price}}元/{{this.callPrice.timecircle}}分钟</span>
                 </mt-cell>
             </div>
             <mt-cell title="暂不接单" class="cell-con" @click.native.prevent="changeBusinessStatus">
@@ -57,6 +59,8 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import { mapGetters,mapActions } from 'vuex';
 import {ERecieveStatus} from '../../enum/ERecieveStatus';
+import {EPriceType} from "../../enum/EPriceType.ts";
+import {EPriceStatus} from "../../enum/EPriceStatus.ts"
 import ListenerService from "../../api/ListenerService.ts";
 const listenerService = ListenerService.getInstance();
 
@@ -75,11 +79,39 @@ const listenerService = ListenerService.getInstance();
 export default class ListenerSettings extends Vue{
     private isNotReceive = false;
     private showAlertWin = false;
+    private myTagsPreview:any = [];
+    private myExpPreview:any = [];
+    private myOtherPreview:any=[];
+    private callPrice:any={};
+    private textPrice:any={};
    
     created(){
-        if((<any>this).user&&(<any>this).user.listener){
-            this.isNotReceive = (<any>this).user.listener.recievestatus === ERecieveStatus.休息中;
+        const user = (<any>this).user;
+        if(user&&user.listener){
+            const otherInfos = ['familyname','eduname','jobname'];
+            this.isNotReceive = user.listener.recievestatus === ERecieveStatus.休息中;
+            if(user.listener.labels&&user.listener.labels.length){
+                user.listener.labels.forEach((label:any)=>{
+                    this.myTagsPreview.push(label.name);
+                });
+            }
+            if(user.listener.exps&&user.listener.exps.length){
+                user.listener.exps.forEach((exp:any)=>{
+                    this.myExpPreview.push(exp.name);
+                });
+            }
+            otherInfos.forEach((key:string)=>{
+                user.listener[key]&&this.myOtherPreview.push(user.listener[key]);
+            });
         }
+        if(user&&user.pricesettings){
+            this.setPricePrev(user.pricesettings);
+        }
+    }
+
+    setPricePrev(prices:Array<any>){
+        this.callPrice = prices.find((price:any)=>price.type===EPriceType.ECall&&price.status===EPriceStatus.Enable)||{price:''};
+        this.textPrice = prices.filter(item=>item.type===EPriceType.EWord&&item.status===EPriceStatus.Enable)[0]||{price:''};
     }
 
     changeBusinessStatus(){
@@ -148,6 +180,9 @@ export default class ListenerSettings extends Vue{
         }
         a.cell-con{
             padding-left:0;
+            .cell-text{
+                .t-ellipsis(1)
+            }
         }
     }
     div.mint-popup.custom{

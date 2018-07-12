@@ -23,16 +23,19 @@ import PersonalInfo from "@/page/settings/PersonalInfo.vue";
 import Follow from "@/page/userInfo/Follow.vue";
 import SearchPanel from "@/page/SearchPanel.vue";
 import Chat from "@/page/Chat.vue";
+import MyAdvert from "@/page/advert/MyAdvert.vue";
+import AdvertSetting from "@/page/advert/AdvertSetting.vue";
+import AdvertRecord from "@/page/advert/AdvertRecord.vue";
 
 Vue.use(Router)
 
 const router = new Router({
   routes: [
     {
-      path:"/login",
-      component:Login,
-      meta:{
-        noRequireAuth:true
+      path: "/login",
+      component: Login,
+      meta: {
+        noRequireAuth: true
       }
     },
     {
@@ -70,15 +73,16 @@ const router = new Router({
       path: "/exprience",
       name: "Exprience",
       component: Exprience
-    },{
-      path:"/searchFilter",
-      name:"SearchFilter",
-      component:SearchFilter
     },
     {
-      path:"/searchResult",
-      name:"SearchResult",
-      component:SearchResult
+      path: "/searchFilter",
+      name: "SearchFilter",
+      component: SearchFilter
+    },
+    {
+      path: "/searchResult",
+      name: "SearchResult",
+      component: SearchResult
     },
     {
       path: "/tag",
@@ -131,6 +135,18 @@ const router = new Router({
       path:"/chat",
       name:"Chat",
       component:Chat
+    },{
+      path:"/myAdvert",
+      name:"MyAdvert",
+      component:MyAdvert
+    },{
+      path:"/advertSetting",
+      name:"AdvertSetting",
+      component:AdvertSetting
+    },{
+      path:'/advertRecord',
+      name:'AdvertRecord',
+      component:AdvertRecord
     }
   ]
 });

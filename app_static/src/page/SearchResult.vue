@@ -1,8 +1,10 @@
 <template>
   <div class="lists-container">
-    <div class="tab">
-      <div class="item sort">排序</div>
-      <div class="item filter">筛选</div>
+    <div class="search">
+      <mt-search
+        v-model="value"
+        cancel-text="取消"
+        placeholder="倾听者"></mt-search>
     </div>
     <div class="lists">
       <list-item v-for="(item,i) in lists" :key="i" :user="item"></list-item>
@@ -49,23 +51,9 @@ export default class SearchResult extends Vue{
 .lists-container{
   background:#f5f5f5;
   height:100vh;
-  .tab{
-    display: flex;
-    height:3.4rem;
-    line-height: 3.4rem;
-    background:#f5f5f5;
-    border-bottom:1px solid #d3d3d3;
-    .item{
-      flex:1;
-      &.active{
-        color:@mainColor;
-      }
-    }
-    .sort{
-      border-right:1px solid #d3d3d3;
-    }
-    .filter{
-    }
+  .search{
+    height:4rem;
+    width:100%;
   }
   .lists{
     height:~'calc(100% - 3.4rem)';

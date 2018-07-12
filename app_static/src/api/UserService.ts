@@ -60,6 +60,28 @@ export default class MyService {
     public updateListenerOther(data:any):AxiosPromise<ErrorMsg>{
       return Axios.post("user/updateOther", data);
     }
+
+    /**
+     * 获取访客数据
+     */
+    public getVisitVecords(params:any):AxiosPromise<any>{
+      return Axios.get("/user/getvisitrecords", {params});
+    }
+
+    /**
+     * 获取关注列表数据
+     */
+    public getFavorites(params:any):AxiosPromise<any>{
+      return Axios.get("/user/getfavorites", {params});
+    }
+
+    /**
+     * 获取每个用户对应的关注数据
+     */
+    public getCheckRecord(ids:Array<number>):AxiosPromise<any>{
+      return Axios.get("/user/getcheckrecord", {params:{lids:JSON.stringify(ids)}});
+    }
+
     private constructor() {}
 
     public static getInstance() {

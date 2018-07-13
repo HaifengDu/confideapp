@@ -82,6 +82,20 @@ export default class MyService {
       return Axios.get("/user/getcheckrecord", {params:{lids:JSON.stringify(ids)}});
     }
 
+    /**
+     * 关注
+     */
+    public addfavorite(id:number):AxiosPromise<any>{
+      return Axios.get("/user/addfavorite", {params:{lid:id}});
+    }
+
+    /**
+     * 取消关注
+     */
+    public delfavorite(id:number):AxiosPromise<any>{
+      return Axios.get("/user/delfavorite", {params:{lid:id}});
+    }
+
     private constructor() {}
 
     public static getInstance() {

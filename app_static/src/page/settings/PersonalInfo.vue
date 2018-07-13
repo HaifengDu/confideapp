@@ -221,7 +221,6 @@ export default class PersonalInfo extends Vue{
 
     //删除我的经历标签
     deleteMyExp(){
-        //TODO:向后台请求，删除我的经历标签
         labelService.deleteExperice(this.selectedData.id).then((res:any)=>{
             if(res.data.success){
                 const index = this.experiences.findIndex((item:any)=>item.id===this.selectedData.id);

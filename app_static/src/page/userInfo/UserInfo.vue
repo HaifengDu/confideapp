@@ -6,7 +6,13 @@
             </div>
             <div class="nickname">{{user.nickname}}</div>
             <div class="user-lab">北京市</div>
-            <div class="user-lab" v-if="isListener">已婚 | 本科 | 巨蟹座 | 男 28</div>
+            <div class="user-lab">
+                <span v-if="isListener">{{user.listener.familyname}} | </span>
+                <span v-if="isListener">{{user.listener.eduname}} | </span> 
+                <span v-if="isListener">{{user.listener.eduname}} | </span>
+                <span>{{user.sex==1?'女':'男'}} | </span>
+                <span>{{getUserAge(user.birthday)}}</span>
+            </div>
             <div v-if="!isSelf" class="option">
                 <div class="action">
                     <div class="icon">
@@ -25,7 +31,7 @@
                 <img src="static/images/userInfo/order.png">
             </div>
             <div class="register">
-                2018.05.28注册
+                {{user.createdAt.split('T')[0]}}注册
             </div>
         </div>
         <div class="body">
@@ -62,8 +68,8 @@
                     {{resume}}
                 </div>
                 <div class="title">经历</div>
-                <div class="experience" v-for="(exp,index) in exps" :key="index">
-                    <span class="exp-name">{{exp.name}}</span>
+                <div v-if="exp.desc" class="experience" v-for="(exp,index) in exps" :key="index">
+                    <span class="exp-name">{{exp.name}}:</span>
                     <span class="exp-content">{{exp.desc}}</span>
                 </div>
                 <span @click="expend" class="expend-btn">[{{isExpended?'收起':'展开'}}]</span>
@@ -87,9 +93,6 @@
         </mt-popup>
         <message :visible="msgVisible" position="top"></message>
         <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
-        <!-- <div class="button-box">
-            <mt-button size="normal" type="primary" @click.native="contact">进入聊天</mt-button>
-        </div> -->
     </div>
 </template>
 
@@ -120,7 +123,7 @@ const SHOW_MSG_TIME = 2000;
 })
 export default class UserInfo extends Vue{
     private weixinid = '';
-    private stepPrice = 9.9;
+    private stepPrice = 0;
     private helpNum = 1;
     private saledHours = 0.3;
     
@@ -162,6 +165,7 @@ export default class UserInfo extends Vue{
         this.isListener = data.role === ERole.Listener;
         if(this.isListener){
             let listener = data.listener;
+            //我的标签部分
             listener.labels.forEach((label:any)=>{
                 label.desc = '';
             })
@@ -173,11 +177,24 @@ export default class UserInfo extends Vue{
                 }
             });
             this.tags = listener.labels;
-            //TODO:将经历名称与desc描述数据组合到一起循环展示
-            // this.exps = JSON.parse(listener.labeldesc);
+            //经历部分
+            let exps = listener.exps;
+            let expDescs = JSON.parse(listener.expdesc);
+            exps.forEach((exp:any)=>{
+                let desc = expDescs.find((item:any)=>item.id==exp.id);
+                desc&&(exp.desc = desc.desc);
+            });
+            this.exps = exps;
+            //起步价
+            this.stepPrice = listener.minprice||0;
         }
+        //简介
         this.resume = data.resume;
         this.checkFollow(data.id);
+    }
+
+    getUserAge(birthday:string){
+        return new Date().getFullYear() - new Date(birthday).getFullYear();
     }
 
     checkFollow(id:number){
@@ -185,6 +202,7 @@ export default class UserInfo extends Vue{
             if(res.data.success){   
                 const data = res.data.data;
                 this.isFollowed = data[0].record;
+                this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
             }
         });
     }
@@ -194,8 +212,29 @@ export default class UserInfo extends Vue{
     }
 
     addConcern(){
-        this.isFollowed = !this.isFollowed;
-        this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+        const user = (<any>this).user;
+        if(!user){
+            return;
+        }
+        if(!this.isFollowed){
+            userService.addfavorite(user.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    this.isFollowed = !this.isFollowed;
+                    this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+                }
+            });
+        }else{
+            //取消关注
+            userService.delfavorite(user.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    this.isFollowed = !this.isFollowed;
+                    this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+                }
+            });
+        }
+        
     }
 
     showScribe(tag:any){
@@ -401,6 +440,7 @@ export default class UserInfo extends Vue{
                 .experience{
                     color:#b5b5b5;
                     .exp-name{
+                        color: #2c3e50;
                         font-weight: bold;
                     }
                 }

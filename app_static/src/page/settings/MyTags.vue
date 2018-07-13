@@ -148,8 +148,6 @@ export default class MyTags extends Vue{
             return;
         }
         if(!this.isEdit){
-            //向后台发送新增标签请求，参数，stype，name
-            //添加成功后，接受后台返回的标签id，然后将标签数据push到this.tags数组中
             labelService.addLabel({name:this.newLabel.name}).then((res:any)=>{
                 if(res.data.success){
                     const data = res.data.data;

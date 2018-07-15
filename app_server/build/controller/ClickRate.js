@@ -36,6 +36,17 @@ class ClickRateService {
         });
     }
     /**
+     * 取消关注
+     * @param pid
+     * @param lid
+     */
+    deleteFavorite(pid, lid) {
+        return MongoFavorite_1.MongoFavorite.deleteOne({
+            pid,
+            lid
+        });
+    }
+    /**
      * 收藏
      * @param pid
      * @param lid
@@ -146,10 +157,10 @@ class ClickRateService {
             return Promise.reject(new ErrorMsg_1.default(false, "用户数量过大"));
         }
         const where = {
-            pid: {
+            pid: userid,
+            lid: {
                 $in: ids
-            },
-            lid: userid
+            }
         };
         return MongoFavorite_1.MongoFavorite.find(where).then(res => {
             return ids.map(id => {

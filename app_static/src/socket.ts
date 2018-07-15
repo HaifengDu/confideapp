@@ -29,8 +29,8 @@ export default class SocketWrapper{
         return this.socket.removeEventListener(event,listener);
     }
 
-    public emit(event:string,args:any){
-        return this.socket.emit(event,args);
+    public emit(event:string,args:any,cb?:any){
+        return this.socket.emit(event,args,cb);
     }
 
     public close(){

@@ -13,7 +13,6 @@
 
 <body>
     <div id="app"></div>
-    <div><button id="test1111">测试</button></div>
     <!-- built files will be auto injected -->
     <script>
         (function(window, document) {
@@ -22,11 +21,11 @@
             var fontSize = (clientW * 10) / 375
             document.getElementsByTagName('html')[0].style['font-size'] = fontSize + 'px'
         })(window, document)
-        document.getElementById("test1111").addEventListener('click', function() {
-            wx.playVoice({
-                localId: window.testautoid // 需要播放的音频的本地ID，由stopRecord接口获得
-            });
-        });
+        // document.getElementById("test1111").addEventListener('click', function() {
+        //     wx.playVoice({
+        //         localId: window.testautoid // 需要播放的音频的本地ID，由stopRecord接口获得
+        //     });
+        // });
         // var socket = io.connect('http://localhost:3001/chat?roomid=123123');
         // var testDom = document.getElementById("test");
         // socket.on("connect", () => {

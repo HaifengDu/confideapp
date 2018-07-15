@@ -7,11 +7,12 @@ const util_1 = require("../helper/util");
 const MongoChatModel_1 = require("../model/mongo/MongoChatModel");
 const syncHelper_1 = require("../helper/syncHelper");
 const _ = require("lodash");
+const uuid = require("uuid");
+const roomDic = {};
 class ChatSocket {
     constructor(socket, role) {
         this.socket = socket;
         this.role = role;
-        this.roomDic = {};
         this.syncHelper = syncHelper_1.default.getInstance();
         this.initEvent();
     }
@@ -21,11 +22,12 @@ class ChatSocket {
     initEvent() {
         this.socket.on(ChatSocket.joinEvent, this.joinRoom.bind(this));
         this.socket.on(ChatSocket.sendEvent, this.sendMsg.bind(this));
+        this.socket.on(ChatSocket.readEvent, this.read.bind(this));
         this.socket.on('disconnect', this.disconnectInsetAll.bind(this));
         this.socket.on("leave", this.leaveInsertRoomRecords.bind(this));
         this.socket.on("error", () => {
-            for (let key in this.roomDic) {
-                delete this.roomDic[key];
+            for (let key in roomDic) {
+                delete roomDic[key];
             }
         });
     }
@@ -33,18 +35,19 @@ class ChatSocket {
      * 加入房间事件
      * @param data
      */
-    joinRoom(data) {
+    joinRoom(data, ackFn) {
         const pid = data.pid; //倾诉者
         const lid = data.lid; //倾听者
         const roomid = ChatSocket.createRoom(pid, lid);
         this.socket.join(roomid);
         this.socket.to(roomid).emit(ChatSocket.joinEvent, { msg: `${data.name}加入房间`, roomid });
+        ackFn(roomid);
     }
     /**
      * 发送消息事件
      * @param res
      */
-    sendMsg(res) {
+    sendMsg(res, ackFn) {
         let tempsenduid = res.pid;
         let temptouid = res.lid;
         if (!tempsenduid || !temptouid) {
@@ -56,6 +59,7 @@ class ChatSocket {
         }
         const roomid = ChatSocket.createRoom(res.pid, res.lid);
         const msgObj = {
+            tokenid: uuid(),
             roomid,
             senduid: tempsenduid,
             touid: temptouid,
@@ -69,14 +73,14 @@ class ChatSocket {
             msgObj.mediaid = res.mediaid;
             msgObj.type = EChatMsgType_1.default.Audio;
         }
-        if (!this.roomDic[roomid]) {
-            this.roomDic[roomid] = [];
+        if (!roomDic[roomid]) {
+            roomDic[roomid] = [];
         }
-        this.roomDic[roomid].push(msgObj);
+        roomDic[roomid].push(msgObj);
         //当消息长度大于最大限制时，插入库中并删除
-        if (this.roomDic[roomid].length >= ChatSocket.MAX_MSG_LENGTH) {
+        if (roomDic[roomid].length >= ChatSocket.MAX_MSG_LENGTH) {
             setTimeout(() => {
-                const shouldInsertedRecord = this.roomDic[roomid].splice(0, ChatSocket.MAX_MSG_LENGTH);
+                const shouldInsertedRecord = roomDic[roomid].splice(0, ChatSocket.MAX_MSG_LENGTH);
                 util_1.retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatModel_1.default, shouldInsertedRecord, (err, docs) => {
                     this.syncAudio(docs);
                 });
@@ -85,17 +89,38 @@ class ChatSocket {
         this.socket.to(roomid).broadcast.emit(ChatSocket.sendEvent, msgObj);
         //去指定的用户通知
         this.socket.to(temptouid.toString()).broadcast.emit(ChatSocket.notifyEvent, msgObj);
+        ackFn(msgObj);
+    }
+    read(data) {
+        const roomid = data.roomid;
+        if (roomDic[roomid] && roomDic[roomid].length) {
+            const chatList = roomDic[roomid];
+            const current = chatList.find(item => item.tokenid === data.tokenid);
+            if (current) {
+                this.socket.to(roomid).broadcast.emit(ChatSocket.readEvent, current.tokenid);
+                MongoChatModel_1.default.update({
+                    tokenid: current.tokenid
+                }, {
+                    status: EChatMsgStatus_1.default.Readed
+                });
+            }
+        }
     }
     /**
      * 端口链接事件
      */
     disconnectInsetAll() {
-        const values = _.values(this.roomDic);
-        const records = _.flatten(values);
+        const rooms = _.values(this.socket.rooms);
+        let records = [];
+        rooms.forEach(item => {
+            records = records.concat(roomDic[item] || []);
+        });
+        // const values = _.values(roomDic);
+        // const records = _.flatten(values);
         if (records.length) {
             util_1.retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatModel_1.default, records, (err, docs) => {
-                for (let key in this.roomDic) {
-                    delete this.roomDic[key];
+                for (let key in roomDic) {
+                    delete roomDic[key];
                 }
                 this.syncAudio(docs);
             });
@@ -109,9 +134,9 @@ class ChatSocket {
         const roomid = data.roomid;
         if (roomid) {
             this.socket.leave(roomid);
-            if (this.roomDic[roomid] && this.roomDic[roomid].length) {
-                util_1.retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatModel_1.default, this.roomDic[roomid], (err, docs) => {
-                    delete this.roomDic[roomid];
+            if (roomDic[roomid] && roomDic[roomid].length) {
+                util_1.retryInsertMongo(ChatSocket.RETRY_COUNT)(MongoChatModel_1.default, roomDic[roomid], (err, docs) => {
+                    delete roomDic[roomid];
                     this.syncAudio(docs);
                 });
             }
@@ -134,6 +159,7 @@ class ChatSocket {
 ChatSocket.joinEvent = "join";
 ChatSocket.sendEvent = "send";
 ChatSocket.notifyEvent = "notify";
+ChatSocket.readEvent = "read";
 ChatSocket.MAX_MSG_LENGTH = 100;
 ChatSocket.RETRY_COUNT = 5;
 exports.ChatSocket = ChatSocket;

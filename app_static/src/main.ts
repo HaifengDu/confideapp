@@ -27,15 +27,16 @@ launchSocket(1111)({
 });
 declare var wx:any;
 wx.config({
-    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+    debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
     appId: 'wx3e8733cd66f81abd', // 必填，公众号的唯一标识
-    timestamp:1531323798059 , // 必填，生成签名的时间戳
+    timestamp:1531490039577 , // 必填，生成签名的时间戳
     nonceStr: 'KgzteC8WIlg5bZnK', // 必填，生成签名的随机串
-    signature: 'e2f1e78997e86b985204f4a9ad3f293c4a186d76',// 必填，签名
-    jsApiList: ['onMenuShareAppMessage','startRecord', 'stopRecord','translateVoice','playVoice'] // 必填，需要使用的JS接口列表
+    signature: '968082dfd3c540a03cf9f9eda9e5030be189b338',// 必填，签名
+    jsApiList: ['onMenuShareAppMessage','startRecord', 'stopRecord','translateVoice','downloadVoice','uploadVoice','playVoice'] // 必填，需要使用的JS接口列表
 });
 wx.error(function(res:any){
     console.log(res);
+    alert(JSON.stringify(res));
     // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
 });
 wx.ready(function(){
@@ -55,18 +56,18 @@ wx.ready(function(){
     //         debugger;
     //     }
     // });
-    wx.startRecord();
-    setTimeout(function(){
-        wx.stopRecord({
-            success: function (res:any) {
-                var localId = res.localId;
-                console.log(localId);
-                (<any>window).testautoid = localId;
-                wx.playVoice({
-                    localId: localId // 需要播放的音频的本地ID，由stopRecord接口获得
-                });
-            }
-        });
-    },5000);
+    // wx.startRecord();
+    // setTimeout(function(){
+    //     wx.stopRecord({
+    //         success: function (res:any) {
+    //             var localId = res.localId;
+    //             console.log(localId);
+    //             (<any>window).testautoid = localId;
+    //             wx.playVoice({
+    //                 localId: localId // 需要播放的音频的本地ID，由stopRecord接口获得
+    //             });
+    //         }
+    //     });
+    // },5000);
 });
 

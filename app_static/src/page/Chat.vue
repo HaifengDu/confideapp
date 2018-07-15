@@ -1,5 +1,39 @@
 <template>
-    <div style="height:calc(100vh - 100px);background-color:#eee">
+    <div style="height:calc(100vh - 58px);background-color:#eee">
+        <div class="info-container">
+          <div class="status">
+            名字 - 可接单
+          </div>
+          <div class="info">
+            <div class="icon">
+
+            </div>
+            <div class="summary">
+              <div class="base">
+                <div class="item">
+                  <div class="num">1234</div>
+                  <div class="text">已售时长</div>
+                </div>
+                <div class="item">
+                  <div class="num">99.99%</div>
+                  <div class="text">好评率</div>
+                </div>
+                <div class="item">
+                  <div class="num">1234</div>
+                  <div class="text">帮助人数</div>
+                </div>
+              </div>
+              <div class="base">
+                <div class="item">
+
+                </div>
+                <div class="item">
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="chat-wrapper">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
                 <span class="msg-status" v-if="item.ismy">{{item.status==2?'已读':'已发送'}}</span>
@@ -8,16 +42,16 @@
             </div>
         </div>
         <div class="big-wrapper">
-            <div class="send-wrapper"> 
+            <div class="send-wrapper">
                 <mt-button @click="changeType" class="microphone-btn" type="default">
                     <i v-show="chatType===1" class="fa fa-microphone" aria-hidden="true"></i>
                     <i v-show="chatType===2" class="fa fa-keyboard-o" aria-hidden="true"></i>
                 </mt-button>
                 <mt-field ref="field" v-show="chatType===1" style="display:none;" placeholder="请输入信息" v-model="msg" @keyup.enter="send"></mt-field>
-                <button 
-                v-show="chatType===2" 
-                plain 
-                @touchstart="touchstart" 
+                <button
+                v-show="chatType===2"
+                plain
+                @touchstart="touchstart"
                 @touchend="touchend"
                 class="mint-field tell-btn mint-button mint-field tell-btn mint-button--default mint-button--normal is-plain">
                     按住说话
@@ -25,7 +59,7 @@
                 <mt-button v-show="chatType===1" type="primary" @click="send">发送</mt-button>
             </div>
         </div>
-    </div>    
+    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -128,7 +162,7 @@ export default class Chat extends Vue{
                 msgObj.status = EChatMsgStatus.Send;
             });
         });
-        
+
         event.preventDefault();
     }
     playRecord(msgObj:any){
@@ -157,7 +191,7 @@ export default class Chat extends Vue{
     beforeDestroy() {
        this.sockeWrapper.emit("leave",{
            roomid:this.roomid
-       }); 
+       });
        this.sockeWrapper.remove("send",this.sendM);
        this.sockeWrapper.remove("readM",this.readM);
     }
@@ -166,6 +200,35 @@ export default class Chat extends Vue{
 
 <style lang="less" scoped>
 @import "../assets/common.less";
+.info-container{
+  height:10rem;
+  background:#fff;
+  .status{
+    height:3rem;
+    line-height:3rem;
+    border-bottom:.1rem solid #f5f5f5;
+  }
+  .info{
+    height:6.8rem;
+    border-bottom:.1rem solid #f5f5f5;
+    display:flex;
+    .icon{
+      width:7rem;
+    }
+    .summary{
+      flex:1;
+      border-left:.1rem solid #f5f5f5;
+      .base{
+        display:flex;
+        height:3.3rem;
+        border-bottom:.1rem solid #f5f5f5;
+        .item{
+          flex:1;
+        }
+      }
+    }
+  }
+}
 .big-wrapper{
     width: 100%;
     position:fixed;
@@ -174,9 +237,14 @@ export default class Chat extends Vue{
 .send-wrapper{
     max-width: @maxLength;
     display: flex;
-    margin-bottom: 5px;
+    height:48px;
+    padding:5px 0;
+    background:#f5f5f5;
     .mint-field{
         flex-grow: 1;
+    }
+    .mint-cell {
+        border-bottom: none;
     }
     button{
         height: 48px;

@@ -50,9 +50,7 @@ export default class Follow extends Vue{
 
     getRecordStatus(){
         const tempData = this.followDatas.slice(this.pager.getPage().limit*(this.pager.getPage().page-2));
-        let params = tempData.reduce((ori:any,item:any)=>{   
-            return ori?ori + ',' + item.id:item.id;
-        },'').split(',');
+        let params = tempData.map((item:any)=>item.id);
         userService.getCheckRecord(params).then((res:any)=>{
             if(res.data.success){   
                 res.data.data.forEach((item:any)=>{
@@ -103,8 +101,22 @@ export default class Follow extends Vue{
     }
 
     followMe(item:any){
-        //TODO:向后台发送请求，关注或者取消关注
-        item.record = !item.record;
+        if(!item.record){
+            userService.addfavorite(item.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    item.record = true;
+                }
+            });
+        }else{
+            //取消关注
+            userService.delfavorite(item.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    item.record = false;
+                }
+            });
+        }
     }
 
     loadMore(){

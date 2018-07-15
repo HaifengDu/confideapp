@@ -6,7 +6,13 @@
             </div>
             <div class="nickname">{{user.nickname}}</div>
             <div class="user-lab">北京市</div>
-            <div class="user-lab" v-if="isListener">已婚 | 本科 | 巨蟹座 | 男 28</div>
+            <div class="user-lab">
+                <span v-if="isListener">{{user.listener.familyname}} | </span>
+                <span v-if="isListener">{{user.listener.eduname}} | </span> 
+                <span v-if="isListener">{{user.listener.eduname}} | </span>
+                <span>{{user.sex==1?'女':'男'}} | </span>
+                <span>{{getUserAge(user.birthday)}}</span>
+            </div>
             <div v-if="!isSelf" class="option">
                 <div class="action">
                     <div class="icon">
@@ -18,14 +24,14 @@
                     <div @click="addConcern" class="icon">
                         <img :src="concernSrc">
                     </div>
-                    <div class="text">{{isConcern?'已关注':'关注'}}</div>
+                    <div class="text">{{isFollowed?'已关注':'关注'}}</div>
                 </div>
             </div>
             <div v-if="!isSelf&&isListener" class="order" @click="order">
                 <img src="static/images/userInfo/order.png">
             </div>
             <div class="register">
-                2018.05.28注册
+                {{user.createdAt.split('T')[0]}}注册
             </div>
         </div>
         <div class="body">
@@ -44,27 +50,27 @@
                         <p class="content">已售时长(时)</p>
                     </div>
                 </div>
-                <div class="evaluate">
+                <div class="evaluate" @click="toEvaluate">
                     {{goodEvaRate}}好评&nbsp;&nbsp;&nbsp;&nbsp;{{evaluateNum}}条评价<i class="arrow"></i>
                 </div>
             </div>
-            <!-- <div v-if="isListener" class="person-info">
-                <div class="title">个人经历</div>
-                <div>已婚 | 本科 | 巨蟹座 | 男 28</div>
-            </div> -->
             <div v-if="isListener" class="person-info">
                 <div class="title">我的标签</div>
                 <div>
-                    <span class="tags tag-default" v-for="(tag,index) in tags" :key="index" @click="tag.hasSub&&showScribe(tag)">
-                        {{tag.name}}<span v-if="tag.hasSub" class="f-nm">></span>
+                    <span class="tags tag-default" v-for="(tag,index) in tags" :key="index" @click="tag.desc&&showScribe(tag)">
+                        {{tag.name}}<span v-if="tag.desc" class="f-nm">></span>
                     </span>
                 </div>
             </div>
             <div class="person-info" :class="{'p-top':!isListener}">
                 <div class="title">个人简介</div>
                 <div class="information" :class="{'close':!isExpended}">
-                    松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。
-                    松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。松果名师，大学老师，运动健将，擅长于心理辅导，临床心理学在读博士，国际认证婚姻家庭治疗师。
+                    {{resume}}
+                </div>
+                <div class="title">经历</div>
+                <div v-if="exp.desc" class="experience" v-for="(exp,index) in exps" :key="index">
+                    <span class="exp-name">{{exp.name}}:</span>
+                    <span class="exp-content">{{exp.desc}}</span>
                 </div>
                 <span @click="expend" class="expend-btn">[{{isExpended?'收起':'展开'}}]</span>
             </div>
@@ -82,14 +88,11 @@
         <mt-popup
             v-model="popupVisible" class="custom">
             <div class="title">{{tag.name}}</div>
-            <div class="content">{{tag.scribe}}</div>
+            <div class="content">{{tag.desc}}</div>
             <div class="btn" @click="contact">和TA聊聊</div>
         </mt-popup>
         <message :visible="msgVisible" position="top"></message>
         <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
-        <!-- <div class="button-box">
-            <mt-button size="normal" type="primary" @click.native="contact">进入聊天</mt-button>
-        </div> -->
     </div>
 </template>
 
@@ -98,6 +101,9 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import Message from './Message';
 import { mapActions, mapGetters } from 'vuex';
+import { ERole } from '../../enum/ERole';
+import MyService from "../../api/UserService.ts";
+const userService = MyService.getInstance();
 
 const SHOW_MSG_TIME = 2000;
 @Component({
@@ -117,39 +123,88 @@ const SHOW_MSG_TIME = 2000;
 })
 export default class UserInfo extends Vue{
     private weixinid = '';
-    private stepPrice = 9.9;
+    private stepPrice = 0;
     private helpNum = 1;
     private saledHours = 0.3;
     
     private goodEvaRate = '100%';
     private evaluateNum = 1;
     private isExpended = false;
+    //个人简介
+    private resume = ''; 
+    //是否是倾听者
+    private isListener = false;
+    //是否已关注该用户
+    private isFollowed = true;
+    private exps:any = [];
 
     //TODO:测试数据
-    //是否是倾听者
-    private isListener = true;
+    
     //当前用户信息页面是否是自己
     private isSelf = false;
-    //是否已关注该用户
-    private isConcern = false;
 
     private popupVisible = false;
     private msgVisible = false;
     private tag:any = {};
 
     private concernSrc = 'static/images/userInfo/add.png';
-    private tags = [
-        {name:'情感挽回',hasSub:true,scribe:'拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高,拥有多年的情感挽回经验，成功率高，拥有多年的情感挽回经验，成功率高，拥有多年的情感挽回经验，成功率高'},
-        {name:'婚姻关系'},
-        {name:'人际关系'},
-        {name:'个人成长'},
-        {name:'情绪疏导',hasSub:true,scribe:'极其擅长情绪疏导，经验丰富'},
-        {name:'心理负担'},
-        {name:'帮我分析问题'}
-    ]
+    private tags:any = [];
     created(){
         this.weixinid = (<any>this).$route.query.weixinid||'oRtVK06i1JN_GkUA5NPk7pXzOJ3s';
-        (<any>this).getUserInfo(this.weixinid);
+        (<any>this).getUserInfo(this.weixinid).then((res:any)=>{
+            if(res.data.success){
+                this.initData(res.data.data);
+            }else{
+                this.$toast('获取用户信息失败');
+            }
+        });
+
+    }
+
+    initData(data:any){
+        this.isListener = data.role === ERole.Listener;
+        if(this.isListener){
+            let listener = data.listener;
+            //我的标签部分
+            listener.labels.forEach((label:any)=>{
+                label.desc = '';
+            })
+            let descs = JSON.parse(listener.labeldesc);
+            descs.forEach((desc:any)=>{
+                if(desc.desc){
+                    let label = listener.labels.find((item:any)=>item.id==desc.id);
+                    label&&(label.desc = desc.desc);
+                }
+            });
+            this.tags = listener.labels;
+            //经历部分
+            let exps = listener.exps;
+            let expDescs = JSON.parse(listener.expdesc);
+            exps.forEach((exp:any)=>{
+                let desc = expDescs.find((item:any)=>item.id==exp.id);
+                desc&&(exp.desc = desc.desc);
+            });
+            this.exps = exps;
+            //起步价
+            this.stepPrice = listener.minprice||0;
+        }
+        //简介
+        this.resume = data.resume;
+        this.checkFollow(data.id);
+    }
+
+    getUserAge(birthday:string){
+        return new Date().getFullYear() - new Date(birthday).getFullYear();
+    }
+
+    checkFollow(id:number){
+        userService.getCheckRecord([id]).then((res:any)=>{
+            if(res.data.success){   
+                const data = res.data.data;
+                this.isFollowed = data[0].record;
+                this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+            }
+        });
     }
 
     expend(){
@@ -157,8 +212,29 @@ export default class UserInfo extends Vue{
     }
 
     addConcern(){
-        this.isConcern = !this.isConcern;
-        this.concernSrc = this.isConcern?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+        const user = (<any>this).user;
+        if(!user){
+            return;
+        }
+        if(!this.isFollowed){
+            userService.addfavorite(user.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    this.isFollowed = !this.isFollowed;
+                    this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+                }
+            });
+        }else{
+            //取消关注
+            userService.delfavorite(user.id).then((res:any)=>{
+                console.log(res);
+                if(res.data.success){
+                    this.isFollowed = !this.isFollowed;
+                    this.concernSrc = this.isFollowed?'static/images/userInfo/right.png':'static/images/userInfo/add.png';
+                }
+            });
+        }
+        
     }
 
     showScribe(tag:any){
@@ -168,6 +244,10 @@ export default class UserInfo extends Vue{
 
     order(){
         console.log('to order');
+    }
+
+    toEvaluate(){
+        console.log('to evaluate');
     }
 
     contact(){
@@ -352,9 +432,17 @@ export default class UserInfo extends Vue{
                     padding-right:30px;
                     .p-rl;
                     text-align: justify;
+                    color:#b5b5b5;
                 }
                 .close{
                     .t-ellipsis(3);
+                }
+                .experience{
+                    color:#b5b5b5;
+                    .exp-name{
+                        color: #2c3e50;
+                        font-weight: bold;
+                    }
                 }
                 .expend-btn{
                     .p-ab;

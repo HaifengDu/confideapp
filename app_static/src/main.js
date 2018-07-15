@@ -6,8 +6,10 @@ import axios from 'axios';
 import VeeValidate, { Validator } from 'vee-validate';
 import zh_CN from 'vee-validate/dist/locale/zh_CN';
 import MintUI from "mint-ui";
+import ElInputNumber from "element-ui/lib/input-number";
 import "mint-ui/lib/style.css";
 import "./assets/style.less";
+import "element-ui/lib/theme-chalk/input-number.css";
 import './main.ts';
 import App from './App';
 import router from './router';
@@ -20,6 +22,7 @@ Vue.use(VeeValidate, {
     locale: 'zh_CN'
 });
 Vue.use(MintUI);
+Vue.use(ElInputNumber);
 Vue.prototype.$toast = MintUI.Toast;
 /* eslint-disable no-new */
 new Vue({

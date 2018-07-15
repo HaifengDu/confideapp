@@ -7,7 +7,9 @@ export interface IGeneralSetting{
     uid?:number,
     position?:EGeneralPosition,
     price?:number,
+    limitprice?:number,//当日现在金额
+    dayprice?:number,
     status?:EGeneralStatus,
-    listener:IListener
+    listener?:IListener
 }
 export default IGeneralSetting;

@@ -15,8 +15,6 @@ export interface IUser{
     headimgurl?:string,
     resume?:string,
     phone?:string,
-    phonebindstatus?:EBindPhoneStatus,
-    pricesettings?:Array<any>,
-    listener?:Object
+    phonebindstatus?:EBindPhoneStatus
 }
 export default IUser;

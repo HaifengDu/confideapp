@@ -3,6 +3,7 @@
  */
 export enum EGeneralStatus{
     Disable=1,
-    Enable=2
+    Enable,
+    DayDisable
 }
 export default EGeneralStatus;

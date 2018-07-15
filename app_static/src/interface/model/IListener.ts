@@ -7,7 +7,6 @@ export interface IListener{
     id?:number,
     uid?:number,
     job?:number,
-    jobName?:string,
     family?:number,
     edu?:number,
     labelids?:string|any[],
@@ -19,8 +18,9 @@ export interface IListener{
     certificateurls?:string,
     authstatus?:EAuthStatus,
     minprice?:number,
-
+    money?:number,
     labels?:IListenLabel[],//标签整合后的数据
+    exps?:IListenLabel[],
     user?:IUser,
 }
 export default IListener;

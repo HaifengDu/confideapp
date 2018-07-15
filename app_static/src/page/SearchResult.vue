@@ -30,6 +30,8 @@ const listService = ListService.getInstance();
 })
 export default class SearchResult extends Vue{
   private lists = []
+  private limit = 30
+  private start = 0
   created() {
       const searchConds = (<any>this).searchConds;
       if(searchConds){
@@ -54,6 +56,9 @@ export default class SearchResult extends Vue{
   .search{
     height:4rem;
     width:100%;
+    input{
+      .fs(1.4rem);
+    }
   }
   .lists{
     height:~'calc(100% - 3.4rem)';

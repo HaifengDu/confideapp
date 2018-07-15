@@ -2,6 +2,7 @@ import EChatMsgStatus from "../../enum/EChatMsgStatus";
 import * as Mongoose  from "mongoose";
 import { EChatMsgType } from "../../enum/EChatMsgType";
 export interface IOnlyChatRecord{
+    tokenid?:string,
     senduid:number,
     touid:number,
     roomid:string,

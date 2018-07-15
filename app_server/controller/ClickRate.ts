@@ -43,6 +43,18 @@ export default class ClickRateService {
     }
 
     /**
+     * 取消关注
+     * @param pid 
+     * @param lid 
+     */
+    public deleteFavorite(pid:number,lid:number){
+        return MongoFavorite.deleteOne({
+            pid,
+            lid
+        });
+    } 
+
+    /**
      * 收藏
      * @param pid 
      * @param lid 
@@ -154,10 +166,10 @@ export default class ClickRateService {
             return Promise.reject(new ErrorMsg(false,"用户数量过大"));
         }
         const where = {
-            pid:{
+            pid:userid,
+            lid:{
                 $in:ids
-            },
-            lid:userid
+            }
         };
         return MongoFavorite.find(where).then(res=>{
             return ids.map(id=>{

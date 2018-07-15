@@ -1,4 +1,5 @@
 @import "./font-awesome-4.7.0/less/font-awesome.less";
+@import "./common.less";
 @mainColor:#00D1CF;
 *{
   padding:0;
@@ -18,7 +19,7 @@ a:focus,input:focus,select:focus{
   -webkit-user-modify:read-write-plaintext-only; 
 }
 /*mint ui*/
-.mint-tabbar{position:fixed;max-width:620px;margin:0 auto;}
+.mint-tabbar{position:fixed;max-width:@maxLength;margin:0 auto;}
 .mint-tabbar > .mint-tab-item.is-selected{color:@mainColor;}
 .mint-button.mint-button--primary{background:@mainColor !important;}
 .mint-button:not(.is-disabled):active::after {

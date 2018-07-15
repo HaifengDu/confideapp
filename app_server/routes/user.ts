@@ -195,6 +195,28 @@ router.get("/addvisitrecord",[
 });
 
 /**
+ * 取消关注
+ */
+router.get("/delfavorite",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    query("lid").isNumeric().withMessage("倾听者id不能为空")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    clickRateCtrl.deleteFavorite(parseInt(req.query.userid),parseInt(req.query.lid)).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+/**
  * 添加收藏
  */
 router.get("/addfavorite",[

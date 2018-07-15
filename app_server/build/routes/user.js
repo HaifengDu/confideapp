@@ -178,6 +178,25 @@ router.get("/addvisitrecord", [
     });
 });
 /**
+ * 取消关注
+ */
+router.get("/delfavorite", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.query("lid").isNumeric().withMessage("倾听者id不能为空")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    clickRateCtrl.deleteFavorite(parseInt(req.query.userid), parseInt(req.query.lid)).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
  * 添加收藏
  */
 router.get("/addfavorite", [

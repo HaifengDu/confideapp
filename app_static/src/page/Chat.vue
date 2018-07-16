@@ -6,7 +6,8 @@
           </div>
           <div class="info">
             <div class="icon">
-
+              <user-icon :size="4"></user-icon>
+              <div class="follow">+关注</div>
             </div>
             <div class="summary">
               <div class="base">
@@ -24,11 +25,12 @@
                 </div>
               </div>
               <div class="base">
-                <div class="item">
-
+                <div class="item single">
+                  <div class="comment" v-if="true">有独创性的人杰</div>
+                  <div class="auth" v-else>认证</div>
                 </div>
-                <div class="item">
-
+                <div class="item single">
+                  评价（12345）
                 </div>
               </div>
             </div>
@@ -70,10 +72,14 @@ import SocketWrapper from '../socket';
 import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
 import { EChatMsgType } from '../enum/EChatMsgType';
+import UserIcon from '@/components/UserIcon'
 declare var wx:any;
 @Component({
     computed:{
         ...mapGetters(["user"])
+    },
+    components:{
+      UserIcon
     }
 })
 export default class Chat extends Vue{
@@ -212,18 +218,37 @@ export default class Chat extends Vue{
     height:6.8rem;
     border-bottom:.1rem solid #f5f5f5;
     display:flex;
+    .fs(1.1rem);
     .icon{
       width:7rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .follow{
+        .fs(1.1rem);
+      }
     }
     .summary{
       flex:1;
       border-left:.1rem solid #f5f5f5;
       .base{
         display:flex;
-        height:3.3rem;
+        height:3.4rem;
         border-bottom:.1rem solid #f5f5f5;
         .item{
           flex:1;
+          .fs(1rem);
+          .text{
+            .fs(1.1rem);
+          }
+          &.single{
+            height:3.3rem;
+            line-height:3.3rem;
+            div{
+              .fs(1.1rem);
+            }
+          }
         }
       }
     }
@@ -263,7 +288,7 @@ export default class Chat extends Vue{
     }
 }
 .chat-wrapper{
-    margin:100px 20px 20px 20px;
+    margin:20px 20px 20px 20px;
     padding:10px;
     .chat-record{
         text-align: left;

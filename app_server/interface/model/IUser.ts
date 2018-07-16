@@ -1,6 +1,7 @@
 import { ERoleStatus } from "../../enum/ERoleStatus";
 import { EBindPhoneStatus } from "../../enum/EBindPhoneStatus";
 import { ERole } from "../../enum/ERole";
+import { IListener } from "./IListener";
 
 export interface IUser{
     id?:number,
@@ -15,6 +16,8 @@ export interface IUser{
     headimgurl?:string,
     resume?:string,
     phone?:string,
-    phonebindstatus?:EBindPhoneStatus
+    phonebindstatus?:EBindPhoneStatus,
+    pricesettins?:any[],
+    listener?:IListener
 }
 export default IUser;

@@ -17,10 +17,6 @@
                     <p class="count">66~99</p>
                     <p class="content">预计首页排名</p>
                 </div>
-                <!-- <div>
-                    <p class="count">11.3倍</p>
-                    <p class="content">预计曝光增长</p>
-                </div> -->
             </div>
             <div class="reminder">
                 <p>推广排名由用户单价决定，提高单价有利于您获得更靠前的排名。</p>
@@ -47,17 +43,52 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import ListenerService from "../../api/ListenerService.ts";
+const listenerService = ListenerService.getInstance();
 
 @Component({
     
 })
 export default class AdvertSetting extends Vue{
     private isOpenAdvLimit = false;
-    private limitPrice = 0;
+    private limitPrice = 0.1;
     private price = 0.1;
 
+    created() {
+        listenerService.getGeneralsetting().then((res:any)=>{
+            if(res.data.success&&res.data.data){
+                //设置数据
+                const data = res.data.data;
+                this.price = data.price;
+                if(data.limitprice){
+                    this.limitPrice = data.limitprice;
+                    this.isOpenAdvLimit = true;
+                }
+            }
+            if(!res.data.success){
+                this.$toast(res.data.message);
+            }
+        });
+    }
+
     save(){
-        console.log('save settings...');
+        let params:any = {
+            price:this.price
+        }
+        if(this.isOpenAdvLimit&&this.price>this.limitPrice){
+            this.$toast('当日预算金额不能小于用户单价');
+            return;
+        }
+        if(this.isOpenAdvLimit){
+            params.limitprice = parseFloat(<any>this.limitPrice);
+        }
+        listenerService.setGeneralsetting(params).then((res:any)=>{
+            if(res.data.success){
+                this.$toast('设置成功');
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 }
 </script>

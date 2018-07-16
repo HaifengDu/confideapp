@@ -3,7 +3,7 @@
         <div class="body">
             <div class="balance">
                 <div class="title">账户余额（元）</div>
-                <div class="num">1999</div>
+                <div class="num">{{money}}</div>
                 <div class="charge">
                     <mt-button size="normal" type="primary" class="charge-btn" @click.native="toCharge">充值</mt-button>
                 </div>
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="button-box">
-            <mt-button size="normal" type="primary" @click.native="toAdvertise">开始推广</mt-button>
+            <mt-button size="normal" type="primary" @click.native="toAdvertise">{{isAdverting?'取消推广':'开始推广'}}</mt-button>
         </div>
     </div>
 </template>
@@ -25,11 +25,35 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
+import { mapGetters } from 'vuex';
+import {EGeneralStatus} from "../../enum/EGeneralStatus";
+import ListenerService from "../../api/ListenerService.ts";
+const listenerService = ListenerService.getInstance();
+
 
 @Component({
-    
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
 })
 export default class MyAdvert extends Vue{
+    private money:number = 0;
+    private isAdverting = false;
+    created() {
+        if((<any>this).user&&(<any>this).user.listener){
+            this.money = (<any>this).user.listener.money;
+        }
+        listenerService.getGeneralsetting().then((res:any)=>{
+            if(res.data.success&&res.data.data){
+                this.isAdverting = res.data.data.status === EGeneralStatus.Enable;
+            }
+            if(!res.data.success){
+                this.$toast(res.data.message);
+            }
+        });
+    }
     
     toCharge(){
         console.log('to charge...');
@@ -44,7 +68,14 @@ export default class MyAdvert extends Vue{
     }
 
     toAdvertise(){
-        console.log('to advertise');
+        listenerService.setGeneralstatus(this.isAdverting?EGeneralStatus.Disable:EGeneralStatus.Enable).then((res:any)=>{
+            if(res.data.success){
+                this.isAdverting = !this.isAdverting;
+                this.$toast(this.isAdverting?'推广成功':'取消推广成功');
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 }
 </script>

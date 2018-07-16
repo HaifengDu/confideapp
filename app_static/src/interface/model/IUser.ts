@@ -17,7 +17,7 @@ export interface IUser{
     resume?:string,
     phone?:string,
     phonebindstatus?:EBindPhoneStatus,
-    pricesettins?:any[],
+    pricesettings?:any[],
     listener?:IListener
 }
 export default IUser;

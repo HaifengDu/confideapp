@@ -70,7 +70,7 @@ const rootStore:Store<IRootState> = new Store<IRootState>({
     [MType.UPDATE_PRICES](state,prices:any){
       prices.forEach((price:any)=>{
         if(state.user.pricesettings){
-          let oriPrice = state.user.pricesettings.find(item=>item.id==price.id);
+          let oriPrice = state.user.pricesettings.find((item:any)=>item.id==price.id);
           Object.assign(oriPrice,price);
         }
       });

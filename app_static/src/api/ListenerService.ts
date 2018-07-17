@@ -4,6 +4,7 @@ import { IPriceSetting} from "../interface/model/IPriceSetting";
 import Axios, { AxiosResponse } from "axios";
 import ErrorMsg from "../model/ErrorMsg";
 import { IResponse } from "../interface/model/IResponse";
+import {EGeneralStatus} from "../enum/EGeneralStatus";
 
 export default class ListenerService {
 
@@ -90,6 +91,35 @@ export default class ListenerService {
             formData.append("files",item);
         }); 
         return Axios.post("/listener/uploadcert",formData,config);
+    }
+
+    /**
+     * 获取推广单价相关数据
+     */
+    getGeneralsetting():Promise<AxiosResponse<IResponse<any>>>{
+        return Axios.get("/listener/generalsetting");
+    }
+
+    /**
+     * 设置推广配置
+     * @param params 
+     */
+    setGeneralsetting(params:any):Promise<AxiosResponse<IResponse<any>>>{
+        if(!params){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.post("/listener/generalsetting",{data:JSON.stringify(params)});
+    }
+
+    /**
+     * 设置推广状态
+     * @param params 
+     */
+    setGeneralstatus(status:EGeneralStatus):Promise<AxiosResponse<IResponse<any>>>{
+        if(!status){
+            return Promise.reject(new ErrorMsg(false,"参数不正确"));
+        }
+        return Axios.post("/listener/setgeneralstatus",{status:status});
     }
 
     static createInstance() {

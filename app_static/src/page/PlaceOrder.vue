@@ -48,6 +48,13 @@ export default class PlaceOrder extends Vue{
 
     paymoney(){
         //TODO:调用微信支付接口
+        /*
+        *  1.先生成订单
+           2.获取签名
+           3.调用微信支付接口，同时弹出支付完成确认弹窗
+           4.等待支付完成回调进行验证
+           5.点支付完成向后台发送订单号，点稍后支付跳转到订单详情页面
+        */
     }
 }
 </script>

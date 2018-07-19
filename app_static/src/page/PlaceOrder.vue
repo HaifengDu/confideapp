@@ -66,7 +66,7 @@ export default class PlaceOrder extends Vue{
     }
 
     paymoney(){
-        
+        this.toOrderDetail(1);
         /*
         *  1.先生成订单
            2.调用微信支付接口，同时弹出支付完成确认弹窗
@@ -109,7 +109,6 @@ export default class PlaceOrder extends Vue{
         WeixinJSBridge.invoke(
             'getBrandWCPayRequest', params,
             (res:any)=>{
-                console.log(res);
                 if(res.err_msg == "get_brand_wcpay_request:ok" ){
                     alert("get_brand_wcpay_request:ok");
                     MessageBox.confirm('是否完成支付?','提示',{
@@ -118,20 +117,20 @@ export default class PlaceOrder extends Vue{
                         confirmButtonText:'已完成支付',
                         cancelButtonText:'稍后支付'
                     }).then((res:any) => {
-                        //TODO:跳转到订单页面
-                        console.log(res);
+                        this.toOrderDetail(this.order.id);
                     },(cancel:any)=>{
-                        console.log(cancel);
-                        //TODO:跳转到订单页面
+                        this.toOrderDetail(this.order.id);
                     });
-                    //TODO:支付完成弹出提示，稍后支付，或者已完成支付，无论点击那个，都要跳转到订单页面，查询订单状态
                 }else{
                     MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
-                        console.log(res);
-                        //TODO:用户点确定跳转到订单页面，将订单单号放到url上传过去
+                        this.toOrderDetail(this.order.id);
                     });
                 }
         }); 
+    }
+
+    private toOrderDetail(id:number){
+        this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
     }
 }
 </script>

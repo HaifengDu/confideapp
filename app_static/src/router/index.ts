@@ -27,6 +27,7 @@ import MyAdvert from "@/page/advert/MyAdvert.vue";
 import AdvertSetting from "@/page/advert/AdvertSetting.vue";
 import AdvertRecord from "@/page/advert/AdvertRecord.vue";
 import PlaceOrder from "@/page/PlaceOrder.vue";
+import OrderDetail from "@/page/order/OrderDetail.vue";
 
 Vue.use(Router)
 
@@ -152,6 +153,10 @@ const router = new Router({
       path:'/placeOrder',
       name:'PlaceOrder',
       component:PlaceOrder
+    },{
+      path:'/orderDetail',
+      name:'OrderDetail',
+      component:OrderDetail
     }
   ]
 });

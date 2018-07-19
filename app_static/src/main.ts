@@ -29,9 +29,9 @@ declare var wx:any;
 wx.config({
     debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
     appId: 'wx3e8733cd66f81abd', // 必填，公众号的唯一标识
-    timestamp:1531490039577 , // 必填，生成签名的时间戳
+    timestamp:1531996106922 , // 必填，生成签名的时间戳
     nonceStr: 'KgzteC8WIlg5bZnK', // 必填，生成签名的随机串
-    signature: '968082dfd3c540a03cf9f9eda9e5030be189b338',// 必填，签名
+    signature: 'f79e619aff51627830fbe4d2fe8527eb05195761',// 必填，签名
     jsApiList: ['onMenuShareAppMessage','startRecord', 'stopRecord','translateVoice','downloadVoice','uploadVoice','playVoice'] // 必填，需要使用的JS接口列表
 });
 wx.error(function(res:any){

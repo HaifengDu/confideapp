@@ -7,9 +7,9 @@
             <div class="nickname">{{user.nickname}}</div>
             <div class="user-lab">北京市</div>
             <div class="user-lab">
-                <span v-if="isListener">{{user.listener.familyname}} | </span>
-                <span v-if="isListener">{{user.listener.eduname}} | </span> 
-                <span v-if="isListener">{{user.listener.eduname}} | </span>
+                <span v-if="isListener&&user.listener">{{user.listener?user.listener.familyname:''}} | </span>
+                <span v-if="isListener&&user.listener">{{user.listener?user.listener.eduname:''}} | </span> 
+                <span v-if="isListener&&user.listener">{{user.listener?user.listener.jobname:''}} | </span>
                 <span>{{user.sex==1?'女':'男'}} | </span>
                 <span>{{getUserAge(user.birthday)}}</span>
             </div>

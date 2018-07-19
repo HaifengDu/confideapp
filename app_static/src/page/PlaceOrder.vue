@@ -3,7 +3,7 @@
         <div class="body">
             <div class="paytype">
                 <div class="icon">
-                    <img src="static/images/pay/microphone.png">
+                    <img :src="getServiceTypeIcon()">
                 </div>
                 <div class="detail">
                     <div class="time">
@@ -19,7 +19,7 @@
             <mt-cell title="账户余额" class="cell-con">
                 ￥{{balance}}<mt-switch style="margin-left:10px;" v-model="isUserBalance"></mt-switch>
             </mt-cell>
-            <mt-field class="cell-con" label="倾诉备注" placeholder="输入对本次交易的说明（选填）" v-model="message"></mt-field>
+            <mt-field class="cell-con" label="倾诉备注" placeholder="输入对本次交易的说明（选填）" v-model="comment"></mt-field>
             
             <div class="lisence">
                 <p>确认支付代表同意<span class="text">《千寻倾听平台倾诉者协议》</span></p>
@@ -35,33 +35,103 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-
-@Component({
-    
-})
+import {EPriceType} from "@/enum/EPriceType";
+import OrderService from "@/api/OrderService.ts";
+import CalucateService from "@/helper/CalucateService.ts";
+import { MessageBox } from 'mint-ui';
+const orderService = OrderService.getInstance();
+const calculate = CalucateService.Factory();
+declare var WeixinJSBridge:any;
+@Component
 export default class PlaceOrder extends Vue{
     private balance:number=0.15;
     private total:number = 9.9;
     private timecircle = 15;
     private isUserBalance = true;
-    private message = '';
+    private comment = '';
+    private serviceType = 2;   //服务类型，文字服务，还是通话服务
+    private uprice = 0.66;  //TODO:单价
+    private order:any = null;
 
     create(){
         //TODO:获取调起微信支付接口所需的签名等数据
     }
 
+    getServiceTypeIcon(){
+        return this.serviceType==EPriceType.EWord?'static/images/pay/chat.png':'static/images/pay/microphone.png'
+    }
+
     getTotal(){
-        return this.isUserBalance?this.total-this.balance:this.total;
+        return this.isUserBalance?calculate.numSub(this.total,this.balance):this.total;
     }
 
     paymoney(){
-        //TODO:调用微信支付接口
+        
         /*
         *  1.先生成订单
            2.调用微信支付接口，同时弹出支付完成确认弹窗
            3.等待支付完成回调进行验证
            4.点支付完成向后台发送订单号，点稍后支付跳转到订单详情页面
         */
+        const params = {
+            lid:2,         //倾听者id
+            payprice:this.getTotal(),  //待支付
+            totalprice:this.total,   //合计
+            balance:this.isUserBalance?this.balance:0,  //使用的余额
+            source:1,
+            servicetype:this.serviceType,      //服务类型
+            payservicetime:this.timecircle,    //服务时长
+            uprice:this.uprice,
+            comment:this.comment
+        }
+        orderService.placeOrder(params).then((res:any)=>{
+            if(res.data.success){
+                this.order = res.data.data;
+                const jsParam = res.data.jsParam;
+                //TODO:调用微信支付接口
+                if (typeof WeixinJSBridge == "undefined"){
+                    if( document.addEventListener ){
+                        document.addEventListener('WeixinJSBridgeReady', this.onBridgeReady, false);
+                    }else if ((<any>document).attachEvent){
+                        (<any>document).attachEvent('WeixinJSBridgeReady', this.onBridgeReady); 
+                        (<any>document).attachEvent('onWeixinJSBridgeReady', this.onBridgeReady);
+                    }
+                }else{
+                    this.onBridgeReady(jsParam);
+                }
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
+    }
+
+    private onBridgeReady(params:any){
+        WeixinJSBridge.invoke(
+            'getBrandWCPayRequest', params,
+            (res:any)=>{
+                console.log(res);
+                if(res.err_msg == "get_brand_wcpay_request:ok" ){
+                    alert("get_brand_wcpay_request:ok");
+                    MessageBox.confirm('是否完成支付?','提示',{
+                        showCancelButton:true,
+                        closeOnClickModal:false,
+                        confirmButtonText:'已完成支付',
+                        cancelButtonText:'稍后支付'
+                    }).then((res:any) => {
+                        //TODO:跳转到订单页面
+                        console.log(res);
+                    },(cancel:any)=>{
+                        console.log(cancel);
+                        //TODO:跳转到订单页面
+                    });
+                    //TODO:支付完成弹出提示，稍后支付，或者已完成支付，无论点击那个，都要跳转到订单页面，查询订单状态
+                }else{
+                    MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
+                        console.log(res);
+                        //TODO:用户点确定跳转到订单页面，将订单单号放到url上传过去
+                    });
+                }
+        }); 
     }
 }
 </script>
@@ -124,6 +194,7 @@ export default class PlaceOrder extends Vue{
             position: fixed;
             bottom:71px;
             width:100%;
+            max-width: 620px;
             text-align:center;
             .text{
                 color:@mainColor;

@@ -157,6 +157,12 @@ export class ChatManagerBiz{
         this.chatRole.Current = <ERole>rootStore.state.user.role;
     }
 
+    /**
+     * 加入房间
+     * @param vue 
+     * @param uid 
+     * @param touid 
+     */
     joinRoom(vue:Vue,uid:number,touid:number){
         const chatListener = new ChatListener(vue);
         //NOTE:暂时没有名字

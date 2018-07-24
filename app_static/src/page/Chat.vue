@@ -7,7 +7,7 @@
           <div class="info">
             <div class="icon">
               <user-icon size="4"></user-icon>
-              <div class="follow">+关注</div>
+              <div class="follow" @click="follow">+关注</div>
             </div>
             <div class="summary">
               <div class="base">
@@ -35,6 +35,14 @@
               </div>
             </div>
           </div>
+        </div>
+        <div class="tab">
+          <div class="price">36元起</div>
+          <div class="switch">
+            <div class="word fa fa-commenting-o"></div>
+            <div class="phone fa fa-phone"></div>
+          </div>
+          <div class="order">马上下单</div>
         </div>
         <div class="chat-wrapper">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
@@ -120,6 +128,9 @@ export default class Chat extends Vue{
         if(current){
             current.status = EChatMsgStatus.Readed;
         }
+    }
+    follow(){
+
     }
     constructor(){
         super();
@@ -262,6 +273,56 @@ export default class Chat extends Vue{
     }
   }
 }
+.tab{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  height:4rem;
+  margin:0 1rem;
+  position:relative;
+  .price{
+    position:absolute;
+    top:.4rem;
+    left:7rem;
+    height:1.6rem;
+    line-height:1.6rem;
+    border-top-left-radius:.6rem;
+    border-top-right-radius:.6rem;
+    border-bottom-right-radius:.6rem;
+    background:@mainColor;
+    color:#fff;
+    padding:.1rem .4rem;
+    .fs(1.2rem);
+  }
+  .switch{
+    width:8rem;
+    height:2.4rem;
+    .bs(1.2rem);
+    background:#fff;
+    display:flex;
+    .fs(2rem);
+    .word{
+      border-right:1px solid #d3d3d3;
+      flex:1;
+    }
+    .phone{
+      flex:1;
+      padding-top:.2rem;
+    }
+    .active{
+      color:@mainColor;
+    }
+  }
+  .order{
+    width:7rem;
+    background:@mainColor;
+    color:#fff;
+    height:2.4rem;
+    line-height: 2.4rem;
+    .fs(1.3rem);
+    .bs(1.2rem);
+  }
+}
 .big-wrapper{
     width: 100%;
     position:fixed;
@@ -316,7 +377,6 @@ export default class Chat extends Vue{
             flex:1;
             display: inline-block;
             text-align: left;
-            font-weight: bold;
             padding: 5px;
             border-radius: 10px;
             color: #666;

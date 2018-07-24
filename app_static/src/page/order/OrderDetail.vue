@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="container con-bg">
+        <div v-if="!isToBePaid" class="container con-bg">
             <div class="body">
                 <div class="type">{{serviceName}}</div>
                 <div class="main">
@@ -30,11 +30,33 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div v-if="isToBePaid" class="container">
             <div class="body">
                 <div class="header">
                     <p>等待付款</p>
+                    <p>本次通话服务需支付9.62元</p>
                 </div>
+                <mt-cell title="订单类型" class="cell-con cell-prev">通话服务</mt-cell>
+                <mt-cell title="倾听者" class="cell-con cell-prev">重新的开始</mt-cell>
+                <mt-cell title="订单号" class="cell-con cell-prev">1624151</mt-cell>
+                <mt-cell title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
+                <div class="total-account">
+                    <p class="order-total">
+                        <span>订单总额</span>
+                        <span>￥9.9</span>
+                    </p>
+                    <p class="balance-total">
+                        <span>抵扣余额</span>
+                        <span>-￥0.28</span>
+                    </p>
+                </div>
+                <div style="text-align:right;">
+                    需付款：<span style="color:rgb(239,146,55);">￥&nbsp;9.62</span>
+                </div>
+            </div>
+            <div class="button-box">
+                <mt-button size="normal" type="primary" @click.native="cancelOrder">取消订单</mt-button>
+                <mt-button style="margin-left:20px;" size="normal" type="primary" @click.native="payOrder">支付订单</mt-button>
             </div>
         </div>
     </div>
@@ -62,6 +84,14 @@ export default class OrderDetail extends Vue{
 
     getServiceTypeIcon(){
         return this.serviceType==EPriceType.EWord?'static/images/pay/chat.png':'static/images/pay/microphone.png'
+    }
+
+    cancelOrder(){
+        //TODO:取消订单
+    }
+
+    payOrder(){
+        //TODO:支付订单
     }
 
 }

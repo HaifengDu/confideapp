@@ -67,7 +67,7 @@ export function playRecord(id:string){
         // 结束
         wx.onVoicePlayEnd({
             success: function (res:any) {
-                
+                //
             }
         });
     });

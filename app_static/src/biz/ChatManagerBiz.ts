@@ -37,7 +37,7 @@ class ChatRole{
 /**
  * socket聊天管理
  */
-class ChatListener{
+export class ChatListener{
     public static readonly joinEvent = "join";
     public static readonly sendEvent = "send";
     public static readonly notifyEvent = "notify";
@@ -64,6 +64,7 @@ class ChatListener{
         }
         //NOTE:不能改成this
         ChatListener._VUE.$emit(ChatListener.sendEvent,obj);
+        //接受消息，更新已读
         socketWrapper.emit(ChatListener.readEvent,{
             tokenid:obj.tokenid,
             roomid:obj.roomid
@@ -115,11 +116,12 @@ class ChatListener{
         }else{
             chatMsgObj.type = EChatMsgType.Text;
         }
-        return new Promise((resolve,reject)=>{
+        return new Promise<IOnlyChatRecord>((resolve,reject)=>{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
             },ChatListener.MAX_COUNT);
             socketWrapper.emit(ChatListener.sendEvent,chatMsgObj,function(obj:any){
+                chatMsgObj.ismy = true;
                 chatMsgObj.tokenid = obj.tokenid;
                 chatMsgObj.status = EChatMsgStatus.Send;
                 clearTimeout(flag);
@@ -147,7 +149,7 @@ class ChatListener{
         socketWrapper.remove(ChatListener.readEvent,ChatListener.read)
     }
 }
-export class ChatManagerBiz{
+export default class ChatManagerBiz{
     private chatRole:ChatRole = new ChatRole();
     private userService:MyService;
     private orderService:OrderService;
@@ -163,10 +165,11 @@ export class ChatManagerBiz{
      * @param uid 
      * @param touid 
      */
-    joinRoom(vue:Vue,uid:number,touid:number){
+    public joinRoom(vue:Vue,touid:number){
         const chatListener = new ChatListener(vue);
+        const currentUid = <number>rootStore.state.user.id;
         //NOTE:暂时没有名字
-        chatListener.join(uid,touid,"");
+        chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
         return chatListener;
     }
 
@@ -190,6 +193,7 @@ export class ChatManagerBiz{
                 if(this.chatRole.Current===ERole.Listener&&this.chatRole.To===ERole.Listener){
                     this.checkRole(data.data);
                 }
+
                 return {
                     roles:this.chatRole,
                     listener:listenerRes.data.data,

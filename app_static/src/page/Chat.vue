@@ -81,70 +81,55 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import { getSocket } from '../socketLaunch';
 import {Component} from "vue-property-decorator";
-import {mapGetters} from "vuex";
-import SocketWrapper from '../socket';
 import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
 import { EChatMsgType } from '../enum/EChatMsgType';
 import UserIcon from '@/components/UserIcon'
-declare var wx:any;
+import ChatManagerBiz,{ChatListener} from "../biz/ChatManagerBiz";
+import { IOnlyChatRecord } from '../interface/mongomodel/IChatRecord';
+
 @Component({
-    computed:{
-        ...mapGetters(["user"])
-    },
     components:{
       UserIcon
     }
 })
 export default class Chat extends Vue{
-    private sockeWrapper:SocketWrapper;
-    private roomid:string;
+    private biz:ChatManagerBiz;
+    private chatListener:ChatListener;
     private msg = "";
     private msgList:any[]=[];
-    private chatType=1;
-    private sendM = (obj:any)=>{
-        this.msgList.push(obj);
-        if(obj.type===EChatMsgType.Audio){
-            wx.downloadVoice({
-                serverId: obj.mediaid, // 需要下载的音频的服务器端ID，由uploadVoice接口获得
-                isShowProgressTips: 1, // 默认为1，显示进度提示
-                success: function (res:any) {
-                    obj.localId = res.localId; // 返回音频的本地ID
-                },
-                fail:function(res:any){
-                    console.log(res);
-                }
-            });
-        }
-        this.sockeWrapper.emit('read',{
-            tokenid:obj.tokenid,
-            roomid:obj.roomid
-        });
-    }
-    private readM = (tokenid:string)=>{
-        const current = this.msgList.find(item=>item.tokenid===tokenid);
-        if(current){
-            current.status = EChatMsgStatus.Readed;
-        }
-    }
+    private chatType = EChatMsgType.Text;
     follow(){
 
     }
     constructor(){
         super();
-        this.sockeWrapper = getSocket();
+        this.biz = new ChatManagerBiz();
     }
     created(){
-        this.sockeWrapper.emit("join",{
-            pid:1,lid:2,name:"杜海峰"
-        },(roomid:string)=>{
-            this.roomid = roomid;
+        this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
+            const listener = data.listener;
+            if(listener){
+                this.chatListener = this.biz.joinRoom(this,<number>listener.id);
+                this.chatListener.addEvent();
+                this.onSocketEvent();
+            }
         });
-        this.sockeWrapper.on("send",this.sendM);
-        this.sockeWrapper.on('read',this.readM);
     }
+    onSocketEvent(){
+
+        this.$on(ChatListener.sendEvent,(data:IOnlyChatRecord)=>{
+            this.msgList.push(data);
+        });
+        this.$on(ChatListener.readEvent,(tokenid:string)=>{
+            const current = this.msgList.find(item=>item.tokenid===tokenid);
+            if(current){
+                current.status = EChatMsgStatus.Readed;
+            }
+        });
+    }
+
     mounted() {
         const input = (<any>this.$refs.field).$refs.input;
         input.addEventListener('keyup',(event:any)=>{
@@ -154,11 +139,10 @@ export default class Chat extends Vue{
         });
     }
     changeType(){
-        //先测试一下
-        if(this.chatType===1){
-            this.chatType=2;
+        if(this.chatType===EChatMsgType.Text){
+            this.chatType=EChatMsgType.Audio;
         }else{
-            this.chatType=1;
+            this.chatType=EChatMsgType.Text;
         }
     }
     touchstart(event:MouseEvent){
@@ -170,55 +154,41 @@ export default class Chat extends Vue{
             serverId:string,
             localId:string
         })=>{
-            const msgObj:any = {
-                msg:this.msg,
-                tokenid:"",
-                status:-1,
-                pid:1,
-                lid:2,
-                type:EChatMsgType.Audio,
+            this.chatListener.sendMsg({
                 localId:obj.localId,
-                mediaid:obj.serverId,
-                ismy:true
-            }
-            this.msgList.push(msgObj);
-            this.sockeWrapper.emit("send",msgObj,function(obj:any){
-                msgObj.tokenid = obj.tokenid;
-                msgObj.status = EChatMsgStatus.Send;
+                serverId:obj.serverId,
+            }).then(data=>{
+                this.msgList.push(data);
             });
         });
 
         event.preventDefault();
     }
-    playRecord(msgObj:any){
-        playRecord(msgObj.localId);
+    playRecord(msgObj:IOnlyChatRecord){
+        if(msgObj.localId){
+            playRecord(msgObj.localId);
+        }
     }
     send(){
         if(!this.msg){
             this.$toast("消息不能为空");
             return;
         }
-        const msgObj:any = {
-            msg:this.msg,
-            tokenid:"",
-            status:-1,
-            pid:1,
-            lid:2,
-            ismy:true
-        };
-        this.sockeWrapper.emit("send",msgObj,function(obj:any){
-            msgObj.tokenid = obj.tokenid;
-            msgObj.status = EChatMsgStatus.Send;
-        });
-        this.msgList.push(msgObj)
+        if(this.chatListener){
+            this.chatListener.sendMsg({
+                msg:this.msg
+            }).then(data=>{
+                data.ismy = true;
+                this.msgList.push(data);
+            });
+        }
         this.msg = "";
     }
     beforeDestroy() {
-       this.sockeWrapper.emit("leave",{
-           roomid:this.roomid
-       });
-       this.sockeWrapper.remove("send",this.sendM);
-       this.sockeWrapper.remove("readM",this.readM);
+        if(this.chatListener){
+            this.chatListener.leave();
+            this.chatListener.removeEvent();
+        }
     }
 }
 </script>

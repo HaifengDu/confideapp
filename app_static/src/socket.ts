@@ -4,7 +4,7 @@ import io from "socket.io-client";
 // declare var io:any;
 export default class SocketWrapper{
     private socket:SocketIOClient.Socket;
-    private static readonly chatUrl = "http://192.168.1.3:3001/chat";
+    private static readonly chatUrl = "http://192.168.1.5:3001/chat";
     //应该是权限
     constructor(private userid:number,events:ISocketEvent){
         this.init();
@@ -20,7 +20,7 @@ export default class SocketWrapper{
             this.socket.on(key,events[key].bind(this));
         }
     }
-    
+
     public on(event:string, listener: Function){
         return this.socket.on(event,listener);
     }

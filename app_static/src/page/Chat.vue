@@ -6,7 +6,8 @@
           </div>
           <div class="info">
             <div class="icon">
-
+              <user-icon size="4"></user-icon>
+              <div class="follow" @click="follow">+关注</div>
             </div>
             <div class="summary">
               <div class="base">
@@ -24,21 +25,38 @@
                 </div>
               </div>
               <div class="base">
-                <div class="item">
-
+                <div class="item single">
+                  <div class="comment" v-if="true">有独创性的人杰</div>
+                  <div class="auth" v-else>认证</div>
                 </div>
-                <div class="item">
-
+                <div class="item single">
+                  评价（12345）
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="tab">
+          <div class="price">36元起</div>
+          <div class="switch">
+            <div class="word fa fa-commenting-o"></div>
+            <div class="phone fa fa-phone"></div>
+          </div>
+          <div class="order">马上下单</div>
+        </div>
         <div class="chat-wrapper">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
-                <span class="msg-status" v-if="item.ismy">{{item.status==2?'已读':'已发送'}}</span>
-                <span v-if="item.type!=2" class="msg-text">{{item.msg}}</span>
-                <span v-if="item.type==2" @click="playRecord(item)">播放语言</span>
+              <template v-if="item.ismy">
+                <div class="msg-status">{{item.status==2?'已读':'已发送'}}</div>
+                <div v-if="item.type!=2" class="msg-text">{{item.msg}}</div>
+                <div v-if="item.type==2" @click="playRecord(item)">播放语言</div>
+                <user-icon size="4"></user-icon>
+              </template>
+              <template v-else>
+                <user-icon size="4"></user-icon>
+                <div v-if="item.type!=2" class="msg-text">{{item.msg}}</div>
+                <div v-if="item.type==2" @click="playRecord(item)">播放语言</div>
+              </template>
             </div>
         </div>
         <div class="big-wrapper">
@@ -70,10 +88,14 @@ import SocketWrapper from '../socket';
 import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
 import { EChatMsgType } from '../enum/EChatMsgType';
+import UserIcon from '@/components/UserIcon'
 declare var wx:any;
 @Component({
     computed:{
         ...mapGetters(["user"])
+    },
+    components:{
+      UserIcon
     }
 })
 export default class Chat extends Vue{
@@ -106,6 +128,9 @@ export default class Chat extends Vue{
         if(current){
             current.status = EChatMsgStatus.Readed;
         }
+    }
+    follow(){
+
     }
     constructor(){
         super();
@@ -212,21 +237,90 @@ export default class Chat extends Vue{
     height:6.8rem;
     border-bottom:.1rem solid #f5f5f5;
     display:flex;
+    .fs(1.1rem);
     .icon{
       width:7rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .follow{
+        .fs(1.1rem);
+      }
     }
     .summary{
       flex:1;
       border-left:.1rem solid #f5f5f5;
       .base{
         display:flex;
-        height:3.3rem;
+        height:3.4rem;
         border-bottom:.1rem solid #f5f5f5;
         .item{
           flex:1;
+          .fs(1rem);
+          .text{
+            .fs(1.1rem);
+          }
+          &.single{
+            height:3.3rem;
+            line-height:3.3rem;
+            div{
+              .fs(1.1rem);
+            }
+          }
         }
       }
     }
+  }
+}
+.tab{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  height:4rem;
+  margin:0 1rem;
+  position:relative;
+  .price{
+    position:absolute;
+    top:.4rem;
+    left:7rem;
+    height:1.6rem;
+    line-height:1.6rem;
+    border-top-left-radius:.6rem;
+    border-top-right-radius:.6rem;
+    border-bottom-right-radius:.6rem;
+    background:@mainColor;
+    color:#fff;
+    padding:.1rem .4rem;
+    .fs(1.2rem);
+  }
+  .switch{
+    width:8rem;
+    height:2.4rem;
+    .bs(1.2rem);
+    background:#fff;
+    display:flex;
+    .fs(2rem);
+    .word{
+      border-right:1px solid #d3d3d3;
+      flex:1;
+    }
+    .phone{
+      flex:1;
+      padding-top:.2rem;
+    }
+    .active{
+      color:@mainColor;
+    }
+  }
+  .order{
+    width:7rem;
+    background:@mainColor;
+    color:#fff;
+    height:2.4rem;
+    line-height: 2.4rem;
+    .fs(1.3rem);
+    .bs(1.2rem);
   }
 }
 .big-wrapper{
@@ -263,32 +357,39 @@ export default class Chat extends Vue{
     }
 }
 .chat-wrapper{
-    margin:100px 20px 20px 20px;
-    padding:10px;
+    margin:20px 20px 20px 20px;
     .chat-record{
-        text-align: left;
-        margin:25px 0;
+        margin:15px 0;
+        max-width: 85%;
+        display: flex;
         &.chat-my{
-            text-align: right;
-            .msg-text{
-                background: #74e9f5;
-                color: #fff;
-            }
+          margin-left:15%;
+          .msg-text{
+              background: #74e9f5;
+              color: #fff;
+          }
+        }
+        .icon{
+          width:4rem;
+          flex-shrink: 0;
         }
         .msg-text{
-            max-width: 85%;
+            flex:1;
             display: inline-block;
             text-align: left;
-            font-weight: bold;
             padding: 5px;
             border-radius: 10px;
-            color: #74e9f5;
+            color: #666;
             background-color: #fff;
+            word-wrap: break-word;
+            word-break: break-all;
         }
         .msg-status{
             font-size: small;
             color: #666;
             padding: 3px;
+            width:5rem;
+            flex-shrink: 0;
         }
     }
 }

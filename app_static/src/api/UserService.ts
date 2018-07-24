@@ -113,4 +113,10 @@ export default class MyService {
     public static getInstance() {
       return this._instance || (this._instance = new MyService());
     }
+    /**
+     * 通过id获取用户信息
+     */
+    public getUser(id:number):AxiosPromise<any>{
+      return Axios.get("/user/byid",{params:{uid:id}})
+    }
   }

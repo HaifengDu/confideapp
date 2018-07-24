@@ -109,6 +109,7 @@ export default class Chat extends Vue{
     }
     created(){
         this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
+            //TODO:根据订单和角色验证
             const listener = data.listener;
             if(listener){
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);

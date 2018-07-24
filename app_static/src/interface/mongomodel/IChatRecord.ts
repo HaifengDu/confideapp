@@ -6,11 +6,10 @@ export interface IOnlyChatRecord{
     touid:number,
     roomid:string,
     msg?:string,
-    mediaid?:string,
+    serverId?:string,
     type?:EChatMsgType,
     isload?:boolean,
     date:Date,
+    localId?:string,
     status:EChatMsgStatus
 }
-
-export default IOnlyChatRecord;

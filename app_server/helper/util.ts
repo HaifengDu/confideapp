@@ -1,3 +1,4 @@
+import * as express from 'express';
 import * as Mongoose from "mongoose";
 
 export function retryInsertMongo(count:number){
@@ -14,3 +15,12 @@ export function retryInsertMongo(count:number){
         });
     }
 }
+export function getClientIp(req:express.Request){
+    return <string>req.headers['x-forwarded-for'] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress;
+}
+
+export function createNonceStr() {
+    return Math.random().toString(36).substr(2, 15);
+};

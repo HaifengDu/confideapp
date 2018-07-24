@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 价格时段
+ */
 var EPriceCircle;
 (function (EPriceCircle) {
     EPriceCircle[EPriceCircle["Fifteen"] = 1] = "Fifteen";

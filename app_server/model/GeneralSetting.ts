@@ -1,7 +1,7 @@
 import * as Sequelize from "sequelize";
 import sequelize from "../mysqlSeq";
 import { IGeneralSetting } from "../interface/model/IGeneralSetting";
-import Listener from "./Listener";
+import User from "./User";
 
 const GeneralSetting = sequelize.define<IGeneralSetting,IGeneralSetting>("generalsetting",{
     id: {type:Sequelize.INTEGER, primaryKey: true,autoIncrement:true,comment:"唯一id"},
@@ -14,8 +14,8 @@ const GeneralSetting = sequelize.define<IGeneralSetting,IGeneralSetting>("genera
 },{
     freezeTableName: true
 });
-GeneralSetting.sync({alter:true});
-GeneralSetting.belongsTo(Listener,{
+GeneralSetting.belongsTo(User,{
     foreignKey:"uid"
 });
+GeneralSetting.sync({alter:true});
 export default GeneralSetting;

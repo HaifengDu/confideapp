@@ -15,10 +15,10 @@ const PriceSetting = sequelize.define<IPriceSetting,IPriceSetting>("pricesetting
 },{
     freezeTableName: true
 });
-PriceSetting.sync({alter:true});
 User.hasMany(PriceSetting,{
     foreignKey:"uid"
-})
+});
+PriceSetting.sync({alter:true});
 // PriceSetting.belongsTo(Listener,{
 //     foreignKey:"uid"
 // });

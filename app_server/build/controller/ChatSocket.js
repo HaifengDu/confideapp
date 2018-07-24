@@ -1,30 +1,32 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ERole_1 = require("../enum/ERole");
 const EChatMsgStatus_1 = require("../enum/EChatMsgStatus");
 const EChatMsgType_1 = require("../enum/EChatMsgType");
 const util_1 = require("../helper/util");
 const MongoChatModel_1 = require("../model/mongo/MongoChatModel");
 const syncHelper_1 = require("../helper/syncHelper");
+const crypto = require('crypto');
 const _ = require("lodash");
 const uuid = require("uuid");
 const roomDic = {};
 class ChatSocket {
-    constructor(socket, role) {
+    constructor(socket) {
         this.socket = socket;
-        this.role = role;
         this.syncHelper = syncHelper_1.default.getInstance();
         this.initEvent();
     }
     static createRoom(source, target) {
-        return source + "_" + target;
+        const hashCode = crypto.createHash('sha1'); //创建加密类型 
+        const keyStr = [source, target].sort().join("_");
+        const resultHash = hashCode.update(keyStr, 'utf8').digest('hex'); //对传入的字符串进行加密
+        return resultHash;
     }
     initEvent() {
         this.socket.on(ChatSocket.joinEvent, this.joinRoom.bind(this));
         this.socket.on(ChatSocket.sendEvent, this.sendMsg.bind(this));
         this.socket.on(ChatSocket.readEvent, this.read.bind(this));
         this.socket.on('disconnect', this.disconnectInsetAll.bind(this));
-        this.socket.on("leave", this.leaveInsertRoomRecords.bind(this));
+        this.socket.on(ChatSocket.leaveEvent, this.leaveInsertRoomRecords.bind(this));
         this.socket.on("error", () => {
             for (let key in roomDic) {
                 delete roomDic[key];
@@ -48,16 +50,12 @@ class ChatSocket {
      * @param res
      */
     sendMsg(res, ackFn) {
-        let tempsenduid = res.pid;
-        let temptouid = res.lid;
+        let tempsenduid = res.senduid;
+        let temptouid = res.touid;
         if (!tempsenduid || !temptouid) {
             return;
         }
-        if (this.role === ERole_1.ERole.Listener) {
-            tempsenduid = res.lid;
-            temptouid = res.pid;
-        }
-        const roomid = ChatSocket.createRoom(res.pid, res.lid);
+        const roomid = ChatSocket.createRoom(res.senduid, res.touid);
         const msgObj = {
             tokenid: uuid(),
             roomid,
@@ -70,7 +68,7 @@ class ChatSocket {
         };
         if (res.type === EChatMsgType_1.default.Audio) {
             msgObj.isload = false;
-            msgObj.mediaid = res.mediaid;
+            msgObj.serverId = res.serverId;
             msgObj.type = EChatMsgType_1.default.Audio;
         }
         if (!roomDic[roomid]) {
@@ -92,6 +90,17 @@ class ChatSocket {
         ackFn(msgObj);
     }
     read(data) {
+        //数组直接更新为已读
+        if (_.isArray(data.tokenid)) {
+            MongoChatModel_1.default.update({
+                tokenid: {
+                    $in: data.tokenid
+                }
+            }, {
+                status: EChatMsgStatus_1.default.Readed
+            });
+            return;
+        }
         const roomid = data.roomid;
         if (roomDic[roomid] && roomDic[roomid].length) {
             const chatList = roomDic[roomid];
@@ -152,14 +161,15 @@ class ChatSocket {
             this.syncHelper.syncAudio(ids);
         }
     }
-    static getInstance(socket, role) {
-        return new ChatSocket(socket, role);
+    static getInstance(socket) {
+        return new ChatSocket(socket);
     }
 }
 ChatSocket.joinEvent = "join";
 ChatSocket.sendEvent = "send";
 ChatSocket.notifyEvent = "notify";
 ChatSocket.readEvent = "read";
+ChatSocket.leaveEvent = "leave";
 ChatSocket.MAX_MSG_LENGTH = 100;
 ChatSocket.RETRY_COUNT = 5;
 exports.ChatSocket = ChatSocket;

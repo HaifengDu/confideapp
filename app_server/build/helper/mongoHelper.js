@@ -9,7 +9,7 @@ const options = {
     auto_reconnect: true,
     poolSize: 10
 };
-Mongoose.connect('mongodb://dhf:dkl20170531@47.93.50.205:27017/confide', options);
+Mongoose.connect('mongodb://dhf:dkl20170531@39.106.100.155:27017/confide', options);
 const db = Mongoose.connection;
 db.on('error', function (err) {
     console.error('error');

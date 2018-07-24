@@ -8,10 +8,11 @@ import * as Bluebird from "bluebird";
 import ErrorMsg from "../model/ErrorMsg";
 import _ = require("lodash");
 import { EGeneralStatus } from "../enum/EGeneralStatus";
-import ListenerService from "./Listener";
+// import ListenerService from "./Listener";
 import MongoHomeClickRate from "../model/mongo/MongoHomeClickRate";
 import { Query } from "mongoose";
 import CalucateService from "../helper/CalucateService";
+import UserService from "./User";
 
 /**
  * 推广设置
@@ -20,14 +21,41 @@ export default class GeneralSettingService {
 
     private static _instance: GeneralSettingService;
 
-    private listenerService:ListenerService;
+    private userService:UserService;
     private constructor() {
-        this.listenerService = ListenerService.getInstance();
+        this.userService = UserService.getInstance();
     }
 
+    public getGeneral(uid:number){
+        if(!uid){
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
+        }
+        return GeneralSetting.find({
+            where:{
+                uid:uid
+            }
+        });
+    }
+    enableGeneral(status:number,userid:number){
+        const values = Object.keys(EGeneralStatus);
+        if(!userid){
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
+        }
+        const tempStatus = parseInt(<any>status);
+        if(!(tempStatus in values)){
+            return Bluebird.reject(new ErrorMsg(false,"状态非法"));
+        }
+        return GeneralSetting.update({
+            status:tempStatus
+        },{
+            where:{
+                uid:userid
+            }
+        });
+    }
     public setGeneral(generalSetting:IGeneralSetting){
         if(!generalSetting.uid){
-            return Bluebird.reject(new ErrorMsg(false,"用户uid不能为空"));
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
         }
         if(!_.isNumber(generalSetting.price)||!generalSetting.price){
             return Bluebird.reject(new ErrorMsg(false,"价格参数非法"));
@@ -39,8 +67,8 @@ export default class GeneralSettingService {
         if('limitprice' in generalSetting&&generalSetting.limitprice<generalSetting.price){
             return Bluebird.reject(new ErrorMsg(false,"推广限制必须大于等于设置的推广价格"));
         }
-
-        this.listenerService.findByUserid(generalSetting.uid).then(res=>{
+        generalSetting.limitprice = generalSetting.limitprice || null;
+        return this.userService.find(generalSetting.uid).then(res=>{
             if(!res){
                 return Bluebird.reject(new ErrorMsg(false,"未找到对应用户"));
             }
@@ -57,9 +85,11 @@ export default class GeneralSettingService {
                 }
             }).then(res=>{
                 if(res){
+                    const uid = generalSetting.uid;
+                    delete generalSetting.uid;
                     return GeneralSetting.update(generalSetting,{
                         where:{
-                            uid:generalSetting.uid
+                            uid:uid
                         }
                     }).then(res=>{
                         return generalSetting;
@@ -104,16 +134,16 @@ export default class GeneralSettingService {
             }
             return promise;
         }).then(res=>{
-            const findUserPromise = this.listenerService.findByUserid(lid);
+            const findUserPromise = this.userService.find(lid);
             const findGeneralPromise = GeneralSetting.find({
                 where:{
                     uid:lid
                 }
             });
             return Bluebird.all([findUserPromise,findGeneralPromise]).then(resuls=>{
-                const listener = resuls[0];
+                const user = resuls[0];
                 const generalSetting = resuls[1];
-                const restMoney = CalucateService.numSub(listener.money,generalSetting.price);
+                const restMoney = CalucateService.numSub(user.money,generalSetting.price);
                 const dayprice = CalucateService.numAdd(generalSetting.dayprice,generalSetting.price);
                 let promises:Bluebird<any>[]=[];
                 if(restMoney<generalSetting.price){
@@ -144,8 +174,8 @@ export default class GeneralSettingService {
                         }));
                     }
                 }
-                listener.money = CalucateService.numSub(listener.money,generalSetting.price);
-                promises.push(this.listenerService.updateListener(listener));
+                user.money = CalucateService.numSub(user.money,generalSetting.price);
+                promises.push(this.userService.update(user));
                 return Promise.all(promises);
             });
         });

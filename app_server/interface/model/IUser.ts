@@ -18,6 +18,10 @@ export interface IUser{
     phone?:string,
     phonebindstatus?:EBindPhoneStatus,
     pricesettins?:any[],
-    listener?:IListener
+    listener?:IListener,
+    /**
+     * 余额
+     */
+    money?:number
 }
 export default IUser;

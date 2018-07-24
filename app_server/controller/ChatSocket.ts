@@ -5,8 +5,8 @@ import EChatMsgType from "../enum/EChatMsgType";
 import { retryInsertMongo } from "../helper/util";
 import MongoChatRecord from "../model/mongo/MongoChatModel";
 import SyncHelper from "../helper/syncHelper";
+const crypto = require('crypto');
 import _ = require("lodash");
-import IChatModel from "../interface/IChatModel";
 import * as uuid from "uuid";
 const roomDic:{[index:string]:Array<IOnlyChatRecord>}={};
 export class ChatSocket{
@@ -14,16 +14,20 @@ export class ChatSocket{
     private static readonly sendEvent = "send";
     private static readonly notifyEvent = "notify";
     private static readonly readEvent = "read";
+    private static readonly leaveEvent = "leave";
     private static readonly MAX_MSG_LENGTH = 100;
     private static readonly RETRY_COUNT = 5;
     private syncHelper: SyncHelper;
-    constructor(private socket:SocketIO.Socket,private role:ERole){
+    constructor(private socket:SocketIO.Socket){
         this.syncHelper = SyncHelper.getInstance();
         this.initEvent();
     }
 
     public static createRoom(source:number,target:number){
-        return source+"_"+target;
+        const hashCode = crypto.createHash('sha1'); //创建加密类型 
+        const keyStr = [source,target].sort().join("_");
+        const resultHash = hashCode.update(keyStr, 'utf8').digest('hex'); //对传入的字符串进行加密
+        return resultHash;
     }
 
     private initEvent(){
@@ -31,7 +35,7 @@ export class ChatSocket{
         this.socket.on(ChatSocket.sendEvent,this.sendMsg.bind(this));
         this.socket.on(ChatSocket.readEvent,this.read.bind(this)); 
         this.socket.on('disconnect',this.disconnectInsetAll.bind(this));
-        this.socket.on("leave",this.leaveInsertRoomRecords.bind(this));
+        this.socket.on(ChatSocket.leaveEvent,this.leaveInsertRoomRecords.bind(this));
         this.socket.on("error",()=>{
             for(let key in roomDic){
                 delete roomDic[key];
@@ -57,17 +61,13 @@ export class ChatSocket{
      * 发送消息事件
      * @param res 
      */
-    private sendMsg(res:IChatModel,ackFn:(...args:any[])=>void){
-        let tempsenduid = res.pid;
-        let temptouid = res.lid;
+    private sendMsg(res:IOnlyChatRecord,ackFn:(...args:any[])=>void){
+        let tempsenduid = res.senduid;
+        let temptouid = res.touid;
         if(!tempsenduid||!temptouid){
             return;
         }
-        if(this.role===ERole.Listener){
-            tempsenduid = res.lid;
-            temptouid = res.pid;
-        }
-        const roomid = ChatSocket.createRoom(res.pid,res.lid);
+        const roomid = ChatSocket.createRoom(res.senduid,res.touid);
         const msgObj:IOnlyChatRecord = {
             tokenid:uuid(),
             roomid,
@@ -80,7 +80,7 @@ export class ChatSocket{
         }
         if(res.type===EChatMsgType.Audio){
             msgObj.isload=false;
-            msgObj.mediaid = res.mediaid;
+            msgObj.serverId = res.serverId;
             msgObj.type = EChatMsgType.Audio
         }
         if (!roomDic[roomid]) {
@@ -103,7 +103,18 @@ export class ChatSocket{
         ackFn(msgObj);
     }
 
-    private read(data:{tokenid:string,roomid:string}){
+    private read(data:{tokenid:string|string[],roomid:string}){
+        //数组直接更新为已读
+        if(_.isArray(data.tokenid)){
+            MongoChatRecord.update({
+                tokenid:{
+                    $in:data.tokenid
+                }
+            },{
+                status:EChatMsgStatus.Readed
+            });
+            return;
+        }
         const roomid = data.roomid;
         if(roomDic[roomid]&&roomDic[roomid].length){
             const chatList = roomDic[roomid];
@@ -168,8 +179,8 @@ export class ChatSocket{
         }
     }
 
-    static getInstance(socket:SocketIO.Socket,role:ERole){
-        return new ChatSocket(socket,role);
+    static getInstance(socket:SocketIO.Socket){
+        return new ChatSocket(socket);
     }
 }
 

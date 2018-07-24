@@ -6,14 +6,10 @@ const xml2js = require("xml2js");
 const querystring_1 = require("querystring");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const objectHelper_1 = require("./objectHelper");
+const util_1 = require("./util");
 const wxconfig = require("../../config/wxconfig.json");
-const globalconfig = require("../../config/globalconfig.json");
 const appid = wxconfig.appid;
 const appsecret = wxconfig.appsecret;
-const appkey = wxconfig.appkey;
-const mch_id = wxconfig.mch_id;
-const nonce_str = wxconfig.nonce_str;
-const origin = globalconfig.origin;
 class WeixinHelper {
     static getAccesstoken(code) {
         if (!code) {
@@ -82,68 +78,9 @@ class WeixinHelper {
         });
     }
     /**
-     * 微信统一生成订单
-     * https://www.jianshu.com/p/e7ab4641df73
-     * @param openid
-     * @param orderNo
-     * @param total_fee
+     * 支付成功回调
      */
-    static unifiedOrder(openid, orderNo, total_fee) {
-        //mch_id商户号
-        //detail 支付详情
-        //out_trade_no//商户订单号
-        //spbill_create_ip//客户端id
-        //total_fee//金额
-        const url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        const bookingNo = orderNo.toString();
-        const attach = "千寻倾听支付";
-        const notify_url = `${origin}/wx/payok`;
-        const body = "千寻倾听支付";
-        let formData = "<xml>";
-        formData += "<appid>" + appid + "</appid>"; //appid
-        formData += "<attach>" + attach + "</attach>"; //附加数据
-        formData += "<body>" + body + "</body>";
-        formData += "<mch_id>" + mch_id + "</mch_id>"; //商户号
-        formData += "<nonce_str>" + nonce_str + "</nonce_str>"; //随机字符串，不长于32位。
-        formData += "<notify_url>" + notify_url + "</notify_url>";
-        formData += "<openid>" + openid + "</openid>";
-        formData += "<out_trade_no>" + bookingNo + "</out_trade_no>";
-        formData += "<spbill_create_ip></spbill_create_ip>";
-        formData += "<total_fee>" + total_fee + "</total_fee>";
-        formData += "<trade_type>JSAPI</trade_type>";
-        formData += "<sign>" + this.paysignjsapi(appid, attach, body, mch_id, nonce_str, notify_url, openid, bookingNo, '', total_fee, 'JSAPI') + "</sign>";
-        formData += "</xml>";
-        return new Promise((resolve, reject) => {
-            request({ url: url, method: 'POST', body: formData, timeout: 30000 }, (err, res) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                if (res.statusCode !== 200) {
-                    reject(new ErrorMsg_1.default(false, res.body));
-                    return;
-                }
-                xml2js.parseString(res.body, (err, data) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    //prepay_id可能在CData块中
-                    const timeStamp = Date.now();
-                    const _paySignjs = this.paysignjs(appid, nonce_str, 'prepay_id=' + data.prepay_id, 'MD5', timeStamp.toString());
-                    resolve({
-                        appid,
-                        nonce_str,
-                        prepay_id: data.prepay_id,
-                        signType: "MD5",
-                        timeStamp,
-                        paySign: _paySignjs
-                    });
-                });
-            });
-        });
-    }
-    static recieve(req, res) {
+    static recieve(req) {
         /**
          *
             <xml><appid><![CDATA[wxe6c6ab2ef372xxxx]]></appid>
@@ -165,7 +102,7 @@ class WeixinHelper {
             <transaction_id><![CDATA[4001862001201706186249259476]]></transaction_id>
             </xml>
          */
-        const body = res.body;
+        const body = req.body;
         if (!body) {
             return Promise.reject(new ErrorMsg_1.default(false, "参数为空"));
         }
@@ -189,60 +126,6 @@ class WeixinHelper {
             return Promise.reject(new ErrorMsg_1.default(false, "支付失败，返回签名失败"));
         });
     }
-    /**
-     * 服务器端签名
-     * @param appid
-     * @param attach
-     * @param body
-     * @param mch_id
-     * @param nonce_str
-     * @param notify_url
-     * @param openid
-     * @param out_trade_no
-     * @param spbill_create_ip
-     * @param total_fee
-     * @param trade_type
-     */
-    static paysignjsapi(appid, attach, body, mch_id, nonce_str, notify_url, openid, out_trade_no, spbill_create_ip, total_fee, trade_type) {
-        const ret = {
-            appid: appid,
-            attach: attach,
-            body: body,
-            mch_id: mch_id,
-            nonce_str: nonce_str,
-            notify_url: notify_url,
-            openid: openid,
-            out_trade_no: out_trade_no,
-            spbill_create_ip: spbill_create_ip,
-            total_fee: total_fee,
-            trade_type: trade_type
-        };
-        let string = querystring_1.stringify(ret);
-        string = string + '&key=' + appkey;
-        return crypto.createHash('md5').update(string, 'utf8').digest('hex');
-    }
-    ;
-    /**
-     * 客户端签名
-     * @param appid
-     * @param nonceStr
-     * @param pack
-     * @param signType
-     * @param timeStamp
-     */
-    static paysignjs(appid, nonceStr, pack, signType, timeStamp) {
-        const ret = {
-            appId: appid,
-            nonceStr: nonceStr,
-            package: pack,
-            signType: signType,
-            timeStamp: timeStamp
-        };
-        let string = querystring_1.stringify(ret);
-        string = string + '&key=' + appkey;
-        return crypto.createHash('md5').update(string, 'utf8').digest('hex');
-    }
-    ;
     /**
      * 验证微信返回的签名
      * @param map
@@ -286,7 +169,7 @@ class WeixinHelper {
         return this.getJsTicket(access_token).then(data => {
             const obj = objectHelper_1.default.parseJSON(data);
             const timestamp = Date.now();
-            console.log(obj);
+            const nonce_str = util_1.createNonceStr();
             const signStr = `jsapi_ticket=${obj.ticket}&noncestr=${nonce_str}&timestamp=${timestamp}&url=${url}`;
             console.log(signStr);
             const sign = crypto.createHash('sha1').update(signStr).digest('hex');

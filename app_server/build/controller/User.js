@@ -12,11 +12,13 @@ const Sequelize = require("sequelize");
 const mailHelper_1 = require("../helper/mailHelper");
 const EBindPhoneStatus_1 = require("../enum/EBindPhoneStatus");
 const objectHelper_1 = require("../helper/objectHelper");
+const MongoSyncBiz_1 = require("../biz/MongoSyncBiz");
 class UserService {
     constructor(listenerService) {
         this.listenerService = listenerService;
         this._mailHelper = mailHelper_1.default.getInstance();
         this._areaHelper = areaHelper_1.default.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz_1.default.getInstance();
     }
     bindUser(code) {
         return weixinHelper_1.default.getUserinfoByCode(code).then(res => {
@@ -52,7 +54,13 @@ class UserService {
         if (transtion) {
             options.transaction = transtion;
         }
-        return User_1.default.update(user, options);
+        return User_1.default.update(user, options).then(res => {
+            if (res[0] > 0) {
+                user.id = id;
+                return this.mongoSyncbiz.updateByUser(user);
+            }
+            return res;
+        });
     }
     create(user) {
         return User_1.default.create(user);

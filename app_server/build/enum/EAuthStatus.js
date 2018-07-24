@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 资质认证状态
+ */
 var EAuthStatus;
 (function (EAuthStatus) {
     EAuthStatus[EAuthStatus["\u672A\u8BA4\u8BC1"] = 0] = "\u672A\u8BA4\u8BC1";

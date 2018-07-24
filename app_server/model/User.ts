@@ -14,7 +14,8 @@ const User = sequelize.define<IUser,IUser>('user',{
     headimgurl:{type:Sequelize.STRING,comment:"头像"},
     status:{type:Sequelize.TINYINT,defaultValue:0},
     follow:{type:Sequelize.STRING(500),comment:"关注ids"},
-    resume:{type:Sequelize.TEXT,comment:"简历"}
+    resume:{type:Sequelize.TEXT,comment:"简历"},
+    money:{type:Sequelize.FLOAT,defaultValue:0,comment:"用户余额"}
 },{
     freezeTableName: true
 });

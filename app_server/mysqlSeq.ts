@@ -1,7 +1,7 @@
 // const Sequelize = require('sequelize');
 import * as Sequelize from "sequelize";
 const sequelize = new Sequelize('confide', 'root', 'dkl20170531', {
-    host: '47.93.50.205',
+    host: '39.106.100.155',
     dialect: 'mysql',
     operatorsAliases: false,
 

@@ -1,3 +1,6 @@
+/**
+ * 角色状态
+ */
 export enum ERoleStatus{
     删除=-1,
     正常=0,

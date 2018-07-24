@@ -47,7 +47,7 @@ router.get("/", [
         res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
-router.get("/", [
+router.get("/byid", [
     check_1.query("uid").isNumeric().withMessage('微信id不能为空')
 ], (req, res) => {
     const errors = check_1.validationResult(req);

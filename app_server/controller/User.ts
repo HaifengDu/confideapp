@@ -14,16 +14,19 @@ import { EBindPhoneStatus } from "../enum/EBindPhoneStatus";
 import ListenerService from "./Listener";
 import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
+import MongoSyncBiz from "../biz/MongoSyncBiz";
 
 export default class UserService {
 
     private static _instance: UserService;
     private _areaHelper:AreaHelper;
     private _mailHelper:MailHelper;
+    private mongoSyncbiz:MongoSyncBiz;
 
     private constructor(private listenerService?:ListenerService) {
         this._mailHelper = MailHelper.getInstance();
         this._areaHelper = AreaHelper.getInstance();
+        this.mongoSyncbiz = MongoSyncBiz.getInstance(); 
     }
 
     public bindUser(code:string){
@@ -61,7 +64,13 @@ export default class UserService {
         if(transtion){
             options.transaction = transtion;
         }
-        return UserModel.update(user,options);
+        return UserModel.update(user,options).then(res=>{
+            if(res[0]>0){
+                user.id = id;
+                return this.mongoSyncbiz.updateByUser(user);
+            }
+            return res;
+        });
     }
 
     private create(user:IUser){

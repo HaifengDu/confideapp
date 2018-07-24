@@ -5,19 +5,47 @@ const Bluebird = require("bluebird");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const _ = require("lodash");
 const EGeneralStatus_1 = require("../enum/EGeneralStatus");
-const Listener_1 = require("./Listener");
+// import ListenerService from "./Listener";
 const MongoHomeClickRate_1 = require("../model/mongo/MongoHomeClickRate");
 const CalucateService_1 = require("../helper/CalucateService");
+const User_1 = require("./User");
 /**
  * 推广设置
  */
 class GeneralSettingService {
     constructor() {
-        this.listenerService = Listener_1.default.getInstance();
+        this.userService = User_1.default.getInstance();
+    }
+    getGeneral(uid) {
+        if (!uid) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "用户id不能为空"));
+        }
+        return GeneralSetting_1.default.find({
+            where: {
+                uid: uid
+            }
+        });
+    }
+    enableGeneral(status, userid) {
+        const values = Object.keys(EGeneralStatus_1.EGeneralStatus);
+        if (!userid) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "用户id不能为空"));
+        }
+        const tempStatus = parseInt(status);
+        if (!(tempStatus in values)) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "状态非法"));
+        }
+        return GeneralSetting_1.default.update({
+            status: tempStatus
+        }, {
+            where: {
+                uid: userid
+            }
+        });
     }
     setGeneral(generalSetting) {
         if (!generalSetting.uid) {
-            return Bluebird.reject(new ErrorMsg_1.default(false, "用户uid不能为空"));
+            return Bluebird.reject(new ErrorMsg_1.default(false, "用户id不能为空"));
         }
         if (!_.isNumber(generalSetting.price) || !generalSetting.price) {
             return Bluebird.reject(new ErrorMsg_1.default(false, "价格参数非法"));
@@ -28,7 +56,8 @@ class GeneralSettingService {
         if ('limitprice' in generalSetting && generalSetting.limitprice < generalSetting.price) {
             return Bluebird.reject(new ErrorMsg_1.default(false, "推广限制必须大于等于设置的推广价格"));
         }
-        this.listenerService.findByUserid(generalSetting.uid).then(res => {
+        generalSetting.limitprice = generalSetting.limitprice || null;
+        return this.userService.find(generalSetting.uid).then(res => {
             if (!res) {
                 return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
             }
@@ -45,9 +74,11 @@ class GeneralSettingService {
                 }
             }).then(res => {
                 if (res) {
+                    const uid = generalSetting.uid;
+                    delete generalSetting.uid;
                     return GeneralSetting_1.default.update(generalSetting, {
                         where: {
-                            uid: generalSetting.uid
+                            uid: uid
                         }
                     }).then(res => {
                         return generalSetting;
@@ -92,16 +123,16 @@ class GeneralSettingService {
             }
             return promise;
         }).then(res => {
-            const findUserPromise = this.listenerService.findByUserid(lid);
+            const findUserPromise = this.userService.find(lid);
             const findGeneralPromise = GeneralSetting_1.default.find({
                 where: {
                     uid: lid
                 }
             });
             return Bluebird.all([findUserPromise, findGeneralPromise]).then(resuls => {
-                const listener = resuls[0];
+                const user = resuls[0];
                 const generalSetting = resuls[1];
-                const restMoney = CalucateService_1.default.numSub(listener.money, generalSetting.price);
+                const restMoney = CalucateService_1.default.numSub(user.money, generalSetting.price);
                 const dayprice = CalucateService_1.default.numAdd(generalSetting.dayprice, generalSetting.price);
                 let promises = [];
                 if (restMoney < generalSetting.price) {
@@ -135,8 +166,8 @@ class GeneralSettingService {
                         }));
                     }
                 }
-                listener.money = CalucateService_1.default.numSub(listener.money, generalSetting.price);
-                promises.push(this.listenerService.updateListener(listener));
+                user.money = CalucateService_1.default.numSub(user.money, generalSetting.price);
+                promises.push(this.userService.update(user));
                 return Promise.all(promises);
             });
         });

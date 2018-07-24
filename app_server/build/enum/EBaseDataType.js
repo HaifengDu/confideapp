@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 基础数据类型
+ */
 var EBaseDataType;
 (function (EBaseDataType) {
     EBaseDataType[EBaseDataType["Area"] = 1] = "Area";

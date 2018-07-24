@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 角色状态
+ */
 var ERoleStatus;
 (function (ERoleStatus) {
     ERoleStatus[ERoleStatus["\u5220\u9664"] = -1] = "\u5220\u9664";

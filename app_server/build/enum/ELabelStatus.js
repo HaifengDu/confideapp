@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 标签状态
+ */
 var ELabelStatus;
 (function (ELabelStatus) {
     ELabelStatus[ELabelStatus["\u5220\u9664"] = -1] = "\u5220\u9664";

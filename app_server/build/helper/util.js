@@ -15,3 +15,14 @@ function retryInsertMongo(count) {
     };
 }
 exports.retryInsertMongo = retryInsertMongo;
+function getClientIp(req) {
+    return req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress;
+}
+exports.getClientIp = getClientIp;
+function createNonceStr() {
+    return Math.random().toString(36).substr(2, 15);
+}
+exports.createNonceStr = createNonceStr;
+;

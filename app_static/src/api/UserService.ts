@@ -8,6 +8,18 @@ export default class MyService {
     private static _instance: MyService;
 
     /**
+     * 根据id获取用户
+     * @param id 
+     */
+    public getUser(id:number):AxiosPromise<IResponse<IUser>>{
+      return Axios.get("user/byid",{
+        params:{
+          uid:id
+        }
+      });
+    }
+
+    /**
     * getUserInfo
     */
     public getUserInfo(code: string): AxiosPromise<any> {

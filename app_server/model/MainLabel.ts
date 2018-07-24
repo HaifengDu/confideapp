@@ -12,4 +12,7 @@ const MainLabel = sequelize.define<IMainLabel,IMainLabel>('mainlable',{
 },{
     freezeTableName: true
 });
+MainLabel.sync({
+    alter:true
+})
 export default MainLabel;

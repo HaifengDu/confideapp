@@ -13,8 +13,7 @@ export = class SocketHelper {
 
     private initEvent(){
         this.socketio.of(this.chatPath).on("connection",socket=>{
-            const role = socket.handshake.query.role === "0"?ERole.Pourouter:ERole.Listener;
-            ChatSocket.getInstance(socket,role);
+            ChatSocket.getInstance(socket);
         });
         this.socketio.on("connect",socket=>{
             console.log("socket connect");

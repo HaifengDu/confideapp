@@ -21,7 +21,7 @@
         return (num1 * baseNum + num2 * baseNum) / baseNum;
     };
     /** 
-     * 加法运算，避免数据相减小数点后产生多位数和计算精度损失。 
+     * 减法运算，避免数据相减小数点后产生多位数和计算精度损失。 
      * 
      * @param num1被减数 
      * @param num2减数

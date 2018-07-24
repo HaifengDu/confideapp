@@ -21,8 +21,7 @@ const Listener = mysqlSeq_1.default.define('listener', {
     cchcount: { type: Sequelize.TINYINT, defaultValue: 0, comment: "当月通话价格设置次数" },
     wchlastdate: { type: Sequelize.DATE, comment: "文字价格最后修改时间" },
     cchlastdate: { type: Sequelize.DATE, comment: "通话价格最后修改时间" },
-    minprice: { type: Sequelize.FLOAT, comment: "最小价格" },
-    money: { type: Sequelize.FLOAT, defaultValue: 0, comment: "用户余额" }
+    minprice: { type: Sequelize.FLOAT, comment: "最小价格" }
 }, {
     freezeTableName: true
 });

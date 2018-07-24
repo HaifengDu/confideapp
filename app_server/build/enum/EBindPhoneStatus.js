@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 数据绑定状态
+ */
 var EBindPhoneStatus;
 (function (EBindPhoneStatus) {
     EBindPhoneStatus[EBindPhoneStatus["\u672A\u7ED1\u5B9A"] = 0] = "\u672A\u7ED1\u5B9A";

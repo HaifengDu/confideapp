@@ -213,18 +213,60 @@ router.get("/price", [
 /**
  * 推广设置
  */
-router.post("/setgeneralsetting", [
+router.post("/generalsetting", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
-    check_1.body("price").isNumeric().withMessage("价格设置非法")
+    check_1.body("data").isNumeric().withMessage("价格设置非法")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    const data = objectHelper_1.default.parseJSON(req.body.data) || {};
     const generalSetting = {
-        uid: req.query.userid,
-        price: req.body.price
+        uid: parseInt(req.query.userid),
+        price: data.price
     };
-    if (req.body.limitprice) {
-        generalSetting.limitprice = req.body.limitprice;
+    if (data.limitprice) {
+        generalSetting.limitprice = data.limitprice;
     }
     generalSettingCtrl.setGeneral(generalSetting).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
+ * 设置推广状态
+ */
+router.post("/setgeneralstatus", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("status").isNumeric().withMessage("状态非法")
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    generalSettingCtrl.enableGeneral(req.body.status, req.query.userid).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
+ * 获取推广设置
+ */
+router.get("/generalsetting", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    generalSettingCtrl.getGeneral(req.query.userid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

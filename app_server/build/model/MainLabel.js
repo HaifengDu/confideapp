@@ -12,4 +12,7 @@ const MainLabel = mysqlSeq_1.default.define('mainlable', {
 }, {
     freezeTableName: true
 });
+MainLabel.sync({
+    alter: true
+});
 exports.default = MainLabel;

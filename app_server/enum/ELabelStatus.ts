@@ -1,3 +1,6 @@
+/**
+ * 标签状态
+ */
 export enum ELabelStatus{
     删除=-1,
     正常=0,

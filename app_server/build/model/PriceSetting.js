@@ -15,10 +15,10 @@ const PriceSetting = mysqlSeq_1.default.define("pricesetting", {
 }, {
     freezeTableName: true
 });
-PriceSetting.sync({ alter: true });
 User_1.default.hasMany(PriceSetting, {
     foreignKey: "uid"
 });
+PriceSetting.sync({ alter: true });
 // PriceSetting.belongsTo(Listener,{
 //     foreignKey:"uid"
 // });

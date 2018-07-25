@@ -134,16 +134,14 @@ export default class UserService {
             if(!user){
                 return Bluebird.reject(new ErrorMsg(false,"未找到对应用户"));
             }
-            if(user.role===ERole.Listener){
-                if(this.listenerService){
-                    return this.listenerService.findByUserid(user.id).then(listener=>{
-                        const userTemp:any = ObjectHelper.serialize(user);
-                        userTemp.listener = ObjectHelper.serialize<IListener>(listener);
-                        userTemp.pricesettings = userTemp.listener.user.pricesettings;
-                        delete userTemp.listener.user;
-                        return userTemp;
-                    });
-                }
+            if(user.role===ERole.Listener&&this.listenerService){
+                return this.listenerService.findByUserid(user.id).then(listener=>{
+                    const userTemp:any = ObjectHelper.serialize(user);
+                    userTemp.listener = ObjectHelper.serialize<IListener>(listener);
+                    userTemp.pricesettings = userTemp.listener.user.pricesettings;
+                    delete userTemp.listener.user;
+                    return userTemp;
+                });
             }
             return user;
         });

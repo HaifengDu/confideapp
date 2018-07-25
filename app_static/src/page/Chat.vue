@@ -86,8 +86,10 @@ import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
 import { EChatMsgType } from '../enum/EChatMsgType';
 import UserIcon from '@/components/UserIcon'
-import ChatManagerBiz,{ChatListener} from "../biz/ChatManagerBiz";
+import ChatManagerBiz,{ChatListener,ChatEventContants} from "../biz/ChatManagerBiz";
 import { IOnlyChatRecord } from '../interface/mongomodel/IChatRecord';
+import { IOrder } from '../interface/model/IOrder';
+import { ERole } from '../enum/ERole';
 
 @Component({
     components:{
@@ -100,6 +102,9 @@ export default class Chat extends Vue{
     private msg = "";
     private msgList:any[]=[];
     private chatType = EChatMsgType.Text;
+    private order?:IOrder;
+    private currentRole:ERole;
+    
     follow(){
 
     }
@@ -111,6 +116,8 @@ export default class Chat extends Vue{
         this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
             //TODO:根据订单和角色验证
             const listener = data.listener;
+            this.order = data.order;
+            this.currentRole = data.roles.Current;
             if(listener){
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);
                 this.chatListener.addEvent();
@@ -120,14 +127,19 @@ export default class Chat extends Vue{
     }
     onSocketEvent(){
 
-        this.$on(ChatListener.sendEvent,(data:IOnlyChatRecord)=>{
+        this.$on(ChatEventContants.sendEvent,(data:IOnlyChatRecord)=>{
             this.msgList.push(data);
         });
-        this.$on(ChatListener.readEvent,(tokenid:string)=>{
-            const current = this.msgList.find(item=>item.tokenid===tokenid);
+        this.$on(ChatEventContants.readEvent,(tokenids:string[])=>{
+            const current = this.msgList.find(item=>tokenids.indexOf(item.tokenid)>-1);
             if(current){
                 current.status = EChatMsgStatus.Readed;
             }
+        });
+
+        //获取最近的20条消息
+        this.$on(ChatEventContants.vueDefaultRecordEvent,(datas:IOnlyChatRecord[])=>{
+            this.msgList = datas||[];
         });
     }
 

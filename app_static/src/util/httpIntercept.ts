@@ -16,10 +16,6 @@ export default function(axios:AxiosStatic){
         return Promise.reject(error);
       });
     axios.interceptors.response.use(resp=>{
-        const data = resp.data;
-        if(!data.success){
-            //提示错误
-        }
         return resp;
     }, (error) => {
         // 当返回错误时

@@ -193,6 +193,8 @@ export default class Chat extends Vue{
             }).then(data=>{
                 data.ismy = true;
                 this.msgList.push(data);
+            },err=>{
+                this.$toast(err.message);
             });
         }
         this.msg = "";

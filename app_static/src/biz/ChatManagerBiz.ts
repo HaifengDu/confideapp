@@ -44,28 +44,25 @@ export class ChatEventContants{
     public static readonly leaveEvent = "leave";
 
     public static readonly vueDefaultRecordEvent = "vueDefaultRecordEvent";
+
+    public static readonly MAX_CHAT_COUNT = 5;
 }
 
 /**
  * socket聊天管理
  */
 export class ChatListener{
-    // public static readonly joinEvent = "join";
-    // public static readonly sendEvent = "send";
-    // public static readonly notifyEvent = "notify";
-    // public static readonly readEvent = "read";
-    // public static readonly leaveEvent = "leave";
-
-    // public static readonly vueDefaultRecordEvent = "vueDefaultRecordEvent";
-
     private static readonly MAX_COUNT = 3000;
+
     private static _VUE:Vue;
 
     private roomid:string;
     private uid:number;
     private touid:number;
+    private chatCount = 0;
 
     private chatService:ChatService;
+    private checkOrderFlag:number;
 
     static send(obj:IOnlyChatRecord){
         if(obj.type===EChatMsgType.Audio){
@@ -99,7 +96,13 @@ export class ChatListener{
         ChatListener._VUE.$emit(ChatEventContants.readEvent,tempTokenId);
     }
 
-    constructor(vue:Vue){
+    /**
+     * 
+     * @param vue 
+     * @param currentRole 暂时聊天对倾听者和倾诉者使用统一限制
+     * @param order 
+     */
+    constructor(vue:Vue,private currentRole:ERole,private order?:IOrder){
         ChatListener._VUE = vue;
         this.chatService = ChatService.getInstance();
     }
@@ -140,6 +143,42 @@ export class ChatListener{
             return roomid;
         });
     }
+
+    /**
+     * 验证是否可发送消息
+     */
+    private checkSendMsg(){
+        //TODO:根据this.order,this.chatCount,ChatEventContants.MAX_CHAT_COUNT判断是否可以发送
+        if(!this.order){
+            if(this.chatCount<ChatEventContants.MAX_CHAT_COUNT){
+                this.chatCount++;
+                return new ErrorMsg(true);
+            }
+            return new ErrorMsg(false,"已达到最大聊天数量");
+        }
+        if(this.order.servicetime && this.order.servicetime>0){
+            return new ErrorMsg(true);
+        }
+        return new ErrorMsg(false,"订单服务时长已到");
+    }
+
+    /**
+     * 轮询验证订单超时
+     */
+    private checkOrderServiceTime(){
+        if(!this.checkOrderFlag&&this.order){
+            const order = this.order;
+            order.servicetime = order.servicetime||0;
+            this.checkOrderFlag = setInterval(()=>{
+                //订单大于0
+                if(order.servicetime){
+                    order.servicetime --;
+                }else{
+                    clearInterval(this.checkOrderFlag);
+                }
+            },1000);
+        }
+    }
     
 
     /**
@@ -147,6 +186,11 @@ export class ChatListener{
      * @param chatMsgObj 
      */
     sendMsg(chatMsgObj:IOnlyChatRecord){
+        this.checkOrderServiceTime();
+        const checkResult = this.checkSendMsg();
+        if(!checkResult.success){
+            return Promise.reject(checkResult);
+        }
         chatMsgObj.status = EChatMsgStatus.Send;
         chatMsgObj.roomid = this.roomid;
         chatMsgObj.senduid = this.uid;
@@ -174,6 +218,7 @@ export class ChatListener{
      * 离开房间
      */
     leave(){
+        clearInterval(this.checkOrderFlag);
         socketWrapper.emit(ChatEventContants.leaveEvent,{
             roomid:this.roomid
         });
@@ -193,6 +238,8 @@ export default class ChatManagerBiz{
     private chatRole:ChatRole = new ChatRole();
     private userService:MyService;
     private orderService:OrderService;
+
+    private order?:IOrder;
     constructor(){
         this.userService = MyService.getInstance();
         this.orderService = OrderService.getInstance();
@@ -206,7 +253,7 @@ export default class ChatManagerBiz{
      * @param touid 
      */
     public joinRoom(vue:Vue,touid:number){
-        const chatListener = new ChatListener(vue);
+        const chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
         const currentUid = <number>rootStore.state.user.id;
         //NOTE:暂时没有名字
         chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
@@ -234,7 +281,7 @@ export default class ChatManagerBiz{
                 if(this.chatRole.Current===ERole.Listener&&this.chatRole.To===ERole.Listener){
                     this.checkRole(data.data);
                 }
-
+                this.order = data.data;
                 return {
                     roles:this.chatRole,
                     listener:listenerRes.data.data,

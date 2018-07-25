@@ -100,6 +100,7 @@ export default class Chat extends Vue{
     private msg = "";
     private msgList:any[]=[];
     private chatType = EChatMsgType.Text;
+    private role = ""
     follow(){
 
     }
@@ -108,7 +109,7 @@ export default class Chat extends Vue{
         this.biz = new ChatManagerBiz();
     }
     created(){
-        this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
+        this.biz.getData(parseInt(this.$route.query.uid)).then(data=>{
             //TODO:根据订单和角色验证
             const listener = data.listener;
             if(listener){
@@ -116,6 +117,7 @@ export default class Chat extends Vue{
                 this.chatListener.addEvent();
                 this.onSocketEvent();
             }
+            (<any>this).role = data.roles
         });
     }
     onSocketEvent(){

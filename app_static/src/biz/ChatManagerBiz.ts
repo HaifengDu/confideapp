@@ -10,6 +10,8 @@ import Vue from "vue";
 import EChatMsgType from "../enum/EChatMsgType";
 import { IOnlyChatRecord } from "../interface/mongomodel/IChatRecord";
 import { EChatMsgStatus } from "../enum/EChatMsgStatus";
+import _ from "lodash";
+import ChatService from "../api/ChatService";
 const socketWrapper = getSocket();
 declare var wx:any;
 
@@ -34,21 +36,34 @@ class ChatRole{
     }
 }
 
-/**
- * socket聊天管理
- */
-export class ChatListener{
+export class ChatEventContants{
     public static readonly joinEvent = "join";
     public static readonly sendEvent = "send";
     public static readonly notifyEvent = "notify";
     public static readonly readEvent = "read";
     public static readonly leaveEvent = "leave";
+
+    public static readonly vueDefaultRecordEvent = "vueDefaultRecordEvent";
+
+    public static readonly MAX_CHAT_COUNT = 5;
+}
+
+/**
+ * socket聊天管理
+ */
+export class ChatListener{
     private static readonly MAX_COUNT = 3000;
+
     private static _VUE:Vue;
 
     private roomid:string;
     private uid:number;
     private touid:number;
+    private chatCount = 0;
+
+    private chatService:ChatService;
+    private checkOrderFlag:number;
+
     static send(obj:IOnlyChatRecord){
         if(obj.type===EChatMsgType.Audio){
             wx.downloadVoice({
@@ -63,20 +78,33 @@ export class ChatListener{
             });
         }
         //NOTE:不能改成this
-        ChatListener._VUE.$emit(ChatListener.sendEvent,obj);
+        ChatListener._VUE.$emit(ChatEventContants.sendEvent,obj);
         //接受消息，更新已读
-        socketWrapper.emit(ChatListener.readEvent,{
+        socketWrapper.emit(ChatEventContants.readEvent,{
             tokenid:obj.tokenid,
             roomid:obj.roomid
         });
     }
 
-    static read(tokenid:string){
-        ChatListener._VUE.$emit(ChatListener.readEvent,tokenid);
+    static read(tokenid:string|string[]){
+        let tempTokenId:string[] = [];
+        if(_.isString(tokenid)){
+            tempTokenId = [tokenid]
+        }else{
+            tempTokenId = tokenid;
+        }
+        ChatListener._VUE.$emit(ChatEventContants.readEvent,tempTokenId);
     }
 
-    constructor(vue:Vue){
+    /**
+     * 
+     * @param vue 
+     * @param currentRole 暂时聊天对倾听者和倾诉者使用统一限制
+     * @param order 
+     */
+    constructor(vue:Vue,private currentRole:ERole,private order?:IOrder){
         ChatListener._VUE = vue;
+        this.chatService = ChatService.getInstance();
     }
 
     /**
@@ -88,25 +116,81 @@ export class ChatListener{
     join(uid:number,lid:number,username:string){
         this.uid = uid;
         this.touid = lid;
-        return new Promise((resolve,reject)=>{
+        return new Promise<string>((resolve,reject)=>{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
             },ChatListener.MAX_COUNT);
-            socketWrapper.emit(ChatListener.joinEvent,{
+            socketWrapper.emit(ChatEventContants.joinEvent,{
                 pid:uid,lid:lid,name:username
             },(roomid:string)=>{
                 clearTimeout(flag);
                 this.roomid = roomid;
                 resolve(roomid);
             });
+        }).then(roomid=>{
+            this.chatService.getDefaultChatRecords(roomid).then(res=>{
+                const data = res.data;
+                if(data.success&&data.data){
+                    ChatListener._VUE.$emit(ChatEventContants.vueDefaultRecordEvent,data.data);
+                    const tokenids = data.data.map(item=>item.tokenid);
+                    //将收到的消息标记为已读
+                    socketWrapper.emit(ChatEventContants.readEvent,{
+                        tokenid:tokenids,
+                        roomid:roomid
+                    });
+                }
+            });
+            return roomid;
         });
     }
+
+    /**
+     * 验证是否可发送消息
+     */
+    private checkSendMsg(){
+        //TODO:根据this.order,this.chatCount,ChatEventContants.MAX_CHAT_COUNT判断是否可以发送
+        if(!this.order){
+            if(this.chatCount<ChatEventContants.MAX_CHAT_COUNT){
+                this.chatCount++;
+                return new ErrorMsg(true);
+            }
+            return new ErrorMsg(false,"已达到最大聊天数量");
+        }
+        if(this.order.servicetime && this.order.servicetime>0){
+            return new ErrorMsg(true);
+        }
+        return new ErrorMsg(false,"订单服务时长已到");
+    }
+
+    /**
+     * 轮询验证订单超时
+     */
+    private checkOrderServiceTime(){
+        if(!this.checkOrderFlag&&this.order){
+            const order = this.order;
+            order.servicetime = order.servicetime||0;
+            this.checkOrderFlag = setInterval(()=>{
+                //订单大于0
+                if(order.servicetime){
+                    order.servicetime --;
+                }else{
+                    clearInterval(this.checkOrderFlag);
+                }
+            },1000);
+        }
+    }
+    
 
     /**
      * 发送消息
      * @param chatMsgObj 
      */
     sendMsg(chatMsgObj:IOnlyChatRecord){
+        this.checkOrderServiceTime();
+        const checkResult = this.checkSendMsg();
+        if(!checkResult.success){
+            return Promise.reject(checkResult);
+        }
         chatMsgObj.status = EChatMsgStatus.Send;
         chatMsgObj.roomid = this.roomid;
         chatMsgObj.senduid = this.uid;
@@ -120,7 +204,7 @@ export class ChatListener{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
             },ChatListener.MAX_COUNT);
-            socketWrapper.emit(ChatListener.sendEvent,chatMsgObj,function(obj:any){
+            socketWrapper.emit(ChatEventContants.sendEvent,chatMsgObj,function(obj:any){
                 chatMsgObj.ismy = true;
                 chatMsgObj.tokenid = obj.tokenid;
                 chatMsgObj.status = EChatMsgStatus.Send;
@@ -134,25 +218,28 @@ export class ChatListener{
      * 离开房间
      */
     leave(){
-        socketWrapper.emit(ChatListener.leaveEvent,{
+        clearInterval(this.checkOrderFlag);
+        socketWrapper.emit(ChatEventContants.leaveEvent,{
             roomid:this.roomid
         });
     }
 
     addEvent(){
-        socketWrapper.on(ChatListener.readEvent,ChatListener.read);
-        socketWrapper.on(ChatListener.sendEvent,ChatListener.send);
+        socketWrapper.on(ChatEventContants.readEvent,ChatListener.read);
+        socketWrapper.on(ChatEventContants.sendEvent,ChatListener.send);
     } 
     
     removeEvent(){
-        socketWrapper.remove(ChatListener.sendEvent,ChatListener.send);
-        socketWrapper.remove(ChatListener.readEvent,ChatListener.read)
+        socketWrapper.remove(ChatEventContants.sendEvent,ChatListener.send);
+        socketWrapper.remove(ChatEventContants.readEvent,ChatListener.read)
     }
 }
 export default class ChatManagerBiz{
     private chatRole:ChatRole = new ChatRole();
     private userService:MyService;
     private orderService:OrderService;
+
+    private order?:IOrder;
     constructor(){
         this.userService = MyService.getInstance();
         this.orderService = OrderService.getInstance();
@@ -166,12 +253,13 @@ export default class ChatManagerBiz{
      * @param touid 
      */
     public joinRoom(vue:Vue,touid:number){
-        const chatListener = new ChatListener(vue);
+        const chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
         const currentUid = <number>rootStore.state.user.id;
         //NOTE:暂时没有名字
         chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
         return chatListener;
     }
+    
 
     /**
      * 验证当前用户角色
@@ -193,7 +281,7 @@ export default class ChatManagerBiz{
                 if(this.chatRole.Current===ERole.Listener&&this.chatRole.To===ERole.Listener){
                     this.checkRole(data.data);
                 }
-
+                this.order = data.data;
                 return {
                     roles:this.chatRole,
                     listener:listenerRes.data.data,

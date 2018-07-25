@@ -105,6 +105,7 @@ export class ChatSocket{
 
     private read(data:{tokenid:string|string[],roomid:string}){
         //数组直接更新为已读
+        const roomid = data.roomid;
         if(_.isArray(data.tokenid)){
             MongoChatRecord.update({
                 tokenid:{
@@ -113,9 +114,9 @@ export class ChatSocket{
             },{
                 status:EChatMsgStatus.Readed
             });
+            this.socket.to(roomid).broadcast.emit(ChatSocket.readEvent,data.tokenid);
             return;
         }
-        const roomid = data.roomid;
         if(roomDic[roomid]&&roomDic[roomid].length){
             const chatList = roomDic[roomid];
             const current = chatList.find(item=>item.tokenid===data.tokenid);

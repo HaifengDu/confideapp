@@ -53,7 +53,7 @@ router.get("/",[
 });
 
 router.get("/byid",[
-    query("uid").isNumeric().withMessage('微信id不能为空')
+    query("uid").isNumeric().withMessage('用户id不能为空')
 ],(req:express.Request,res:express.Response)=>{
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {

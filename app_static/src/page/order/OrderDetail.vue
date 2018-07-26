@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="height:100%;">
         <div v-if="!isToBePaid" class="container con-bg">
             <div class="body">
                 <div class="type">{{serviceName}}</div>
@@ -33,21 +33,24 @@
         <div v-if="isToBePaid" class="container">
             <div class="body">
                 <div class="header">
-                    <p>等待付款</p>
-                    <p>本次通话服务需支付9.62元</p>
+                    <p class="text status"><u class="clock"></u>等待付款</p>
+                    <p class="text">本次{{serviceType==2?'通话':'文字'}}服务需支付9.62元</p>
+                    <div class="icon">
+                        <img :src="getServiceTypeIcon()">
+                    </div>
                 </div>
-                <mt-cell title="订单类型" class="cell-con cell-prev">通话服务</mt-cell>
+                <mt-cell title="订单类型" class="cell-con cell-prev">{{serviceType==2?'通话':'文字'}}服务</mt-cell>
                 <mt-cell title="倾听者" class="cell-con cell-prev">重新的开始</mt-cell>
                 <mt-cell title="订单号" class="cell-con cell-prev">1624151</mt-cell>
                 <mt-cell title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
                 <div class="total-account">
                     <p class="order-total">
-                        <span>订单总额</span>
-                        <span>￥9.9</span>
+                        <span class="title">订单总额</span>
+                        <span class="money">￥9.9</span>
                     </p>
                     <p class="balance-total">
-                        <span>抵扣余额</span>
-                        <span>-￥0.28</span>
+                        <span class="title">抵扣余额</span>
+                        <span class="money">-￥0.28</span>
                     </p>
                 </div>
                 <div style="text-align:right;">
@@ -56,7 +59,7 @@
             </div>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="cancelOrder">取消订单</mt-button>
-                <mt-button style="margin-left:20px;" size="normal" type="primary" @click.native="payOrder">支付订单</mt-button>
+                <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder">支付订单</mt-button>
             </div>
         </div>
     </div>
@@ -73,7 +76,7 @@ export default class OrderDetail extends Vue{
     private total = 9.9;
     private serviceType = 2;
     private statuNamesDic = ['待支付','已结束 '];
-    private isToBePaid = false;
+    private isToBePaid = true;
 
     create(){
         //TODO:根据订单单号获取订单支付状态，更具已支付还是未支付，展示对应的订单详情页面
@@ -167,6 +170,59 @@ export default class OrderDetail extends Vue{
                     .money{
                         color:@orange;
                     }
+                }
+            }
+        }
+        .header{
+            padding:20px 20px 20px 30px;
+            background:@mainColor;
+            .p-rl;
+            .text{
+                text-align:left;
+                color:#fff;
+            }
+            .status{
+                .f-lg;
+                padding-bottom:5px;
+            }
+            .icon{
+                width:60px;
+                height:60px;
+                .p-ab;
+                right:40px;
+                top:14px;
+                img{
+                    width:100%;
+                    height:100%;
+                }
+            }
+            .clock{
+                display:inline-block;
+                width:20px;
+                height:20px;
+                .p-rl;
+                top:3px;
+                margin-right:5px;
+                background-image: url(../../../static/images/pay/clock.png);  
+                background-repeat: no-repeat;  
+                background-size: 100% 100%;
+            }
+        }
+        .total-account{
+            padding:10px 10px 10px 20px;
+            border-bottom:1px solid rgb(215,215,215);
+            .order-total,.balance-total{
+                .title,.money{
+                    display:inline-block;
+                    width:49%;
+                    box-sizing:border-box;
+                    color:rgb(136,136,136);
+                }
+                .title{
+                    text-align:left;
+                }
+                .money{
+                    text-align:right;
                 }
             }
         }

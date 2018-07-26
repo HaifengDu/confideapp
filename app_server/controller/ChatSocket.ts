@@ -106,14 +106,18 @@ export class ChatSocket{
     private read(data:{tokenid:string|string[],roomid:string}){
         //数组直接更新为已读
         const roomid = data.roomid;
-        if(_.isArray(data.tokenid)){
+        if(_.isArray(data.tokenid)&&data.tokenid.length){
             MongoChatRecord.update({
                 tokenid:{
                     $in:data.tokenid
                 }
             },{
                 status:EChatMsgStatus.Readed
-            });
+            },{
+                multi:true
+            }).then(res => {
+                console.log("更新聊天状态",res);
+            });;
             this.socket.to(roomid).broadcast.emit(ChatSocket.readEvent,data.tokenid);
             return;
         }
@@ -126,7 +130,9 @@ export class ChatSocket{
                     tokenid:current.tokenid
                 },{
                     status:EChatMsgStatus.Readed
-                });
+                }).then(res => {
+                    console.log("更新聊天状态",res);
+                });;
             }
         }
     }

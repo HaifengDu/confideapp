@@ -89,6 +89,7 @@ import UserIcon from '@/components/UserIcon'
 import ChatManagerBiz,{ChatListener,ChatEventContants} from "../biz/ChatManagerBiz";
 import { IOnlyChatRecord } from '../interface/mongomodel/IChatRecord';
 import { IOrder } from '../interface/model/IOrder';
+import { IUser } from '../interface/model/IUser';
 import { ERole } from '../enum/ERole';
 import { EOrderStatus } from '../enum/order/EOrderStatus';
 
@@ -105,6 +106,7 @@ export default class Chat extends Vue{
     private chatType = EChatMsgType.Text;
     private order?:IOrder;
     private currentRole:ERole;
+    private toUser:IUser={};
     
     follow(){
 
@@ -120,6 +122,7 @@ export default class Chat extends Vue{
             this.order = data.order;
             this.currentRole = data.roles.Current;
             if(listener){
+                this.toUser = listener;
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);
                 this.chatListener.addEvent();
                 this.onSocketEvent();
@@ -132,9 +135,11 @@ export default class Chat extends Vue{
             this.msgList.push(data);
         });
         this.$on(ChatEventContants.readEvent,(tokenids:string[])=>{
-            const current = this.msgList.find(item=>tokenids.indexOf(item.tokenid)>-1);
-            if(current){
-                current.status = EChatMsgStatus.Readed;
+            const lists = this.msgList.filter(item=>tokenids.indexOf(item.tokenid)>-1);
+            if(lists&&lists.length){
+                lists.forEach(item=>{
+                    item.status = EChatMsgStatus.Readed;
+                });
             }
         });
 
@@ -362,6 +367,8 @@ export default class Chat extends Vue{
 }
 .chat-wrapper{
     margin:20px 20px 20px 20px;
+    overflow: auto;
+    height: ~'calc(100vh - 22rem)';
     .chat-record{
         margin:15px 0;
         max-width: 85%;

@@ -137,12 +137,21 @@ export class ChatListener{
                 const data = res.data;
                 if(data.success&&data.data){
                     ChatListener._VUE.$emit(ChatEventContants.vueDefaultRecordEvent,data.data);
-                    const tokenids = data.data.map(item=>item.tokenid);
-                    //将收到的消息标记为已读
-                    socketWrapper.emit(ChatEventContants.readEvent,{
-                        tokenid:tokenids,
-                        roomid:roomid
-                    });
+                    const tokenids = data.data.map(item=>{
+                        if(item.senduid===this.uid){
+                            item.ismy = true;
+                        }
+                        return item;
+                    })
+                    .filter(item=>item.status===EChatMsgStatus.Send&&item.touid===this.uid)
+                    .map(item=>item.tokenid);
+                    if(tokenids.length){
+                        //将收到的消息标记为已读
+                        socketWrapper.emit(ChatEventContants.readEvent,{
+                            tokenid:tokenids,
+                            roomid:roomid
+                        });
+                    }
                 }
             });
             return roomid;
@@ -266,6 +275,10 @@ export class ChatListener{
         socketWrapper.remove(ChatEventContants.readEvent,ChatListener.read)
     }
 }
+
+/**
+ * chat页面管理器
+ */
 export default class ChatManagerBiz{
     private chatRole:ChatRole = new ChatRole();
     private userService:MyService;

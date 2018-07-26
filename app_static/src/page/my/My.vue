@@ -1,71 +1,77 @@
 <template>
   <div class="my-container">
-    <div class="info">
-      <div class="bg"></div>
-      <div class="detail" @click="goBaseInfo"></div>
-      <div class="main">
-        <div class="icon">
-          <img :src="user.headimgurl" alt="">
-        </div>
-        <div class="nick-name">{{user.nickname}}</div>
-        <div class="follows">
-          <div class="follow" @click="toFollow">关注<span class="num">10w+</span></div>
-          <div class="like" @click="toVisitor">访客<span class="num">666</span></div>
-        </div>
-      </div>
+    <div v-show="!isget">
+      <mt-field placeholder="请输入微信id" v-model="wxid"></mt-field>
+      <mt-button class="button" @click="getUser">获取用户</mt-button>
     </div>
-    <div class="entrance">
-      <div class="ul" v-bind:key="index" v-for="(ele,index) in entranceArr">
-        <div class="li" v-bind:key="index" v-for="(item,index) in ele.children">
-          <div class="icon"><img :src="item.imgUrl" alt=""></div>
-          <div class="text">{{item.text}}</div>
+    <div v-show="isget">
+      <div class="info">
+        <div class="bg"></div>
+        <div class="detail" @click="goBaseInfo"></div>
+        <div class="main">
+          <div class="icon">
+            <img :src="user.headimgurl" alt="">
+          </div>
+          <div class="nick-name">{{user.nickname}}</div>
+          <div class="follows">
+            <div class="follow" @click="toFollow">关注<span class="num">10w+</span></div>
+            <div class="like" @click="toVisitor">访客<span class="num">666</span></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="lists">
-      <div class="list" v-if="user.role===0" @click="applyListener">
-        <mt-cell title="申请倾听者">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
-        </mt-cell>
+      <div class="entrance">
+        <div class="ul" v-bind:key="index" v-for="(ele,index) in entranceArr">
+          <div class="li" v-bind:key="index" v-for="(item,index) in ele.children">
+            <div class="icon"><img :src="item.imgUrl" alt=""></div>
+            <div class="text">{{item.text}}</div>
+          </div>
+        </div>
       </div>
-      <div class="list" v-if="user.role===1" @click="listenerSetting">
-        <mt-cell title="倾听者设置">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
-        </mt-cell>
+      <div class="lists">
+        <div class="list" v-if="user.role===0" @click="applyListener">
+          <mt-cell title="申请倾听者">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
+          </mt-cell>
+        </div>
+        <div class="list" v-if="user.role===1" @click="listenerSetting">
+          <mt-cell title="倾听者设置">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/listener.png" width="24" height="24">
+          </mt-cell>
+        </div>
+        <div class="list">
+          <mt-cell title="分享赚现金">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/share.png" width="24" height="24">
+          </mt-cell>
+        </div>
       </div>
-      <div class="list">
-        <mt-cell title="分享赚现金">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/share.png" width="24" height="24">
-        </mt-cell>
-      </div>
-    </div>
-    <div class="lists">
-      <div class="list">
-        <mt-cell title="关于我们">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/about.png" width="24" height="24">
-        </mt-cell>
-      </div>
-      <div class="list">
-        <mt-cell title="常见问题">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/matter.png" width="24" height="24">
-        </mt-cell>
-      </div>
-      <div class="list">
-        <mt-cell title="客服电话">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/phone.png" width="24" height="24">
-        </mt-cell>
-      </div>
-      <div class="list">
-        <mt-cell title="意见反馈">
-          <i class="mint-cell-allow-right"></i>
-          <img slot="icon" src="static/images/my/advice.png" width="24" height="24">
-        </mt-cell>
+      <div class="lists">
+        <div class="list">
+          <mt-cell title="关于我们">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/about.png" width="24" height="24">
+          </mt-cell>
+        </div>
+        <div class="list">
+          <mt-cell title="常见问题">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/matter.png" width="24" height="24">
+          </mt-cell>
+        </div>
+        <div class="list">
+          <mt-cell title="客服电话">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/phone.png" width="24" height="24">
+          </mt-cell>
+        </div>
+        <div class="list">
+          <mt-cell title="意见反馈">
+            <i class="mint-cell-allow-right"></i>
+            <img slot="icon" src="static/images/my/advice.png" width="24" height="24">
+          </mt-cell>
+        </div>
       </div>
     </div>
   </div>
@@ -90,6 +96,9 @@ import {EFollowType} from "../../enum/EFollowType.ts";
   }
 })
 export default class My extends Vue{
+  //TODO:正式删掉
+  private isget = false;
+  private wxid="";
   private entranceArr:any[] = [
     {
         children:[
@@ -157,14 +166,24 @@ export default class My extends Vue{
   toVisitor(){
     this.$router.push({path:'/follow',query:{type:String(EFollowType.Visitor)}});
   }
-  created(){
-    document.title = "我的";
-    this.getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s').then(res=>{
+  getUser(){
+    this.getUserInfo(this.wxid).then(res=>{
       const data = res.data;
       if(!data.success){
         this.$toast(data.message);
+      }else{
+        this.isget = true;
       }
     });
+  }
+  created(){
+    document.title = "我的";
+    // this.getUserInfo('oRtVK06i1JN_GkUA5NPk7pXzOJ3s').then(res=>{
+    //   const data = res.data;
+    //   if(!data.success){
+    //     this.$toast(data.message);
+    //   }
+    // });
   }
 
   private getUserInfo:INoopPromise;

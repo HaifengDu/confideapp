@@ -92,14 +92,19 @@ class ChatSocket {
     read(data) {
         //数组直接更新为已读
         const roomid = data.roomid;
-        if (_.isArray(data.tokenid)) {
+        if (_.isArray(data.tokenid) && data.tokenid.length) {
             MongoChatModel_1.default.update({
                 tokenid: {
                     $in: data.tokenid
                 }
             }, {
                 status: EChatMsgStatus_1.default.Readed
+            }, {
+                multi: true
+            }).then(res => {
+                console.log("更新聊天状态", res);
             });
+            ;
             this.socket.to(roomid).broadcast.emit(ChatSocket.readEvent, data.tokenid);
             return;
         }
@@ -112,7 +117,10 @@ class ChatSocket {
                     tokenid: current.tokenid
                 }, {
                     status: EChatMsgStatus_1.default.Readed
+                }).then(res => {
+                    console.log("更新聊天状态", res);
                 });
+                ;
             }
         }
     }

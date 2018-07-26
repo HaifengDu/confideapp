@@ -53,12 +53,12 @@
                         <span class="money">-￥0.28</span>
                     </p>
                 </div>
-                <div style="text-align:right;">
-                    需付款：<span style="color:rgb(239,146,55);">￥&nbsp;9.62</span>
+                <div class="payment">
+                    <span class="need-pay">需付款：</span><span style="color:rgb(239,146,55);">￥&nbsp;9.62</span>
                 </div>
             </div>
             <div class="button-box">
-                <mt-button size="normal" type="primary" @click.native="cancelOrder">取消订单</mt-button>
+                <mt-button size="normal" type="default" @click.native="cancelOrder">取消订单</mt-button>
                 <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder">支付订单</mt-button>
             </div>
         </div>
@@ -74,7 +74,7 @@ export default class OrderDetail extends Vue{
     private serviceName = '通话服务';
     private status = 1;
     private total = 9.9;
-    private serviceType = 2;
+    private serviceType = 1;
     private statuNamesDic = ['待支付','已结束 '];
     private isToBePaid = true;
 
@@ -90,7 +90,7 @@ export default class OrderDetail extends Vue{
     }
 
     cancelOrder(){
-        //TODO:取消订单
+        //TODO:取消订单,然后跳回到上一页面
     }
 
     payOrder(){
@@ -209,14 +209,14 @@ export default class OrderDetail extends Vue{
             }
         }
         .total-account{
-            padding:10px 10px 10px 20px;
+            padding:10px 20px;
             border-bottom:1px solid rgb(215,215,215);
             .order-total,.balance-total{
                 .title,.money{
                     display:inline-block;
                     width:49%;
                     box-sizing:border-box;
-                    color:rgb(136,136,136);
+                    color:#888;
                 }
                 .title{
                     text-align:left;
@@ -224,6 +224,14 @@ export default class OrderDetail extends Vue{
                 .money{
                     text-align:right;
                 }
+            }
+        }
+        .payment{
+            padding:10px 20px;
+            .f-lg;
+            text-align:right;
+            .need-pay{
+                color:#888;
             }
         }
     }

@@ -2,7 +2,7 @@
     <div style="height:calc(100vh - 58px);background-color:#eee">
         <div class="info-container">
           <div class="status">
-            名字 - 可接单
+            {{listener.nickname}} - 可接单
           </div>
           <div class="info">
             <div class="icon">
@@ -90,6 +90,7 @@ import ChatManagerBiz,{ChatListener,ChatEventContants} from "../biz/ChatManagerB
 import { IOnlyChatRecord } from '../interface/mongomodel/IChatRecord';
 import { IOrder } from '../interface/model/IOrder';
 import { ERole } from '../enum/ERole';
+import { IUser } from '../interface/model/IUser';
 
 @Component({
     components:{
@@ -102,9 +103,9 @@ export default class Chat extends Vue{
     private msg = "";
     private msgList:any[]=[];
     private chatType = EChatMsgType.Text;
-    private role = ""
     private order?:IOrder;
     private currentRole:ERole;
+    private listener:IUser
 
     follow(){
 
@@ -118,13 +119,13 @@ export default class Chat extends Vue{
             //TODO:根据订单和角色验证
             const listener = data.listener;
             this.order = data.order;
+            (<any>this).listener = data.listener
             this.currentRole = data.roles.Current;
             if(listener){
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);
                 this.chatListener.addEvent();
                 this.onSocketEvent();
             }
-            (<any>this).role = data.roles
         });
     }
     onSocketEvent(){

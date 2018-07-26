@@ -134,7 +134,7 @@ const router = new Router({
       name:"SearchPanel",
       component:SearchPanel
     },{
-      path:"/chat",
+      path:"/chat/:uid",
       name:"Chat",
       component:Chat
     },{

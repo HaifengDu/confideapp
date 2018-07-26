@@ -21,7 +21,9 @@ module.exports = {
             "/list*": proxyUrl,
             "/list/*": proxyUrl,
             "/order*": proxyUrl,
-            "/order/*": proxyUrl
+            "/order/*": proxyUrl,
+            "/chat*": proxyUrl,
+            "/chat/*": proxyUrl
         },
 
         // Various Dev Server settings

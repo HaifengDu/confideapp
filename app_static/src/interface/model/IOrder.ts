@@ -52,11 +52,11 @@ export interface IOrder{
     /**
      * 服务时长
      */
-    servicetime?:number,
+    servicetime:number,
     /**
      * 购买时长
      */
-    payservicetime?:number,
+    payservicetime:number,
     /**
      * 代理头
      */

@@ -12,7 +12,9 @@ import { IOnlyChatRecord } from "../interface/mongomodel/IChatRecord";
 import { EChatMsgStatus } from "../enum/EChatMsgStatus";
 import _ from "lodash";
 import ChatService from "../api/ChatService";
+import { EOrderStatus } from "../enum/EOrderStatus";
 const socketWrapper = getSocket();
+const orderService = OrderService.getInstance();
 declare var wx:any;
 
 /**
@@ -44,6 +46,7 @@ export class ChatEventContants{
     public static readonly leaveEvent = "leave";
 
     public static readonly vueDefaultRecordEvent = "vueDefaultRecordEvent";
+    public static readonly vueOrderComplete = "vueOrderComplete";
 
     public static readonly MAX_CHAT_COUNT = 5;
 }
@@ -63,6 +66,8 @@ export class ChatListener{
 
     private chatService:ChatService;
     private checkOrderFlag:number;
+
+    private isUpdating=false;
 
     static send(obj:IOnlyChatRecord){
         if(obj.type===EChatMsgType.Audio){
@@ -156,7 +161,7 @@ export class ChatListener{
             }
             return new ErrorMsg(false,"已达到最大聊天数量");
         }
-        if(this.order.servicetime && this.order.servicetime>0){
+        if(this.order.servicetime<this.order.payservicetime){
             return new ErrorMsg(true);
         }
         return new ErrorMsg(false,"订单服务时长已到");
@@ -170,13 +175,40 @@ export class ChatListener{
             const order = this.order;
             order.servicetime = order.servicetime||0;
             this.checkOrderFlag = setInterval(()=>{
-                //订单大于0
-                if(order.servicetime){
-                    order.servicetime --;
+                //服务时长小于购买时长
+                if(order.servicetime<order.payservicetime){
+                    order.servicetime ++;
                 }else{
+                    ChatListener._VUE.$emit(ChatEventContants.vueOrderComplete,order);
                     clearInterval(this.checkOrderFlag);
                 }
             },1000);
+        }
+    }
+
+    /**
+     * 更新订单服务中
+     */
+    private checkOrderToServicing(){
+        //订单为支付完成时 更新订单
+        //NOTE:只会返回已支付和服务中的订单
+        if(this.order){
+            if(this.order.status===EOrderStatus.Paid){
+                if(this.isUpdating){
+                    return;
+                }
+                this.isUpdating = true;
+                orderService.updateServicing(<number>this.order.id).then(res=>{
+                    const data = res.data;
+                    if(data.success){
+                        Object.assign(this.order,data.data);
+                        this.isUpdating = false;
+                        this.checkOrderServiceTime();
+                    }
+                });
+            }else{
+                this.checkOrderServiceTime();
+            }
         }
     }
     
@@ -186,11 +218,11 @@ export class ChatListener{
      * @param chatMsgObj 
      */
     sendMsg(chatMsgObj:IOnlyChatRecord){
-        this.checkOrderServiceTime();
         const checkResult = this.checkSendMsg();
         if(!checkResult.success){
             return Promise.reject(checkResult);
         }
+        this.checkOrderToServicing();
         chatMsgObj.status = EChatMsgStatus.Send;
         chatMsgObj.roomid = this.roomid;
         chatMsgObj.senduid = this.uid;
@@ -237,12 +269,10 @@ export class ChatListener{
 export default class ChatManagerBiz{
     private chatRole:ChatRole = new ChatRole();
     private userService:MyService;
-    private orderService:OrderService;
 
     private order?:IOrder;
     constructor(){
         this.userService = MyService.getInstance();
-        this.orderService = OrderService.getInstance();
         this.chatRole.Current = <ERole>rootStore.state.user.role;
     }
 
@@ -259,7 +289,29 @@ export default class ChatManagerBiz{
         chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
         return chatListener;
     }
+
+    public completeOrder(order:IOrder){
+        if(!order.id){
+            return Promise.reject(new ErrorMsg(false,"订单非法"));
+        }
+        if(!('servicetime' in order)){
+            return Promise.reject(new ErrorMsg(false,"服务时长不正确"));
+        }
+        return orderService.chatComplete(order.id,order.servicetime);
+    }  
     
+    /**
+     * 更新服务时长
+     */
+    public updateServicetime(order:IOrder) {
+        if(!order.id){
+            return Promise.reject(new ErrorMsg(false,"订单非法"));
+        }
+        if(!('servicetime' in order)){
+            return Promise.reject(new ErrorMsg(false,"服务时长不正确"));
+        }
+        return orderService.updateServicetime(order.id,order.servicetime);
+    }
 
     /**
      * 验证当前用户角色
@@ -275,7 +327,7 @@ export default class ChatManagerBiz{
             return Promise.reject(new ErrorMsg(false,"获取用户错误"));
         }).then<{roles:ChatRole,listener?:IUser,order?:IOrder}>(listenerRes=>{
             const currentUid = rootStore.state.user.id;
-            return this.orderService.checkHasOrder(<number>currentUid,lid).then(res=>{
+            return orderService.checkHasOrder(<number>currentUid,lid).then(res=>{
                 const data =res.data;
                 //都是倾听者  区分倾听者和倾诉者
                 if(this.chatRole.Current===ERole.Listener&&this.chatRole.To===ERole.Listener){

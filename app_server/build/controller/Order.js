@@ -13,6 +13,7 @@ const _ = require("lodash");
 const logHelper_1 = require("../helper/logHelper");
 const util_1 = require("../helper/util");
 const sequelize_1 = require("sequelize");
+const ECompleteType_1 = require("../enum/order/ECompleteType");
 class OrderService {
     constructor() {
         this.logHelper = logHelper_1.LogHelper.getInstance();
@@ -118,6 +119,7 @@ class OrderService {
      * @param lid
      */
     checkHasOrder(uid, lid) {
+        //必须是已支付或服务中的订单
         return Order_1.default.find({
             where: {
                 [sequelize_1.Op.or]: [{
@@ -126,6 +128,11 @@ class OrderService {
                     }, {
                         uid: lid,
                         lid: uid
+                    }],
+                [sequelize_1.Op.or]: [{
+                        status: EOrderStatus_1.EOrderStatus.Paid
+                    }, {
+                        status: EOrderStatus_1.EOrderStatus.Servicing
                     }]
             }
         });
@@ -141,21 +148,19 @@ class OrderService {
             if (!order) {
                 return Promise.reject(new ErrorMsg_1.default(false, "订单不存在"));
             }
+            if (order.payprice === totalfee) {
+                //更新微信订单号和状态
+                return Order_1.default.update({
+                    status: EOrderStatus_1.EOrderStatus.Paid,
+                    wxorderid: wxorderid
+                }, {
+                    where: {
+                        id: orderid
+                    }
+                });
+            }
             else {
-                if (order.payprice === totalfee) {
-                    //更新微信订单号和状态
-                    return Order_1.default.update({
-                        status: EOrderStatus_1.EOrderStatus.Paid,
-                        wxorderid: wxorderid
-                    }, {
-                        where: {
-                            id: orderid
-                        }
-                    });
-                }
-                else {
-                    return Promise.reject(Object.assign({ totalfee, payprice: order.payprice }, new ErrorMsg_1.default(false, "支付金额与订单金额不一致")));
-                }
+                return Promise.reject(Object.assign({ totalfee, payprice: order.payprice }, new ErrorMsg_1.default(false, "支付金额与订单金额不一致")));
             }
         });
     }
@@ -221,6 +226,67 @@ class OrderService {
             else {
                 return Promise.reject(errorMsg);
             }
+        });
+    }
+    /**
+     * 更新订单
+     * @param userid
+     * @param order
+     */
+    update(userid, order) {
+        if (!order.id) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "订单id非法"));
+        }
+        const orderid = order.id;
+        delete order.id;
+        return Order_1.default.findById(orderid).then(order => {
+            if (!order) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, "订单不存在"));
+            }
+            if (order.uid !== userid) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, "订单用户不一致"));
+            }
+            return Order_1.default.update(order, {
+                where: {
+                    id: orderid
+                }
+            });
+        });
+    }
+    /**
+     * 聊天完成
+     * @param orderid
+     */
+    chatComplete(userid, orderid, servicetime) {
+        return this.update(userid, {
+            status: EOrderStatus_1.EOrderStatus.Awaiting_Comment,
+            completetype: ECompleteType_1.ECompleteType.Auto,
+            completedtime: new Date(),
+            servicetime: servicetime || 0,
+            id: orderid
+        });
+    }
+    /**
+     * 更新服务时长
+     * @param userid
+     * @param orderid
+     * @param servicetime
+     */
+    updateServicetime(userid, orderid, servicetime) {
+        return this.update(userid, {
+            servicetime: servicetime || 0,
+            id: orderid
+        });
+    }
+    /**
+     * 更新订单为服务站
+     * @param userid
+     * @param orderid
+     */
+    updateServicing(userid, orderid) {
+        return this.update(userid, {
+            status: EOrderStatus_1.EOrderStatus.Servicing,
+            id: orderid
         });
     }
     static createInstance() {

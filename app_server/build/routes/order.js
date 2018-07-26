@@ -60,4 +60,64 @@ router.get("/checkHasOrder", [
         res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
+/**
+ * 聊天完成订单
+ */
+router.post("/chatComplete", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
+    check_1.body("servicetime").isNumeric().withMessage("服务时长不能为空")
+], function (req, res) {
+    orderService.chatComplete(parseInt(req.query.userid), parseInt(req.body.orderid), parseFloat(req.body.servicetime))
+        .then(data => {
+        let order = null;
+        if (data[1] && data[1].length) {
+            order = data[1][0];
+        }
+        res.json(Object.assign({ data: order }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
+ * 更新服务时间
+ */
+router.post("/updateServicetime", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
+    check_1.body("servicetime").isNumeric().withMessage("服务时长不能为空")
+], function (req, res) {
+    orderService.updateServicetime(parseInt(req.query.userid), parseInt(req.body.orderid), parseFloat(req.body.servicetime)).then(data => {
+        let order = null;
+        if (data[1] && data[1].length) {
+            order = data[1][0];
+        }
+        res.json(Object.assign({ data: order }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
+ * 更新订单为服务中
+ */
+router.post("/updateServicing", [
+    check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
+    check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
+], function (req, res) {
+    orderService.updateServicing(parseInt(req.query.userid), parseInt(req.body.orderid)).then(data => {
+        let order = null;
+        if (data[1] && data[1].length) {
+            order = data[1][0];
+        }
+        res.json(Object.assign({ data: order }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
 module.exports = router;

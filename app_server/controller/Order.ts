@@ -13,6 +13,7 @@ import _ = require("lodash");
 import { LogHelper } from "../helper/logHelper";
 import { getClientIp } from "../helper/util";
 import { Op } from "sequelize";
+import { ECompleteType } from "../enum/order/ECompleteType";
 
 export default class OrderService {
 
@@ -130,6 +131,7 @@ export default class OrderService {
      * @param lid 
      */
     public checkHasOrder(uid:number,lid:number){
+        //必须是已支付或服务中的订单
         return Order.find({
             where:{
                 [Op.or]:[{
@@ -138,6 +140,11 @@ export default class OrderService {
                 },{
                     uid:lid,
                     lid:uid
+                }],
+                [Op.or]:[{
+                    status:EOrderStatus.Paid
+                },{
+                    status:EOrderStatus.Servicing
                 }]
             }
         });
@@ -153,24 +160,24 @@ export default class OrderService {
         return Order.findById(orderid).then(order=>{
             if(!order){
                 return Promise.reject(new ErrorMsg(false,"订单不存在"));
+            }
+
+            if(order.payprice===totalfee){
+                //更新微信订单号和状态
+                return Order.update({
+                    status:EOrderStatus.Paid,
+                    wxorderid:wxorderid
+                },{
+                    where:{
+                        id:orderid
+                    }
+                });
             }else{
-                if(order.payprice===totalfee){
-                    //更新微信订单号和状态
-                    return Order.update({
-                        status:EOrderStatus.Paid,
-                        wxorderid:wxorderid
-                    },{
-                        where:{
-                            id:orderid
-                        }
-                    });
-                }else{
-                    return Promise.reject({
-                        totalfee,
-                        payprice:order.payprice,
-                        ...new ErrorMsg(false,"支付金额与订单金额不一致")
-                    });
-                }
+                return Promise.reject({
+                    totalfee,
+                    payprice:order.payprice,
+                    ...new ErrorMsg(false,"支付金额与订单金额不一致")
+                });
             }
         })
     }
@@ -236,6 +243,71 @@ export default class OrderService {
             }else{
                 return Promise.reject(errorMsg);
             }
+        });
+    }
+
+    /**
+     * 更新订单
+     * @param userid 
+     * @param order 
+     */
+    private update(userid:number,order:IOrder){
+        if(!order.id){
+            return Bluebird.reject(new ErrorMsg(false,"订单id非法"));
+        }
+        const orderid = order.id;
+        delete order.id;
+        return Order.findById(orderid).then(order=>{
+            if(!order){
+                return Bluebird.reject(new ErrorMsg(false,"订单不存在"));
+            }
+            if(order.uid!==userid){
+                return Bluebird.reject(new ErrorMsg(false,"订单用户不一致"));
+            }
+            return Order.update(order,{
+                where:{
+                    id:orderid
+                }
+            });
+        });
+    }
+
+    /**
+     * 聊天完成
+     * @param orderid 
+     */
+    public chatComplete(userid:number,orderid:number,servicetime:number){
+        return this.update(userid,{
+            status:EOrderStatus.Awaiting_Comment,
+            completetype:ECompleteType.Auto,
+            completedtime:new Date(),
+            servicetime:servicetime||0,
+            id:orderid
+        });
+    }
+
+    /**
+     * 更新服务时长
+     * @param userid 
+     * @param orderid 
+     * @param servicetime 
+     */
+    public updateServicetime(userid:number,orderid:number,servicetime:number){
+        return this.update(userid,{
+            servicetime:servicetime||0,
+            id:orderid
+        });
+    }
+
+    /**
+     * 更新订单为服务站
+     * @param userid 
+     * @param orderid 
+     */
+    public updateServicing(userid:number,orderid:number){
+        return this.update(userid,{
+            status:EOrderStatus.Servicing,
+            id:orderid
         });
     }
 

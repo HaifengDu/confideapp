@@ -25,6 +25,7 @@ const Order = mysqlSeq_1.default.define('order', {
     paytime: { type: Sequelize.DATE, comment: "支付时间" },
     paidtime: { type: Sequelize.DATE, comment: "支付完成时间" },
     completedtime: { type: Sequelize.DATE, comment: "完成时间" },
+    evaluatetime: { type: Sequelize.DATE, comment: "评价时间" },
     canceltime: { type: Sequelize.DATE, comment: "取消时间" }
 }, {
     freezeTableName: true

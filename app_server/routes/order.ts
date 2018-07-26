@@ -68,4 +68,73 @@ router.get("/checkHasOrder",[
     });
 });
 
+/**
+ * 聊天完成订单
+ */
+router.post("/chatComplete",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("orderid").isNumeric().withMessage("订单id不能为空"),
+    body("servicetime").isNumeric().withMessage("服务时长不能为空")
+],function(req:express.Request,res:express.Response){
+    orderService.chatComplete(parseInt(req.query.userid),parseInt(req.body.orderid),parseFloat(req.body.servicetime))
+    .then(data=>{
+        let order:IOrder = null;
+        if(data[1]&&data[1].length){
+            order = data[1][0];
+        }
+        res.json({
+            data:order,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+/**
+ * 更新服务时间
+ */
+router.post("/updateServicetime",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("orderid").isNumeric().withMessage("订单id不能为空"),
+    body("servicetime").isNumeric().withMessage("服务时长不能为空")
+],function(req:express.Request,res:express.Response){
+    orderService.updateServicetime(parseInt(req.query.userid),parseInt(req.body.orderid),parseFloat(req.body.servicetime)).then(data=>{
+        let order:IOrder = null;
+        if(data[1]&&data[1].length){
+            order = data[1][0];
+        }
+        res.json({
+            data:order,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+/**
+ * 更新订单为服务中
+ */
+router.post("/updateServicing",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("orderid").isNumeric().withMessage("订单id不能为空"),
+],function(req:express.Request,res:express.Response){
+    orderService.updateServicing(parseInt(req.query.userid),parseInt(req.body.orderid)).then(data=>{
+        let order:IOrder = null;
+        if(data[1]&&data[1].length){
+            order = data[1][0];
+        }
+        res.json({
+            data:order,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
 module.exports = router;

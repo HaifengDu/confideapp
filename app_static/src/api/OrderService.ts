@@ -4,6 +4,7 @@ import { IResponse } from "../interface/model/IResponse";
 import { IOrder } from "../interface/model/IOrder";
 
 export default class OrderService {
+
     private static _instance: OrderService;
 
     /**
@@ -22,7 +23,39 @@ export default class OrderService {
             params:{uid,lid}
         });
     }
+
+    /**
+     * 聊天完成订单
+     * @param orderid 
+     * @param servicetime 
+     */
+    public chatComplete(orderid?:number,servicetime?:number):AxiosPromise<IResponse<IOrder>>{
+        return Axios.post("/order/chatComplete",{
+            orderid,
+            servicetime
+        });
+    }
    
+    /**
+     * 更新服务时长
+     * @param orderid 
+     * @param servicetime 
+     */
+    public updateServicetime(orderid?:number,servicetime?:number):AxiosPromise<IResponse<IOrder>>{
+        return Axios.post("/order/updateServicetime",{
+            orderid,
+            servicetime
+        });
+    }
+
+    /**
+     * 更新订单为服务中
+     */
+    public updateServicing(orderid:number):AxiosPromise<IResponse<IOrder>> {
+        return Axios.post("/order/updateServicing",{
+            orderid:orderid
+        });
+    }   
 
     private constructor() {}
 

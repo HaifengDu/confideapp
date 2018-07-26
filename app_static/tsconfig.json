@@ -10,7 +10,7 @@
       // "outDir": "lib",
       "isolatedModules": false,
       "experimentalDecorators": true,
-      "declaration": true,
+      "declaration": false,
       "noImplicitAny": true,
       // "allowJs": true,
       // "noImplicitThis": true,

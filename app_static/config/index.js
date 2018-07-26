@@ -7,24 +7,24 @@ const path = require('path')
 const proxyUrl = "http://127.0.0.1:3001/";
 
 module.exports = {
-  dev: {
-    // Paths
-    assetsSubDirectory: "static",
-    assetsPublicPath: "/",
-    proxyTable: {
-      "/user*": proxyUrl,
-      "/user/*": proxyUrl,
-      "/base*": proxyUrl,
-      "/base/*": proxyUrl,
-      "/listener*": proxyUrl,
-      "/listener/*": proxyUrl,
-      "/list*": proxyUrl,
-      "/list/*": proxyUrl,
-      "/order*": proxyUrl,
-      "/order/*": proxyUrl,
-      "/chat*": proxyUrl,
-      "/chat/*": proxyUrl
-    },
+    dev: {
+        // Paths
+        assetsSubDirectory: "static",
+        assetsPublicPath: "/",
+        proxyTable: {
+            "/user*": proxyUrl,
+            "/user/*": proxyUrl,
+            "/base*": proxyUrl,
+            "/base/*": proxyUrl,
+            "/listener*": proxyUrl,
+            "/listener/*": proxyUrl,
+            "/list*": proxyUrl,
+            "/list/*": proxyUrl,
+            "/order*": proxyUrl,
+            "/order/*": proxyUrl,
+            "/chat*": proxyUrl,
+            "/chat/*": proxyUrl
+        },
 
     // Various Dev Server settings
     host: "localhost", // can be overwritten by process.env.HOST

@@ -97,6 +97,11 @@ export interface IOrder{
      * 取消时间
      */
     canceltime?:Date,
+
+    /**
+     * 评价时间
+     */
+    evaluatetime?:Date
 }
 
 export default IOrder;

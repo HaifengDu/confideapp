@@ -80,7 +80,7 @@
     </div>
 </template>
 <script lang="ts">
-import Vue from 'vue'
+import Vue ,{VNode }from 'vue'
 import {Component} from "vue-property-decorator";
 import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
@@ -91,6 +91,7 @@ import { IOnlyChatRecord } from '../interface/mongomodel/IChatRecord';
 import { IOrder } from '../interface/model/IOrder';
 import { ERole } from '../enum/ERole';
 import { IUser } from '../interface/model/IUser';
+import { EOrderStatus } from '../enum/order/EOrderStatus';
 
 @Component({
     components:{
@@ -143,6 +144,17 @@ export default class Chat extends Vue{
         //获取最近的20条消息
         this.$on(ChatEventContants.vueDefaultRecordEvent,(datas:IOnlyChatRecord[])=>{
             this.msgList = datas||[];
+        });
+
+        this.$on(ChatEventContants.vueOrderComplete,(order:IOrder)=>{
+            this.biz.completeOrder(order).then(res=>{
+                const data = res.data;
+                if(data.success){
+                    Object.assign(this.order,data.data);
+                }
+            },err=>{
+                this.$toast(err.message);
+            });
         });
     }
 
@@ -206,6 +218,13 @@ export default class Chat extends Vue{
         if(this.chatListener){
             this.chatListener.leave();
             this.chatListener.removeEvent();
+        }
+        if(this.order&&<EOrderStatus>this.order.status<EOrderStatus.Awaiting_Comment){
+            this.biz.updateServicetime(this.order).then(data=>{
+                console.log("更新时长成功")
+            },err=>{
+                this.$toast(err.message);
+            });
         }
     }
 }

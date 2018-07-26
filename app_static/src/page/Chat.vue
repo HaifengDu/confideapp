@@ -2,7 +2,7 @@
     <div style="height:calc(100vh - 58px);background-color:#eee">
         <div class="info-container">
           <div class="status">
-            名字 - 可接单
+            {{listener.nickname}} - 可接单
           </div>
           <div class="info">
             <div class="icon">
@@ -116,10 +116,11 @@ export default class Chat extends Vue{
         this.biz = new ChatManagerBiz();
     }
     created(){
-        this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
+        this.biz.getData(parseInt(this.$route.query.uid)).then(data=>{
             //TODO:根据订单和角色验证
             const listener = data.listener;
             this.order = data.order;
+            (<any>this).listener = data.listener
             this.currentRole = data.roles.Current;
             if(listener){
                 this.toUser = listener;

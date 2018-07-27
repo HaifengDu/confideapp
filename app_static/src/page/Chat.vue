@@ -1,12 +1,15 @@
 <template>
     <div style="height:calc(100vh - 58px);background-color:#eee">
-        <div class="info-container">
+        <div class="info-container" v-if="toRole===1">
           <div class="status">
-            {{listener.nickname}} - 可接单
+            {{toUser.nickname}}
+            <template v-if="toRole===1">
+              - {{ERecieveStatus[toUser.listener.recievestatus]}}
+            </template>
           </div>
           <div class="info">
             <div class="icon">
-              <user-icon size="4"></user-icon>
+              <user-icon size="4" :user="toUser"></user-icon>
               <div class="follow" @click="follow">+关注</div>
             </div>
             <div class="summary">
@@ -37,23 +40,23 @@
           </div>
         </div>
         <div class="tab">
-          <div class="price">36元起</div>
+          <div class="price" v-if="toRole===1">36元起</div>
           <div class="switch">
-            <div class="word fa fa-commenting-o"></div>
-            <div class="phone fa fa-phone"></div>
+            <div class="word fa fa-commenting-o" :class="{'active':topChatType==1}" @click="changeTab(EChatType.word)"></div>
+            <div class="phone fa fa-phone" :class="{'active':topChatType==2}" @click="changeTab(EChatType.phone)"></div>
           </div>
-          <div class="order">马上下单</div>
+          <div class="order" v-if="toRole===1">马上下单</div>
         </div>
-        <div class="chat-wrapper">
+        <div class="chat-wrapper" ref="scrollContainer">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
               <template v-if="item.ismy">
                 <div class="msg-status">{{item.status==2?'已读':'已发送'}}</div>
                 <div v-if="item.type!=2" class="msg-text">{{item.msg}}</div>
                 <div v-if="item.type==2" @click="playRecord(item)">播放语言</div>
-                <user-icon size="4"></user-icon>
+                <user-icon size="4" :user="user"></user-icon>
               </template>
               <template v-else>
-                <user-icon size="4"></user-icon>
+                <user-icon size="4" :user="toUser"></user-icon>
                 <div v-if="item.type!=2" class="msg-text">{{item.msg}}</div>
                 <div v-if="item.type==2" @click="playRecord(item)">播放语言</div>
               </template>
@@ -81,6 +84,7 @@
 </template>
 <script lang="ts">
 import Vue ,{VNode }from 'vue'
+import {mapGetters} from 'vuex'
 import {Component} from "vue-property-decorator";
 import { EChatMsgStatus } from '../enum/EChatMsgStatus';
 import {startRecord,stopRecord,playRecord} from "../helper/WeixinHelper"
@@ -92,10 +96,17 @@ import { IOrder } from '../interface/model/IOrder';
 import { IUser } from '../interface/model/IUser';
 import { ERole } from '../enum/ERole';
 import { EOrderStatus } from '../enum/order/EOrderStatus';
+import {EChatType} from '../enum/EChatType';
+import {ERecieveStatus} from '../enum/ERecieveStatus';
 
 @Component({
     components:{
       UserIcon
+    },
+    computed:{
+      ...mapGetters({
+        "user":"user"
+      })
     }
 })
 export default class Chat extends Vue{
@@ -105,9 +116,13 @@ export default class Chat extends Vue{
     private msgList:any[]=[];
     private chatType = EChatMsgType.Text;
     private order?:IOrder;
-    private currentRole:ERole;
+    private currentRole:ERole = ERole.Pourouter;
+    private toRole:ERole = ERole.Pourouter;
     private toUser:IUser={};
-    
+    private topChatType:EChatType = EChatType.word;
+    private EChatType:EChatType;
+    private ERecieveStatus:ERecieveStatus;
+
     follow(){
 
     }
@@ -116,12 +131,14 @@ export default class Chat extends Vue{
         this.biz = new ChatManagerBiz();
     }
     created(){
-        this.biz.getData(parseInt(this.$route.query.uid)).then(data=>{
+        (<any>this).EChatType = EChatType;
+        (<any>this).ERecieveStatus = ERecieveStatus;
+        this.biz.getData(parseInt(this.$route.params.uid)).then(data=>{
             //TODO:根据订单和角色验证
             const listener = data.listener;
             this.order = data.order;
-            (<any>this).listener = data.listener
             this.currentRole = data.roles.Current;
+            this.toRole = data.roles.To;
             if(listener){
                 this.toUser = listener;
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);
@@ -131,9 +148,9 @@ export default class Chat extends Vue{
         });
     }
     onSocketEvent(){
-
         this.$on(ChatEventContants.sendEvent,(data:IOnlyChatRecord)=>{
-            this.msgList.push(data);
+          this.msgList.push(data);
+          this.scrollToBottom()
         });
         this.$on(ChatEventContants.readEvent,(tokenids:string[])=>{
             const lists = this.msgList.filter(item=>tokenids.indexOf(item.tokenid)>-1);
@@ -146,7 +163,7 @@ export default class Chat extends Vue{
 
         //获取最近的20条消息
         this.$on(ChatEventContants.vueDefaultRecordEvent,(datas:IOnlyChatRecord[])=>{
-            this.msgList = datas||[];
+            this.msgList = datas.reverse()||[];
         });
 
         this.$on(ChatEventContants.vueOrderComplete,(order:IOrder)=>{
@@ -169,6 +186,9 @@ export default class Chat extends Vue{
             }
         });
     }
+    changeTab(type:any){
+      this.topChatType = type
+    }
     changeType(){
         if(this.chatType===EChatMsgType.Text){
             this.chatType=EChatMsgType.Audio;
@@ -190,6 +210,7 @@ export default class Chat extends Vue{
                 serverId:obj.serverId,
             }).then(data=>{
                 this.msgList.push(data);
+                this.scrollToBottom()
             });
         });
 
@@ -211,11 +232,16 @@ export default class Chat extends Vue{
             }).then(data=>{
                 data.ismy = true;
                 this.msgList.push(data);
+                this.scrollToBottom()
             },err=>{
                 this.$toast(err.message);
             });
         }
         this.msg = "";
+    }
+    scrollToBottom(){
+      let scrollContainer = <HTMLDivElement>this.$refs.scrollContainer
+      scrollContainer.scrollTop = scrollContainer.offsetHeight
     }
     beforeDestroy() {
         if(this.chatListener){
@@ -367,7 +393,7 @@ export default class Chat extends Vue{
     }
 }
 .chat-wrapper{
-    margin:20px 20px 20px 20px;
+    margin:10px;
     overflow: auto;
     height: ~'calc(100vh - 22rem)';
     .chat-record{
@@ -380,6 +406,9 @@ export default class Chat extends Vue{
               background: #74e9f5;
               color: #fff;
           }
+        }
+        /deep/ .fbui-user-icon{
+          margin:0 5px;
         }
         .icon{
           width:4rem;

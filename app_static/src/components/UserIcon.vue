@@ -1,9 +1,9 @@
 <template>
 	<div class="fbui-user-icon" :title="filterTitle" :style="{'width':filterWidth,'height':filterHeight,'line-height':filterHeight}">
 		<template v-if="user">
-			<div :class="{'u_icon':true,'is_img':(user.ico),'sex_2':(user.sex == 2),'sex_1':(user.sex == 1)}">
-				<template v-if="user.ico">
-					<img :src="user.ico" />
+			<div :class="{'u_icon':true,'is_img':(user.ico||user.headimgurl),'sex_2':(user.sex == 2),'sex_1':(user.sex == 1)}">
+				<template v-if="user.ico||user.headimgurl">
+					<img :src="user.ico||user.headimgurl" />
 				</template>
 				<template v-else>
 					{{filterName}}
@@ -53,7 +53,7 @@ export default class UserIcon extends Vue{
 				return height;
 			}
 		get	filterTitle(){
-				if(this.user && (this.user.nick_name || this.user.name)){
+				if(this.user && (this.user.nick_name || this.user.name || this.user.nickname)){
 					return this.user.nick_name || this.user.name
         }
         return '未'

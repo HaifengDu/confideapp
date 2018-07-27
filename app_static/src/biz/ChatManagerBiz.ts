@@ -102,10 +102,10 @@ export class ChatListener{
     }
 
     /**
-     * 
-     * @param vue 
+     *
+     * @param vue
      * @param currentRole 暂时聊天对倾听者和倾诉者使用统一限制
-     * @param order 
+     * @param order
      */
     constructor(vue:Vue,private currentRole:ERole,private order?:IOrder){
         ChatListener._VUE = vue;
@@ -114,9 +114,9 @@ export class ChatListener{
 
     /**
      * 加入房间
-     * @param uid 
-     * @param lid 
-     * @param username 
+     * @param uid
+     * @param lid
+     * @param username
      */
     join(uid:number,lid:number,username:string){
         this.uid = uid;
@@ -220,11 +220,11 @@ export class ChatListener{
             }
         }
     }
-    
+
 
     /**
      * 发送消息
-     * @param chatMsgObj 
+     * @param chatMsgObj
      */
     sendMsg(chatMsgObj:IOnlyChatRecord){
         const checkResult = this.checkSendMsg();
@@ -268,8 +268,8 @@ export class ChatListener{
     addEvent(){
         socketWrapper.on(ChatEventContants.readEvent,ChatListener.read);
         socketWrapper.on(ChatEventContants.sendEvent,ChatListener.send);
-    } 
-    
+    }
+
     removeEvent(){
         socketWrapper.remove(ChatEventContants.sendEvent,ChatListener.send);
         socketWrapper.remove(ChatEventContants.readEvent,ChatListener.read)
@@ -291,9 +291,9 @@ export default class ChatManagerBiz{
 
     /**
      * 加入房间
-     * @param vue 
-     * @param uid 
-     * @param touid 
+     * @param vue
+     * @param uid
+     * @param touid
      */
     public joinRoom(vue:Vue,touid:number){
         const chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
@@ -311,8 +311,8 @@ export default class ChatManagerBiz{
             return Promise.reject(new ErrorMsg(false,"服务时长不正确"));
         }
         return orderService.chatComplete(order.id,order.servicetime);
-    }  
-    
+    }
+
     /**
      * 更新服务时长
      */
@@ -328,7 +328,7 @@ export default class ChatManagerBiz{
 
     /**
      * 验证当前用户角色
-     * @param lid 
+     * @param lid
      */
     public getData(lid:number) {
         return this.userService.getUser(lid).then(res=>{
@@ -358,8 +358,8 @@ export default class ChatManagerBiz{
 
     /**
      * 根据订单验证当前角色
-     * @param lid 
-     * @param order 
+     * @param lid
+     * @param order
      */
     private checkRole(order?:IOrder){
         //存在订单 区分倾听者和倾诉者
@@ -373,9 +373,9 @@ export default class ChatManagerBiz{
                 this.chatRole.To = ERole.Pourouter;
             }
         }else{
-            //不存在订单，都是倾诉者
+            //不存在订单，看谁谁是倾听者
             this.chatRole.Current = ERole.Pourouter;
-            this.chatRole.To = ERole.Pourouter;
+            this.chatRole.To = ERole.Listener;
         }
     }
 }

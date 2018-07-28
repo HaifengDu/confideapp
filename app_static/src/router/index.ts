@@ -28,6 +28,7 @@ import AdvertSetting from "@/page/advert/AdvertSetting.vue";
 import AdvertRecord from "@/page/advert/AdvertRecord.vue";
 import PlaceOrder from "@/page/PlaceOrder.vue";
 import OrderDetail from "@/page/order/OrderDetail.vue";
+import OrderList from "@/page/order/OrderList.vue";
 
 Vue.use(Router)
 
@@ -157,6 +158,10 @@ const router = new Router({
       path:'/orderDetail',
       name:'OrderDetail',
       component:OrderDetail
+    },{
+      path:'/orderList',
+      name:'OrderList',
+      component:OrderList
     }
   ]
 });

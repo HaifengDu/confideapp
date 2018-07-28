@@ -40,6 +40,10 @@ router.post("/pay", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
     check_1.body("orderid").isNumeric().withMessage("订单id不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     orderService.pay(parseInt(req.query.userid), parseInt(req.body.orderid)).then(data => {
         return res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
@@ -52,6 +56,10 @@ router.get("/checkHasOrder", [
     check_1.query("uid").isNumeric().withMessage("用户id不能为空"),
     check_1.query("lid").isNumeric().withMessage("倾听者不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     orderService.checkHasOrder(req.query.uid, req.query.lid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
@@ -68,6 +76,10 @@ router.post("/chatComplete", [
     check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
     check_1.body("servicetime").isNumeric().withMessage("服务时长不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     orderService.chatComplete(parseInt(req.query.userid), parseInt(req.body.orderid), parseFloat(req.body.servicetime))
         .then(data => {
         let order = null;
@@ -89,6 +101,10 @@ router.post("/updateServicetime", [
     check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
     check_1.body("servicetime").isNumeric().withMessage("服务时长不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     orderService.updateServicetime(parseInt(req.query.userid), parseInt(req.body.orderid), parseFloat(req.body.servicetime)).then(data => {
         let order = null;
         if (data[1] && data[1].length) {
@@ -108,12 +124,34 @@ router.post("/updateServicing", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
     check_1.body("orderid").isNumeric().withMessage("订单id不能为空"),
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     orderService.updateServicing(parseInt(req.query.userid), parseInt(req.body.orderid)).then(data => {
         let order = null;
         if (data[1] && data[1].length) {
             order = data[1][0];
         }
         res.json(Object.assign({ data: order }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+/**
+ * 获取统计数据
+ */
+router.get("/getSummaryData", [
+    check_1.query("lid").isNumeric().withMessage("用户id不能为空"),
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    orderService.getSummaryData(parseInt(req.query.lid)).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));
     }).catch(err => {

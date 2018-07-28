@@ -4,15 +4,19 @@ import OrderBizService from "../biz/OrderBiz";
 import UserService from "./User";
 import ErrorMsg from "../model/ErrorMsg";
 import { ERole } from "../enum/ERole";
-import { wxPay, recieve } from "../helper/wxPay";
+// import { wxPay, recieve } from "../helper/wxPay";
+import WxPayHelper from "../helper/WxPayHelper";
 import { EOrderStatus } from "../enum/order/EOrderStatus";
 import Order from "../model/Order";
 import { EPayType } from "../enum/order/EPayType";
 import * as express from "express";
+import * as Sequelize from "sequelize";
 import _ = require("lodash");
 import { LogHelper } from "../helper/logHelper";
-import { getClientIp } from "../helper/util";
+// import { getClientIp } from "../helper/util";
 import { Op } from "sequelize";
+import * as moment from "moment";
+
 import { ECompleteType } from "../enum/order/ECompleteType";
 
 export default class OrderService {
@@ -22,8 +26,10 @@ export default class OrderService {
     private biz:OrderBizService;
     private userService:UserService;
     private logHelper:LogHelper;
+    private wxPayHelper:WxPayHelper;
     private constructor() {
         this.logHelper = LogHelper.getInstance();
+        this.wxPayHelper = WxPayHelper.getInstance();
         this.biz = OrderBizService.getInstance();
         this.userService =  UserService.getInstance();
     }
@@ -82,11 +88,21 @@ export default class OrderService {
         }).then(orderModel=>{
             const user = orderModel.user;
             const order = orderModel.order;
-            return wxPay(user.weixinid,order.id,order.payprice).then(data=>{
+            return this.wxPayHelper.pay(order.ip,user.weixinid,order.id,order.payprice).then(data=>{
+                this.logHelper.errorOrder({
+                    body:data,
+                    message:"支付获取参数成功"
+                });
                 return {
                     order:order,
-                    jsParam:data.jsParams,
+                    jsParam:data,
                 }
+            },err=>{
+                this.logHelper.errorOrder({
+                    body:err.message,
+                    message:"支付获取参数失败"
+                });
+                return err;
             });
         });
         
@@ -115,11 +131,21 @@ export default class OrderService {
             }).then(orderModel=>{
                 const user = orderModel.user;
                 const order = orderModel.order;
-                return wxPay(user.weixinid,order.id,order.payprice).then(data=>{
+                return this.wxPayHelper.pay(order.ip,user.weixinid,order.id,order.payprice).then(data=>{
+                    this.logHelper.errorOrder({
+                        body:data,
+                        message:"支付获取参数成功"
+                    });
                     return {
                         data:order,
-                        jsParam:data.jsParams,
+                        jsParam:data,
                     }
+                },err=>{
+                    this.logHelper.errorOrder({
+                        body:err.message,
+                        message:"支付获取参数失败"
+                    });
+                    return err;
                 });
             })
         });
@@ -183,66 +209,152 @@ export default class OrderService {
     }
 
     /**
-     * 支付回调成功
+     * 支付回调成功 NOTE:不用了
      * @param req 
      */
     public recieve(req:express.Request){
-        return recieve(req).then(errorMsg=>{
-            if(errorMsg.success){
-                const data = errorMsg.data;
-                //验证金额
-                if(!data.total_fee){
-                    this.logHelper.errorOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:"支付金额为空"
-                    });
-                    return Promise.reject(new ErrorMsg(false,""));
-                }
-                const totalfee = parseFloat(data.total_fee[0]);
-                if(_.isNaN(totalfee)){
-                    this.logHelper.errorOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:"支付金额不正确"
-                    });
-                    return Promise.reject(new ErrorMsg(false,"支付金额不正确"));
-                }
-                if(!data.out_trade_no||!data.out_trade_no[0]){
-                    this.logHelper.errorOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:"订单号为空"
-                    });
-                    return Promise.reject(new ErrorMsg(false,"订单号为空"));
-                }
-                const orderid = parseInt(data.out_trade_no[0]);
-                if(_.isNaN(orderid)){
-                    this.logHelper.errorOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:"订单号格式不正确"
-                    });
-                    return Promise.reject(new ErrorMsg(false,"订单号格式不正确"));
-                }
-                return this.checkPrice(orderid,totalfee,data.transaction_id[0]).then(order=>{
-                    this.logHelper.appendOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:"订单修改成功"
-                    });
-                    return order;
-                },err=>{
-                    this.logHelper.errorOrder({
-                        ip:getClientIp(req),
-                        body:data,
-                        message:err.message
-                    });
-                    return err;
-                });
-            }else{
-                return Promise.reject(errorMsg);
+        // return recieve(req).then(errorMsg=>{
+        //     if(errorMsg.success){
+        //         const data = errorMsg.data;
+        //         //验证金额
+        //         if(!data.total_fee){
+        //             this.logHelper.errorOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:"支付金额为空"
+        //             });
+        //             return Promise.reject(new ErrorMsg(false,""));
+        //         }
+        //         const totalfee = parseFloat(data.total_fee[0]);
+        //         if(_.isNaN(totalfee)){
+        //             this.logHelper.errorOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:"支付金额不正确"
+        //             });
+        //             return Promise.reject(new ErrorMsg(false,"支付金额不正确"));
+        //         }
+        //         if(!data.out_trade_no||!data.out_trade_no[0]){
+        //             this.logHelper.errorOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:"订单号为空"
+        //             });
+        //             return Promise.reject(new ErrorMsg(false,"订单号为空"));
+        //         }
+        //         const orderid = parseInt(data.out_trade_no[0]);
+        //         if(_.isNaN(orderid)){
+        //             this.logHelper.errorOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:"订单号格式不正确"
+        //             });
+        //             return Promise.reject(new ErrorMsg(false,"订单号格式不正确"));
+        //         }
+        //         return this.checkPrice(orderid,totalfee,data.transaction_id[0]).then(order=>{
+        //             this.logHelper.appendOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:"订单修改成功"
+        //             });
+        //             return order;
+        //         },err=>{
+        //             this.logHelper.errorOrder({
+        //                 ip:getClientIp(req),
+        //                 body:data,
+        //                 message:err.message
+        //             });
+        //             return err;
+        //         });
+        //     }else{
+        //         return Promise.reject(errorMsg);
+        //     }
+        // });
+    }
+
+    /**
+     * 使用支付库支付回调
+     * @param result 
+     */
+    public recievePay(result:any){
+        if(!result){
+            this.logHelper.errorOrder({
+                body:result,
+                message:"支付返回结果为空"
+            });
+            return Bluebird.reject(new ErrorMsg(false,"支付返回结果为空"));
+        }
+        const totalfee = parseFloat(result.total_fee);
+        if(_.isNaN(totalfee)){
+            this.logHelper.errorOrder({
+                body:result,
+                message:"支付金额不正确"
+            });
+            return Bluebird.reject(new ErrorMsg(false,"支付金额不正确"));
+        }
+        if(!result.out_trade_no){
+            this.logHelper.errorOrder({
+                body:result,
+                message:"订单号为空"
+            });
+            return Bluebird.reject(new ErrorMsg(false,"订单号为空"));
+        }
+
+        const orderid = parseInt(result.out_trade_no);
+        if(_.isNaN(orderid)){
+            this.logHelper.errorOrder({
+                body:result,
+                message:"订单号格式不正确"
+            });
+            return Bluebird.reject(new ErrorMsg(false,"订单号格式不正确"));
+        }
+        return this.checkPrice(orderid,totalfee,result.transaction_id).then(order=>{
+            this.logHelper.appendOrder({
+                body:result,
+                message:"订单支付成功"
+            });
+            return order;
+        },err=>{
+            this.logHelper.errorOrder({
+                body:result,
+                message:err.message
+            });
+            return err;
+        });
+    }
+
+    /**
+     * 退款
+     * @param userid 
+     * @param orderid 
+     */
+    public refund(userid:number,orderid:number){
+        return Order.findById(orderid).then(order=>{
+            if(!order){
+                return Promise.reject(new ErrorMsg(false,"订单不存在"));
             }
+            if(order.uid!==userid){
+                return Promise.reject(new ErrorMsg(false,"当前用户和订单不一致"));
+            }
+            if(order.status===EOrderStatus.Paid){
+                return Promise.reject(new ErrorMsg(false,"必须为已支付的订单"));
+            }
+            if(moment(new Date()).diff(moment(order.paidtime),"year")>1){
+                return Promise.reject(new ErrorMsg(false,"退款的订单不能超过一年"));
+            }
+            this.wxPayHelper.refund(orderid,order.payprice).then(data=>{
+                this.logHelper.appendOrder({
+                    body:data,
+                    message:"订单退款成功"
+                });
+                return data;
+            },err=>{
+                this.logHelper.appendOrder({
+                    body:err,
+                    message:"订单退款失败"
+                });
+                return err;
+            });
         });
     }
 
@@ -308,6 +420,35 @@ export default class OrderService {
         return this.update(userid,{
             status:EOrderStatus.Servicing,
             id:orderid
+        });
+    }
+
+    /**
+     * 获取统计数据
+     * @param listenerid 
+     */
+    public getSummaryData(listenerid:number){
+        return Order.find({
+            attributes:[
+                [Sequelize.fn("COUNT",Sequelize.literal('DISTINCT `uid`')),'ucount'],
+                [Sequelize.fn("SUM",Sequelize.literal('`payservicetime`')),'stime']
+            ],
+            where:{
+                lid:listenerid,
+                [Sequelize.Op.or]:[{
+                    status:EOrderStatus.Completed
+                },{
+                    status:EOrderStatus.Awaiting_Comment
+                }]
+            }
+        }).then((data:any)=>{
+            if(!data.ucount){
+                data.ucount=0;
+            }
+            if(!data.stime){
+                data.stime = 0;
+            }
+            return <{ucount:number,stime:number}>data;
         });
     }
 

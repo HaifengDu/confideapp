@@ -2,7 +2,7 @@ import * as express from "express";
 import { IOrder } from "../interface/model/IOrder";
 import { getClientIp } from "../helper/util";
 import ObjectHelper from "../helper/objectHelper";
-import { query, body } from "express-validator/check";
+import { query, body, Result, validationResult } from "express-validator/check";
 import OrderService from "../controller/Order";
 import ErrorMsg from "../model/ErrorMsg";
 const orderService = OrderService.getInstance();
@@ -42,6 +42,10 @@ router.post("/pay",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
     body("orderid").isNumeric().withMessage("订单id不能为空")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     orderService.pay(parseInt(req.query.userid),parseInt(req.body.orderid)).then(data=>{
         return res.json({
             data,...new ErrorMsg(true)
@@ -57,6 +61,10 @@ router.get("/checkHasOrder",[
     query("uid").isNumeric().withMessage("用户id不能为空"),
     query("lid").isNumeric().withMessage("倾听者不能为空")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     orderService.checkHasOrder(req.query.uid,req.query.lid).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
@@ -76,6 +84,10 @@ router.post("/chatComplete",[
     body("orderid").isNumeric().withMessage("订单id不能为空"),
     body("servicetime").isNumeric().withMessage("服务时长不能为空")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     orderService.chatComplete(parseInt(req.query.userid),parseInt(req.body.orderid),parseFloat(req.body.servicetime))
     .then(data=>{
         let order:IOrder = null;
@@ -100,6 +112,10 @@ router.post("/updateServicetime",[
     body("orderid").isNumeric().withMessage("订单id不能为空"),
     body("servicetime").isNumeric().withMessage("服务时长不能为空")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     orderService.updateServicetime(parseInt(req.query.userid),parseInt(req.body.orderid),parseFloat(req.body.servicetime)).then(data=>{
         let order:IOrder = null;
         if(data[1]&&data[1].length){
@@ -122,6 +138,10 @@ router.post("/updateServicing",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
     body("orderid").isNumeric().withMessage("订单id不能为空"),
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     orderService.updateServicing(parseInt(req.query.userid),parseInt(req.body.orderid)).then(data=>{
         let order:IOrder = null;
         if(data[1]&&data[1].length){
@@ -136,5 +156,26 @@ router.post("/updateServicing",[
         res.json(new ErrorMsg(false,err.message,err));
     });
 });
+
+/**
+ * 获取统计数据
+ */
+router.get("/getSummaryData",[
+    query("lid").isNumeric().withMessage("用户id不能为空"),
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    orderService.getSummaryData(parseInt(req.query.lid)).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+})
 
 module.exports = router;

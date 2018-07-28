@@ -2,17 +2,33 @@
  * 订单状态
  */
 export enum EOrderStatus{
-    //待付款
+    /**
+     * 待付款
+     */
     Awaiting_Payment=1,
-    //已付款
+    /**
+     * 已付款
+     */
     Paid,
-    //已取消
-    Cancelled,
-    //服务中
+    /**
+     * 服务中
+     */
     Servicing,
-    //待评论
+    /**
+     * 待评论
+     */
     Awaiting_Comment,
-    //已完成
-    Completed
+    /**
+     * 已取消
+     */
+    Cancelled,
+    /**
+     * 已完成
+     */
+    Completed,
+    /**
+     * 退款
+     */
+    Refund
 }
 export default EOrderStatus;

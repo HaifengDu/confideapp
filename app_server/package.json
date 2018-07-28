@@ -42,6 +42,7 @@
     "socket.io": "^2.1.1",
     "typescript": "^2.9.2",
     "uuid": "^3.2.1",
+    "wechat-pay": "^0.3.2",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {

@@ -29,5 +29,9 @@ var EOrderStatus;
      * 已完成
      */
     EOrderStatus[EOrderStatus["Completed"] = 6] = "Completed";
+    /**
+     * 退款
+     */
+    EOrderStatus[EOrderStatus["Refund"] = 7] = "Refund";
 })(EOrderStatus = exports.EOrderStatus || (exports.EOrderStatus = {}));
 exports.default = EOrderStatus;

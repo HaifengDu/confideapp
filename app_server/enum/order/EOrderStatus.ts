@@ -25,6 +25,10 @@ export enum EOrderStatus{
     /**
      * 已完成
      */
-    Completed
+    Completed,
+    /**
+     * 退款
+     */
+    Refund
 }
 export default EOrderStatus;

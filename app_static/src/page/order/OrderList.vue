@@ -12,9 +12,9 @@
                     <ul class="content" style="width:700px;">
                         <li
                         style="width:60px;"
-                        v-for="(item,index) in status" 
-                        class="tab" 
-                        :class="{'active-tab':item.active}" 
+                        v-for="(item,index) in status"
+                        class="tab"
+                        :class="{'active-tab':item.active}"
                         :key="index"
                         @click="changeStatus(item.status)">
                         {{item.name}}</li>
@@ -25,8 +25,8 @@
                 <div class="order-list" ref="orderList">
                     <ul class="content">
                         <li
-                        v-for="(item,index) in list" 
-                        class="list" 
+                        v-for="(item,index) in list"
+                        class="list"
                         :key="index"
                         @click="toOrderDetail(item.id)">
                             <p class="title">
@@ -71,7 +71,7 @@ export default class OrderList extends Vue{
         {status:4,name:'服务中',active:false},
         {status:5,name:'待评论',active:false},
         {status:6,name:'已完成',active:false}
-    ]; 
+    ];
     private list = [
         {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
         {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
@@ -234,18 +234,18 @@ export default class OrderList extends Vue{
                             display:inline-block;
                             width:20px;
                             height:20px;
-                            background-image: url(../../../static/images/pay/microphone-black.png);  
-                            background-repeat: no-repeat;  
+                            background-image: url(../../../static/images/pay/microphone-black.png);
+                            background-repeat: no-repeat;
                             background-size: 100% 100%;
                             vertical-align: middle;
                             .p-rl;
                             top:-2px;
                         }
                         .icon-type.text{
-                            background-image: url(../../../static/images/pay/chat-black.png);  
+                            background-image: url(../../../static/images/pay/chat-black.png);
                         }
                         .arrow{
-                            background-image: url(../../../static/images/userinfo/arrow-right.png);  
+                            background-image: url(../../../static/images/userInfo/arrow-right.png);
                         }
                     }
                 }

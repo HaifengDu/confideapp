@@ -13,12 +13,12 @@
       </div>
       <div class="list">
         <div class="name">单价</div>
-        <div class="price">{{}}/分钟</div>
+        <div class="price">{{phonePrice.taxprice}}/分钟</div>
       </div>
       <div class="list">
         <div class="name">时长</div>
         <div class="price">
-         <el-input-number v-model="base" :step="15" size="mini" :min="15" :max="720"></el-input-number>
+         <el-input-number v-model="base" :step="15*curStep" size="mini" :min="15" :max="720" @change="watchChange"></el-input-number>
           分钟</div>
       </div>
       <div class="tip">该订单为{{curTab==1?'文字':'通话'}}订单，将以{{curTab==1?'文字':'通话'}}形式进行服务。</div>
@@ -50,19 +50,34 @@ export default class SelectOrder extends Vue {
   })
   private toUser:any;
   private wordTime:any[] = [];
-  private phonePrice:any[] = [];
+  private phonePrice:any = {};
   private curTab:EChatType = 2;
   private base = 15;
+  private curStep:any = null;
+  private wordPriceStepIndex = 0;/*计算步长  当前index*/
   changeTab(tab:EChatType){
     (<any>this.curTab) = tab
+  }
+  watchChange(e:any){
+    console.error(e)
+  }
+  compStep(){
+    if(this.wordPriceStepIndex==this.wordTime.length-1){
+      this.curStep = 0;
+    }else{
+      this.curStep = this.wordTime[this.wordPriceStepIndex+1].timecircle-this.wordTime[this.wordPriceStepIndex].timecircle;
+    }
   }
   created(){
     this.toUser&&this.toUser.pricesettings&&this.toUser.pricesettings.forEach((item:any) => {
       if(item.status===EPriceStatus.Enable){
         if(item.type===EPriceType.EWord){
-          this.wordTime.push(item)
+          this.wordTime.push(item);
+          this.wordTime.sort((a,b)=>b-a)
+          this.base = this.wordTime[0];
+
         }else if(item.type===EPriceType.ECall){
-          this.phonePrice.push(item)
+          this.phonePrice = item;
         }
       }
     });

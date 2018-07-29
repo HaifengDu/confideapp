@@ -22,7 +22,7 @@ export default class MyService {
     /**
     * getUserInfo
     */
-    public getUserInfo(code: string): AxiosPromise<any> {
+    public getUserInfo(code: string): AxiosPromise<IResponse<IUser>> {
       return Axios.put("user", { code });
     }
 

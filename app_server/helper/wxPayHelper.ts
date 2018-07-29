@@ -8,7 +8,7 @@ export const initConfig = {
     appId: wxconfig.appId,
     mchId: wxconfig.mch_id,
     notifyUrl: `${origin}/pay/payaction`,
-    pfx: fs.readFileSync("<location-of-your-apiclient-cert.p12>")
+    // pfx: fs.readFileSync("<location-of-your-apiclient-cert.p12>")
 };
 const payment = new Payment(initConfig);
 

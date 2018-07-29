@@ -46,10 +46,12 @@ export class LogHelper {
     }
 
     public append(obj:any){
+        this.addDate(obj);
         this.commonLogger.log(JSON.stringify(obj));
     }
 
     public error(obj:any){
+        this.addDate(obj);
         this.commonLogger.error(JSON.stringify(obj));
     }
 

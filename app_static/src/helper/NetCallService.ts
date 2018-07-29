@@ -1,3 +1,5 @@
+import { INetCallListener } from "../interface/action/INetCallListener";
+
 class NetImService {
 
     private static readonly appid = "45c6af3c98409b18a84451215d0bdd6e";
@@ -7,7 +9,7 @@ class NetImService {
     }
 
     public getImInstance(name:string,token:string){
-        var NIM = (<any>window).SDK.NIM;
+        let NIM = (<any>window).SDK.NIM;
         const nim = NIM.getInstance({
             // debug: true,
             appKey: NetImService.appid,
@@ -42,7 +44,7 @@ class NetImService {
 
     private onDisconnect(error:any) {
         // 此时说明 `SDK` 处于断开状态，开发者此时应该根据错误码提示相应的错误信息，并且跳转到登录页面
-        var that = this;
+        let that = this;
         console.log('连接断开');
         if (error) {
           switch (error.code) {
@@ -52,7 +54,7 @@ class NetImService {
             break;
             // 被踢, 请提示错误后跳转到登录页面
             case 'kicked':
-              var map = {
+              let map = {
                 PC: '电脑版',
                 Web: '网页版',
                 Android: '手机版',
@@ -60,7 +62,7 @@ class NetImService {
                 Mac: '电脑版',
                 WindowsPhone: '手机版'
               };
-              var str = error.from;
+              let str = error.from;
               (<any>new Date()).format()
               console.warn(
                 '你的帐号于' +
@@ -83,6 +85,8 @@ class NetImService {
 
 
 export default class NetCallService{
+    private static _instance: NetCallService;
+
     private Netcall:any;
     private netcall:any;
     private timeoutFlag:number;
@@ -90,6 +94,7 @@ export default class NetCallService{
     private beCalling = false;
     private beCalledInfo:any;
     private netImService = NetImService.getInstance();
+    private netCallListener:INetCallListener;
     private pushConfig = {
         enable: true,
         needBadge: true,
@@ -111,8 +116,13 @@ export default class NetCallService{
         rtmpRecord: false,
         splitMode: this.Netcall.LAYOUT_SPLITLATTICETILE
     };
-    constructor(private name:string,private token:string){
-        var NIM = (<any>window).SDK.NIM;
+    /**
+     * NOTE:不私有
+     * @param name 
+     * @param token 
+     */
+    constructor(name:string,token:string){
+        let NIM = (<any>window).SDK.NIM;
         if(!NIM){
             console.log("初始化im出错，没有NIM对象");
             return;
@@ -131,7 +141,8 @@ export default class NetCallService{
      * 拨号
      * @param name 
      */
-    public call(name:string){
+    public call(name:string,listener:INetCallListener){
+        this.netCallListener = listener;
         const netcall = this.netcall;
             netcall
                 .call({
@@ -141,11 +152,15 @@ export default class NetCallService{
                     sessionConfig: this.sessionConfig,
                     webrtcEnable: true
                 })
-                .then(function(obj:any) {
+                .then((obj:any) => {
                     // 成功发起呼叫
+                    this.netCallListener.calling();
                     console.log('call success', obj);
                 })
-                .catch(function(err:any) {
+                .catch((err:any) => {
+                    if(this.netCallListener&&this.netCallListener.connecterror){
+                        this.netCallListener.connecterror()
+                    }
                     // 被叫不在线
                     if (err.code === 11001) {
                         console.log('callee offline', err);
@@ -155,7 +170,7 @@ export default class NetCallService{
             this.timeoutFlag = setTimeout(function() {
                 if (!netcall.callAccepted) {
                     console.log('超时未接听, hangup');
-                    netcall.hangup();
+                    this.hangup();
                 }
             }, 60 * 1000);
     }
@@ -169,6 +184,25 @@ export default class NetCallService{
         this.netcall.hangup();
         this.stopDeviceAudioIn();
         this.stopDeviceAudioOut();
+        if(this.netCallListener&&this.netCallListener.close){
+            this.netCallListener.close();
+        }
+    }
+
+    public accept(){
+        this.beCalling = true;
+        this.netcall
+            .response({
+                accepted: true,
+                beCalledInfo: this.beCalledInfo,
+                sessionConfig: this.sessionConfig
+            }).then((res:any)=>{
+                this.callAccepted(res);
+            })
+            .catch(function(err:any) {
+                this.reject();
+                console.log('接听失败', err);
+            });
     }
 
     private createNetCallInstance(nim:any){
@@ -198,6 +232,10 @@ export default class NetCallService{
         }).then(()=>{
             clearTimeout(this.timeoutFlag);
             return this.startDeviceAudioOut();
+        }).then(()=>{
+            if(this.netCallListener){
+                this.netCallListener.accept();
+            }
         }).catch((err:any)=>{
             console.log("连接出错");
         });
@@ -205,39 +243,38 @@ export default class NetCallService{
 
     private callRejected(obj:any){
         console.log("对方拒绝");
+        this.netCallListener.reject();
         clearTimeout(this.timeoutFlag);
     }
 
     private signalClosed(obj:any){
-        this.netcall.hangup();
-        this.stopDeviceAudioIn();
-        this.stopDeviceAudioOut();
+        this.hangup();
     }
 
     private rtcConnectFailed(){
         clearTimeout(this.timeoutFlag);
-        this.beCalling = false;
-        this.beCalledInfo = null;
-        this.netcall.hangup();
+        this.hangup();
     }
 
     private beCallingCb(obj:any, scene:any){
         console.log("on be calling:", obj);
-        var channelId = obj.channelId;
+        let channelId = obj.channelId;
+        // tslint:disable-next-line:curly
         if (obj.channelId === this.channelId) return;
         if(this.netcall.calling || this.beCalling){
-            var tmp:any = { command: this.Netcall.NETCALL_CONTROL_COMMAND_BUSY };
+            let tmp:any = { command: this.Netcall.NETCALL_CONTROL_COMMAND_BUSY };
             if (scene === 'p2p') {
                 tmp.channelId = channelId;
             }
 
-            console.log("通知呼叫方我方不空");
+            console.log("通知呼叫方我方忙碌");
            this. netcall.control(tmp);
            return;
         }
         this.channelId = obj.channelId;
         this.beCalling = true;
         this.timeoutFlag = setTimeout(function () {
+            // tslint:disable-next-line:curly
             if (!this.timeoutFlag) return;
             console.log("呼叫方可能已经掉线，挂断通话");
             this.timeoutFlag = null;
@@ -246,22 +283,30 @@ export default class NetCallService{
         this.beCalledInfo = obj;
     }
 
-    private reject(){
+    public reject(auto=false){
+        // tslint:disable-next-line:curly
         if (!this.beCalling) return;
         this.netcall.response({
             accepted: false,
             beCalledInfo: this.beCalledInfo
-        }).then(function () {
+        }).then(function(){
             this.beCalledInfo = null;
             this.beCalling = false;
+            if(!auto&&this.netCallListener){
+                this.netCallListener.close();
+            }
         }.bind(this)).catch(function (err:any) {
             // 自己断网了
+            if(this.netCallListener){
+                this.netCallListener.connecterror();
+            }
             this.beCalledInfo = null;
             this.beCalling = false;
         }.bind(this));
     }
 
     private onHandup(){
+        this.netCallListener.handup();
         this.beCalling = false;
         this.beCalledInfo = null;
         this.stopDeviceAudioIn();
@@ -275,10 +320,10 @@ export default class NetCallService{
         }
 
         //其他暂不处理
-        var type = obj.type;
+        let type = obj.type;
         switch (type) {
             case this.Netcall.NETCALL_CONTROL_COMMAND_BUSY:
-            this.netcall.hangup();
+            this.hangup();
             clearTimeout(this.timeoutFlag);
             break;
         }
@@ -329,9 +374,20 @@ export default class NetCallService{
     private onRemoteTrack(){
         this.netcall.startDevice({
             type: this.Netcall.DEVICE_TYPE_AUDIO_OUT_CHAT
-        }).catch(function(err:any) {
+        }).catch((err:any) => {
+            if(this.netCallListener&&this.netCallListener.close){
+                this.netCallListener.close();
+            }
             console.log('播放对方的声音失败')
             console.error(err)
         });
+    }
+
+    public static getInstance(){
+        return this._instance;
+    }
+
+    public static createInstance(name:string,token:string) {
+        return this._instance || (this._instance = new NetCallService(name,token));
     }
 }

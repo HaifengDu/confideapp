@@ -2,36 +2,23 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const request = require("request");
 const crypto = require("crypto");
-const objectHelper_1 = require("./objectHelper");
-const ErrorMsg_1 = require("../model/ErrorMsg");
 const util_1 = require("./util");
-const SERVER_URL = "https://api.netease.im/sms/sendcode.action";
-const { APP_KEY, APP_SECRET, TEMPLATEID } = require("../../config/neteaseconfig.json");
-const CODELEN = "6";
-class MailHelper {
+const objectHelper_1 = require("./objectHelper");
+const { APP_KEY, APP_SECRET } = require("../../config/neteaseconfig.json");
+class NeteaseHelper {
     constructor() {
-        this.maxTime = 5 * 60 * 1000;
     }
-    checkCode(source, checkModel) {
-        if (!source || !source.code || !source.date || !checkModel || !checkModel.code) {
-            return new ErrorMsg_1.default(false, "参数非法");
-        }
-        if (Date.now() > source.date + this.maxTime) {
-            return new ErrorMsg_1.default(false, "验证码过期");
-        }
-        if (source.phone.toString() === checkModel.phone.toString() && source.code.toString() === checkModel.code.toString()) {
-            return new ErrorMsg_1.default(true);
-        }
-        return new ErrorMsg_1.default(false, "验证码错误");
+    static createInstance() {
+        NeteaseHelper.getInstance();
     }
-    getCode(mobile) {
+    getToken(uid) {
         const curTime = Date.now() / 1000;
         const nonce = util_1.createNonceStr();
         const array = [APP_SECRET, nonce, curTime];
         const hashCode = crypto.createHash('sha1');
         const checkSum = hashCode.update(array.join(""), 'utf8').digest('hex');
         return new Promise((resolve, reject) => {
-            request(SERVER_URL, {
+            request(NeteaseHelper.TOKEN_URL, {
                 headers: {
                     AppKey: APP_KEY,
                     Nonce: nonce,
@@ -40,9 +27,7 @@ class MailHelper {
                     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
                 },
                 form: {
-                    templateid: TEMPLATEID,
-                    mobile: mobile,
-                    codeLen: CODELEN
+                    accid: uid.toString()
                 },
                 method: "post"
             }, (err, res) => {
@@ -54,12 +39,12 @@ class MailHelper {
                 if (res.statusCode === 200) {
                     let result = objectHelper_1.default.parseJSON(res.body);
                     if (result) {
-                        let codeobj = {
-                            code: result.obj,
-                            date: Date.now(),
-                            phone: mobile
-                        };
-                        resolve(codeobj);
+                        if (result.code === 200) {
+                            resolve(result.info);
+                        }
+                        else {
+                            reject(result);
+                        }
                     }
                     else {
                         reject({
@@ -77,11 +62,9 @@ class MailHelper {
             });
         });
     }
-    static createInstance() {
-        MailHelper.getInstance();
-    }
     static getInstance() {
         return this._instance || (this._instance = new this());
     }
 }
-exports.default = MailHelper;
+NeteaseHelper.TOKEN_URL = "https://api.netease.im/nimserver/user/create.action";
+exports.default = NeteaseHelper;

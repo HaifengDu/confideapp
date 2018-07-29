@@ -1,45 +1,29 @@
+
 import * as request from 'request';
 import * as crypto from 'crypto';
-import ObjectHelper from './objectHelper';
-import { IMailCode } from '../interface/IMailCode';
-import ErrorMsg from '../model/ErrorMsg';
 import { createNonceStr } from './util';
-const SERVER_URL = "https://api.netease.im/sms/sendcode.action";
+import ObjectHelper from './objectHelper';
+const {APP_KEY,APP_SECRET} = require("../../config/neteaseconfig.json");
+export default class NeteaseHelper {
 
-const {APP_KEY,APP_SECRET,TEMPLATEID} = require("../../config/neteaseconfig.json");
-const CODELEN="6";
-
-export default class MailHelper {
-
-    private static _instance: MailHelper;
-
-    private readonly maxTime = 5*60*1000;
+    private static readonly TOKEN_URL="https://api.netease.im/nimserver/user/create.action";
+    private static _instance: NeteaseHelper;
 
     private constructor() {
     }
 
-    public checkCode(source:IMailCode,checkModel:IMailCode){
-        if(!source||!source.code||!source.date||!checkModel||!checkModel.code){
-            return new ErrorMsg(false,"参数非法");
-        }
-        if(Date.now()>source.date+this.maxTime){
-            return new ErrorMsg(false,"验证码过期");
-        }
-
-        if(source.phone.toString()===checkModel.phone.toString() && source.code.toString()===checkModel.code.toString()){
-            return new ErrorMsg(true);
-        }
-        return new ErrorMsg(false,"验证码错误");
+    static createInstance() {
+        NeteaseHelper.getInstance();
     }
 
-    public getCode(mobile:string){
+    getToken(uid:number){
         const curTime = Date.now()/1000;
         const nonce = createNonceStr();
         const array = [APP_SECRET, nonce, curTime];
         const hashCode = crypto.createHash('sha1');
         const checkSum = hashCode.update(array.join(""), 'utf8').digest('hex');
-        return new Promise<IMailCode>((resolve,reject)=>{
-            request(SERVER_URL,{
+        return new Promise<any>((resolve,reject)=>{
+            request(NeteaseHelper.TOKEN_URL,{
                 headers:{
                     AppKey:APP_KEY,
                     Nonce:nonce,
@@ -48,9 +32,7 @@ export default class MailHelper {
                     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
                 },
                 form:{
-                    templateid:TEMPLATEID,
-                    mobile:mobile,
-                    codeLen:CODELEN
+                    accid:uid.toString()
                 },
                 method:"post"
             },(err,res)=>{
@@ -62,12 +44,11 @@ export default class MailHelper {
                 if(res.statusCode===200){
                     let result = ObjectHelper.parseJSON(res.body);
                     if(result){
-                        let codeobj:IMailCode = {
-                            code:result.obj,
-                            date:Date.now(),
-                            phone:mobile
+                        if(result.code===200){
+                            resolve(result.info);
+                        }else{
+                            reject(result);
                         }
-                        resolve(codeobj);
                     }else{
                         reject({
                             success:false,
@@ -81,11 +62,7 @@ export default class MailHelper {
                     });
                 }
             });
-        })
-    }
-
-    public static createInstance() {
-        MailHelper.getInstance();
+        });
     }
 
     static getInstance() {

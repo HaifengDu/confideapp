@@ -35,9 +35,11 @@ class LogHelper {
         this.orderLogger.error(JSON.stringify(obj));
     }
     append(obj) {
+        this.addDate(obj);
         this.commonLogger.log(JSON.stringify(obj));
     }
     error(obj) {
+        this.addDate(obj);
         this.commonLogger.error(JSON.stringify(obj));
     }
     static createInstance() {

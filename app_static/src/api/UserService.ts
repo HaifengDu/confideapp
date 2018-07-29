@@ -9,7 +9,7 @@ export default class MyService {
 
     /**
      * 根据id获取用户
-     * @param id 
+     * @param id
      */
     public getUser(id:number):AxiosPromise<IResponse<IUser>>{
       return Axios.get("user/byid",{
@@ -68,7 +68,9 @@ export default class MyService {
         ...temp
       });
     }
-
+    /**
+     * 职业等信息修改
+     */
     public updateListenerOther(data:any):AxiosPromise<ErrorMsg>{
       return Axios.post("user/updateOther", data);
     }
@@ -106,6 +108,13 @@ export default class MyService {
      */
     public delfavorite(id:number):AxiosPromise<any>{
       return Axios.get("/user/delfavorite", {params:{lid:id}});
+    }
+
+    /**
+     * 倾听者好评率|已售时长|最新评论等
+     */
+    public getSummaryData(lid:number):AxiosPromise<any>{
+      return Axios.get("/order/getSummaryData", {params:{lid}});
     }
 
     private constructor() {}

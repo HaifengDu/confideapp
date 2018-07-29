@@ -1,6 +1,6 @@
 <template>
     <div style="height:calc(100vh - 58px);background-color:#eee">
-        <div class="info-container" v-if="toRole===1">
+        <div class="info-container" v-if="toRole===1&&showDetail">
           <div class="status">
             {{toUser.nickname}}
             <template v-if="toRole===1">
@@ -15,7 +15,7 @@
             <div class="summary">
               <div class="base">
                 <div class="item">
-                  <div class="num">1234</div>
+                  <div class="num">{{summaryData.stime}}</div>
                   <div class="text">已售时长</div>
                 </div>
                 <div class="item">
@@ -23,13 +23,13 @@
                   <div class="text">好评率</div>
                 </div>
                 <div class="item">
-                  <div class="num">1234</div>
+                  <div class="num">{{summaryData.ucount}}</div>
                   <div class="text">帮助人数</div>
                 </div>
               </div>
               <div class="base">
                 <div class="item single">
-                  <div class="comment" v-if="true">有独创性的人杰</div>
+                  <div class="comment" v-if="!toUser.listener.authstatus">有独创性的人杰</div>
                   <div class="auth" v-else>认证</div>
                 </div>
                 <div class="item single">
@@ -40,7 +40,7 @@
           </div>
         </div>
         <div class="tab">
-          <div class="price" v-if="toRole===1">36元起</div>
+          <div class="price" v-if="toRole===1">{{toUser.listener.minprice}}元起</div>
           <div class="switch">
             <div class="word fa fa-commenting-o" :class="{'active':topChatType==1}" @click="changeTab(EChatType.word)"></div>
             <div class="phone fa fa-phone" :class="{'active':topChatType==2}" @click="changeTab(EChatType.phone)"></div>
@@ -80,6 +80,7 @@
                 <mt-button v-show="chatType===1" type="primary" @click="send">发送</mt-button>
             </div>
         </div>
+        <select-order :toUser="toUser"></select-order>
     </div>
 </template>
 <script lang="ts">
@@ -98,10 +99,15 @@ import { ERole } from '../enum/ERole';
 import { EOrderStatus } from '../enum/order/EOrderStatus';
 import {EChatType} from '../enum/EChatType';
 import {ERecieveStatus} from '../enum/ERecieveStatus';
+import SelectOrder from '@/components/SelectOrder';
 
 @Component({
     components:{
-      UserIcon
+      UserIcon,
+      SelectOrder
+    },
+    methods:{
+
     },
     computed:{
       ...mapGetters({
@@ -122,7 +128,8 @@ export default class Chat extends Vue{
     private topChatType:EChatType = EChatType.word;
     private EChatType:EChatType;
     private ERecieveStatus:ERecieveStatus;
-
+    private summaryData:any;
+    private showDetail:boolean=true;
     follow(){
 
     }
@@ -139,6 +146,7 @@ export default class Chat extends Vue{
             this.order = data.order;
             this.currentRole = data.roles.Current;
             this.toRole = data.roles.To;
+            this.summaryData = data.summaryData||''
             if(listener){
                 this.toUser = listener;
                 this.chatListener = this.biz.joinRoom(this,<number>listener.id);
@@ -164,6 +172,7 @@ export default class Chat extends Vue{
         //获取最近的20条消息
         this.$on(ChatEventContants.vueDefaultRecordEvent,(datas:IOnlyChatRecord[])=>{
             this.msgList = datas.reverse()||[];
+            this.scrollToBottom()
         });
 
         this.$on(ChatEventContants.vueOrderComplete,(order:IOrder)=>{
@@ -240,8 +249,10 @@ export default class Chat extends Vue{
         this.msg = "";
     }
     scrollToBottom(){
-      let scrollContainer = <HTMLDivElement>this.$refs.scrollContainer
-      scrollContainer.scrollTop = scrollContainer.offsetHeight
+      setTimeout(() => {
+        let scrollContainer = <HTMLDivElement>this.$refs.scrollContainer
+        scrollContainer.scrollTop = scrollContainer.offsetHeight
+      }, 100);
     }
     beforeDestroy() {
         if(this.chatListener){

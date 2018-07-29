@@ -1,0 +1,259 @@
+<template>
+    <div style="height:100%;">
+        <div class="container">
+            <div class="header">
+                <div v-if="isListener" style="margin:0 auto;width:50%;">
+                    <div class="tog-btn-box">
+                        <span :class="{'active':isMySale,'positive':!isMySale}" @click="changeType">我售的单</span>
+                        <span :class="{'active':!isMySale,'positive':isMySale}" @click="changeType">我下的单</span>
+                    </div>
+                </div>
+                <div class="wrapper" ref="wrapper">
+                    <ul class="content" style="width:700px;">
+                        <li
+                        style="width:60px;"
+                        v-for="(item,index) in status" 
+                        class="tab" 
+                        :class="{'active-tab':item.active}" 
+                        :key="index"
+                        @click="changeStatus(item.status)">
+                        {{item.name}}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="body">
+                <div class="order-list" ref="orderList">
+                    <ul class="content">
+                        <li
+                        v-for="(item,index) in list" 
+                        class="list" 
+                        :key="index"
+                        @click="toOrderDetail(item.id)">
+                            <p class="title">
+                                <span class="date">{{item.date}}</span>
+                                <span class="status-name" :class="getStatusClass(item.status)">{{item.statusname}}</span>
+                            </p>
+                            <div style="text-align:left;position:relative;">
+                                <img :src="item.src" style="width:40px;vertical-align:bottom;">
+                                <span class="detail">
+                                    <p class="name">{{item.name}}</p>
+                                    <p class="type">{{item.serviceType==1?'文字':'通话'}}服务订单<span style="padding-left:10px;">时长{{item.timecircle}}分钟</span></p>
+                                </span>
+                                <div class="price">
+                                    <u class="icon-type" :class="{'text':item.serviceType==1}"></u>
+                                    <span>￥{{item.price}}</span>
+                                    <i class="arrow"></i>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue';
+import {Component} from 'vue-property-decorator';
+import {EPriceType} from "@/enum/EPriceType";
+import BScroll from 'better-scroll';
+
+@Component
+export default class OrderList extends Vue{
+    private isListener = true;
+    private isMySale = true;
+    private status = [
+        {status:-1,name:'全部',active:true},
+        {status:1,name:'待付款',active:false},
+        {status:2,name:'已付款',active:false},
+        {status:3,name:'已取消',active:false},
+        {status:4,name:'服务中',active:false},
+        {status:5,name:'待评论',active:false},
+        {status:6,name:'已完成',active:false}
+    ]; 
+    private list = [
+        {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+        {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
+    ];
+
+    create(){
+        //TODO:判断当前用户是否是倾听者
+
+    }
+
+    mounted() {
+        this.$nextTick(() => {
+            new BScroll((<any>this).$refs.wrapper, {
+                scrollX: true,
+                scrollY: false,
+                click: true,
+                bounceTime: 500
+            });
+        })
+    }
+
+    changeType(){
+        this.isMySale = !this.isMySale;
+    }
+
+    changeStatus(status:number){
+        this.status.forEach((item:any)=>{
+            if(item.status ==+ status){
+                item.active = true
+            }else{
+                item.active = false;
+            }
+        });
+        //TODO:根据status获取对应的单据
+    }
+
+    private getStatusClass(status:number){
+        const classArray = ['to-be-pay','payed','canceled','service','to-be-evaluate','complete'];
+        return classArray[status - 1];
+    }
+
+    toOrderDetail(id:number){
+        this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
+    }
+
+}
+</script>
+
+<style lang="less" scoped>
+    @import '../../assets/style.less';
+    @orange:rgb(239,146,55);
+    @bgColor:rgb(238,238,238);
+    @border-radius-width:5px;
+    @default-white:#fff;
+    .to-be-pay{color:@orange;}
+    .payed{color:@mainColor;}
+    .canceled{color:#e43937;}
+    .service{color:purple;}
+    .to-be-evaluate{color:#11b7f3;}
+    .complete{color:#333;}
+    .con-bg{
+        background:@bgColor;
+    }
+    *{
+        .f-nm;
+    }
+    .container{
+        height:100%;
+        background:rgb(229,229,229);
+        .p-rl;
+        .header{
+            background:@default-white;
+            .wrapper{
+                margin:10px 0;
+                .content{
+                    width:600px;
+                    .tab{
+                        display: inline-block;
+                        padding:10px 20px;
+                        width:60px;
+                    }
+                }
+            }
+        }
+        .tog-btn-box{
+            height:32px;
+            line-height: 28px;
+            margin-top:3px;
+            font-size:14px;
+            text-align:right;
+            span{
+                display: inline-block;
+                height:30px;
+                width:45%;
+                text-align:center;
+            }
+            &>span:first-child{
+                border-top-left-radius: @border-radius-width;
+                border-bottom-left-radius: @border-radius-width;
+            }
+            &>span:last-child{
+                position: relative;
+                right:5px;
+                border-top-right-radius: @border-radius-width;
+                border-bottom-right-radius: @border-radius-width;
+            }
+            .active{
+                background: @mainColor;
+                color: @default-white;
+                border: 1px solid @mainColor;
+            }
+            .positive{
+                background: @default-white;
+                color: @mainColor;
+                border: 1px solid @mainColor;
+            }
+        }
+    }
+    .body{
+        .order-list{
+            .content{
+                .list{
+                    padding:10px;
+                    margin-bottom:10px;
+                    background: @default-white;
+                    .title{
+                        padding-bottom: 10px;
+                        .date,.status-name{
+                            display:inline-block;
+                            width:49%;
+                        }
+                        .date{
+                            text-align:left;
+                        }
+                        .status-name{
+                            text-align:right;
+                        }
+                    }
+                    .detail{
+                        display:inline-block;
+                        padding-left:10px;
+                        .name{
+                            margin-bottom: 5px;
+                        }
+                        .type{
+                            color:rgb(173,173,173);
+                        }
+                    }
+                    .price{
+                        border:1px solid #eee;
+                        padding:5px 0 5px 15px;
+                        height:22px;
+                        line-height:22px;
+                        .p-ab;
+                        right:-10px;
+                        bottom:5px;
+                        border-top-left-radius: 16px;
+                        border-bottom-left-radius: 16px;
+                        .icon-type,.arrow{
+                            display:inline-block;
+                            width:20px;
+                            height:20px;
+                            background-image: url(../../../static/images/pay/microphone-black.png);  
+                            background-repeat: no-repeat;  
+                            background-size: 100% 100%;
+                            vertical-align: middle;
+                            .p-rl;
+                            top:-2px;
+                        }
+                        .icon-type.text{
+                            background-image: url(../../../static/images/pay/chat-black.png);  
+                        }
+                        .arrow{
+                            background-image: url(../../../static/images/userinfo/arrow-right.png);  
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .active-tab{
+        color:@mainColor;
+        border-bottom:1px solid @mainColor;
+    }
+</style>

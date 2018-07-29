@@ -15,6 +15,7 @@ import ChatService from "../api/ChatService";
 import { EOrderStatus } from "../enum/EOrderStatus";
 const socketWrapper = getSocket();
 const orderService = OrderService.getInstance();
+const userService = MyService.getInstance();
 declare var wx:any;
 
 /**
@@ -353,7 +354,21 @@ export default class ChatManagerBiz{
                     order:data.data
                 }
             });
-        });
+        }).then(data=>{
+          const tempData:any = data;
+          if (data.listener&&data.listener.role === ERole.Listener) {
+            return userService
+              .getSummaryData(<number>data.listener.id)
+              .then(res => {
+                const data = res.data;
+                if(data.success){
+                  tempData.summaryData = data.data;
+                }
+                return tempData;
+              });
+          }
+          return tempData;
+        })
     }
 
     /**

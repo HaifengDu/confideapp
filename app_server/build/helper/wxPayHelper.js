@@ -10,6 +10,10 @@ exports.initConfig = {
     appId: wxconfig.appId,
     mchId: wxconfig.mch_id,
     notifyUrl: `${origin}/pay/payaction`,
+<<<<<<< HEAD
+=======
+    // pfx: fs.readFileSync("<location-of-your-apiclient-cert.p12>")
+>>>>>>> 160422370b4af0913ef05feb28ee470cbc2de3f5
 };
 const payment = new Payment(exports.initConfig);
 class WxPayHelper {

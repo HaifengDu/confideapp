@@ -78,11 +78,11 @@ export default class OrderDetail extends Vue{
     private statuNamesDic = ['待支付','已结束 '];
     private isToBePaid = true;
 
-    create(){
+    mounted() {
         //TODO:根据订单单号获取订单支付状态，更具已支付还是未支付，展示对应的订单详情页面
         const orderid = this.$route.query.orderid;
         console.log(orderid);
-        this.isToBePaid = true;
+        this.isToBePaid = true;        
     }
 
     getServiceTypeIcon(){

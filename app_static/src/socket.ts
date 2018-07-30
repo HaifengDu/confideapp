@@ -12,7 +12,7 @@ export default class SocketWrapper{
     }
 
     private init(){
-        this.socket = io(SocketWrapper.chatUrl);
+        this.socket = io(`${SocketWrapper.chatUrl}?uid=${this.userid}`);
     }
 
     private initEvent(events:ISocketEvent){

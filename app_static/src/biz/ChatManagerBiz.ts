@@ -13,7 +13,6 @@ import { EChatMsgStatus } from "../enum/EChatMsgStatus";
 import _ from "lodash";
 import ChatService from "../api/ChatService";
 import { EOrderStatus } from "../enum/EOrderStatus";
-const socketWrapper = getSocket();
 const orderService = OrderService.getInstance();
 const userService = MyService.getInstance();
 declare var wx:any;
@@ -83,6 +82,7 @@ export class ChatListener{
                 }
             });
         }
+        const socketWrapper = getSocket();
         //NOTE:不能改成this
         ChatListener._VUE.$emit(ChatEventContants.sendEvent,obj);
         //接受消息，更新已读
@@ -113,6 +113,10 @@ export class ChatListener{
         this.chatService = ChatService.getInstance();
     }
 
+    private reconnect = ()=>{
+        this.join(this.uid,this.touid,"");
+    }
+
     /**
      * 加入房间
      * @param uid
@@ -122,6 +126,7 @@ export class ChatListener{
     join(uid:number,lid:number,username:string){
         this.uid = uid;
         this.touid = lid;
+        const socketWrapper = getSocket();
         return new Promise<string>((resolve,reject)=>{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
@@ -134,6 +139,7 @@ export class ChatListener{
                 resolve(roomid);
             });
         }).then(roomid=>{
+            socketWrapper.on("reconnect",this.reconnect);
             this.chatService.getDefaultChatRecords(roomid).then(res=>{
                 const data = res.data;
                 if(data.success&&data.data){
@@ -147,6 +153,7 @@ export class ChatListener{
                     .filter(item=>item.status===EChatMsgStatus.Send&&item.touid===this.uid)
                     .map(item=>item.tokenid);
                     if(tokenids.length){
+                        const socketWrapper = getSocket();
                         //将收到的消息标记为已读
                         socketWrapper.emit(ChatEventContants.readEvent,{
                             tokenid:tokenids,
@@ -246,6 +253,7 @@ export class ChatListener{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
             },ChatListener.MAX_COUNT);
+            const socketWrapper = getSocket();
             socketWrapper.emit(ChatEventContants.sendEvent,chatMsgObj,function(obj:any){
                 chatMsgObj.ismy = true;
                 chatMsgObj.tokenid = obj.tokenid;
@@ -261,17 +269,22 @@ export class ChatListener{
      */
     leave(){
         clearInterval(this.checkOrderFlag);
+        const socketWrapper = getSocket();
         socketWrapper.emit(ChatEventContants.leaveEvent,{
             roomid:this.roomid
         });
     }
 
     addEvent(){
+        const socketWrapper = getSocket();
         socketWrapper.on(ChatEventContants.readEvent,ChatListener.read);
         socketWrapper.on(ChatEventContants.sendEvent,ChatListener.send);
     }
 
     removeEvent(){
+        const socketWrapper = getSocket();
+        
+        socketWrapper.on("reconnect",this.reconnect);
         socketWrapper.remove(ChatEventContants.sendEvent,ChatListener.send);
         socketWrapper.remove(ChatEventContants.readEvent,ChatListener.read)
     }

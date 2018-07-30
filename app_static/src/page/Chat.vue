@@ -47,7 +47,7 @@
           </div>
           <div class="order" v-if="toRole===1">马上下单</div>
         </div>
-        <div class="chat-wrapper" ref="scrollContainer">
+        <div v-show="topChatType===1" class="chat-wrapper" ref="scrollContainer">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
               <template v-if="item.ismy">
                 <div class="msg-status">{{item.status==2?'已读':'已发送'}}</div>
@@ -62,7 +62,7 @@
               </template>
             </div>
         </div>
-        <div class="big-wrapper">
+        <div v-show="topChatType===1" class="big-wrapper">
             <div class="send-wrapper">
                 <mt-button @click="changeType" class="microphone-btn" type="default">
                     <i v-show="chatType===1" class="fa fa-microphone" aria-hidden="true"></i>
@@ -80,7 +80,10 @@
                 <mt-button v-show="chatType===1" type="primary" @click="send">发送</mt-button>
             </div>
         </div>
-        <select-order :toUser="toUser"></select-order>
+        <div v-show="topChatType===2">
+            <net-call :to-user="toUser"></net-call>
+        </div> 
+        <select-order v-show="false" :toUser="toUser"></select-order>
     </div>
 </template>
 <script lang="ts">
@@ -100,11 +103,13 @@ import { EOrderStatus } from '../enum/order/EOrderStatus';
 import {EChatType} from '../enum/EChatType';
 import {ERecieveStatus} from '../enum/ERecieveStatus';
 import SelectOrder from '@/components/SelectOrder';
+import NetCall from "@/components/NetCall"
 
 @Component({
     components:{
       UserIcon,
-      SelectOrder
+      SelectOrder,
+      NetCall
     },
     methods:{
 

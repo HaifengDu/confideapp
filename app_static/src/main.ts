@@ -1,4 +1,3 @@
-import {launchSocket} from './socketLaunch';
 import Axios from "axios";
 import './util/axiosConfig';
 import './util/extend';
@@ -8,23 +7,6 @@ import httpIntercept from "./util/httpIntercept";
 import cacheWraperAxios from "./util/extendAxios";
 httpIntercept(Axios);
 cacheWraperAxios(Axios);
-launchSocket(1111)({
-    connect:function(){
-        console.log("connect");
-    },
-    connection:function(){
-        console.log("conncetion");
-    },
-    error:function(){
-        console.log("error");
-    },
-    connect_error:function(){
-        console.log("connect_error");
-    },
-    connect_timeout:function(){
-        console.log("connect_timeout");
-    }
-});
 declare var wx:any;
 wx.config({
     debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。

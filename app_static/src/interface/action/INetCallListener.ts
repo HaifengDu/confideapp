@@ -6,6 +6,7 @@ export interface INetCallListener{
     accept(obj?:{fromid:number,fromname:string}):void;
     reject(obj?:{fromid:number,fromname:string}):void;
     close?:()=>void;
+    waittimeout():void;
     connecterror?:()=>void;
     handup():void;
 }

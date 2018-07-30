@@ -4,6 +4,7 @@
 export enum ENetCallStatus{
     WaitCall=1,
     Calling,
+    BeCalling,
     Talking
 }
 

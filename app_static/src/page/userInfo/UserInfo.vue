@@ -31,7 +31,7 @@
                 <img src="static/images/userInfo/order.png">
             </div>
             <div class="register">
-                {{user.createdAt.split('T')[0]}}注册
+                {{user.createdAt&&user.createdAt.split('T')[0]}}注册
             </div>
         </div>
         <div class="body">
@@ -91,7 +91,7 @@
             <div class="content">{{tag.desc}}</div>
             <div class="btn" @click="contact">和TA聊聊</div>
         </mt-popup>
-        <message :visible="msgVisible" position="top"></message>
+        <message :visible="msgVisible" :message="message" position="top"></message>
         <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
     </div>
 </template>
@@ -103,6 +103,7 @@ import Message from './Message';
 import { mapActions, mapGetters } from 'vuex';
 import { ERole } from '../../enum/ERole';
 import MyService from "../../api/UserService.ts";
+import { setTimeout } from 'timers';
 const userService = MyService.getInstance();
 
 const SHOW_MSG_TIME = 2000;
@@ -137,6 +138,7 @@ export default class UserInfo extends Vue{
     //是否已关注该用户
     private isFollowed = true;
     private exps:any = [];
+    private message:string = '';
 
     //TODO:测试数据
     
@@ -159,6 +161,10 @@ export default class UserInfo extends Vue{
             }
         });
 
+        //测试消息
+        setTimeout(()=>{
+            this.showMessage('您好');
+        },3000);
     }
 
     initData(data:any){
@@ -243,20 +249,24 @@ export default class UserInfo extends Vue{
     }
 
     order(){
-        console.log('to order');
+        this.$router.push({name:'Chat',params:{uid:(<any>this).user.id}});
     }
 
     toEvaluate(){
         console.log('to evaluate');
     }
 
-    contact(){
+    showMessage(msg:string){
         this.popupVisible&&(this.popupVisible = false);
+        this.message = msg;
         this.msgVisible = true;
         setTimeout(()=>{
             this.msgVisible = false;
         },SHOW_MSG_TIME);
-        console.log('to talk');
+    }   
+
+    contact(){
+        this.$router.push({name:'Chat',params:{uid:(<any>this).user.id}});
     }
 }
 </script>

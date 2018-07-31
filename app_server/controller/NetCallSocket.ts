@@ -7,7 +7,8 @@ class NetCallEventConstant{
     public static readonly reject = `${eventkey_prefix}reject`;
     public static readonly close = `${eventkey_prefix}close`;
     public static readonly accept = `${eventkey_prefix}accept`;
-    public static readonly hangup = `${eventkey_prefix}hangup`
+    public static readonly hangup = `${eventkey_prefix}hangup`;
+    public static readonly busy = `${eventkey_prefix}busy`;
 }
 export class NetCallSocket{
     constructor(private socket:SocketIO.Socket){
@@ -19,6 +20,7 @@ export class NetCallSocket{
         this.socket.on(NetCallEventConstant.accept,this.accept.bind(this));
         this.socket.on(NetCallEventConstant.reject,this.reject.bind(this));
         this.socket.on(NetCallEventConstant.hangup,this.hangup.bind(this));
+        this.socket.on(NetCallEventConstant.busy,this.busy.bind(this));
     }
 
     private calling(obj:{
@@ -87,6 +89,17 @@ export class NetCallSocket{
             ackFn();
         }
     }
+
+    private busy(obj:{
+        touid:number
+    },ackFn:(...args:any[])=>void){
+        const toSocket = socketMananger.get(obj.touid);
+        if(toSocket){
+            toSocket.emit(NetCallEventConstant.busy);
+            ackFn();
+        }
+    }
+
     static getInstance(socket:SocketIO.Socket){
         return new NetCallSocket(socket);
     }

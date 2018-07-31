@@ -30,5 +30,5 @@ const Order = mysqlSeq_1.default.define('order', {
 }, {
     freezeTableName: true
 });
-Order.sync({ force: true });
+// Order.sync({force:true});
 exports.default = Order;

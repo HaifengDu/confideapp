@@ -7,6 +7,7 @@ const querystring_1 = require("querystring");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const objectHelper_1 = require("./objectHelper");
 const util_1 = require("./util");
+const cacheHelper_1 = require("./cacheHelper");
 const wxconfig = require("../../config/wxconfig.json");
 const appid = wxconfig.appid;
 const appsecret = wxconfig.appsecret;
@@ -41,6 +42,45 @@ class WeixinHelper {
             });
         });
     }
+    /**
+     * 基础接口的token
+     */
+    static getBaseAccessToken() {
+        return cacheHelper_1.getCacheData("GET_TOKE_CACHE", () => {
+            return new Promise((resolve, reject) => {
+                request(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${appsecret}`, function (err, response) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    if (response.statusCode != 200) {
+                        reject({ success: false, message: "返回状态:" + response.statusCode });
+                        return;
+                    }
+                    let body = response.body;
+                    let isError = false;
+                    try {
+                        body = JSON.parse(response.body);
+                    }
+                    catch (e) {
+                        isError = true;
+                    }
+                    if (isError) {
+                        reject({ success: false, message: "解析出错" });
+                        return;
+                    }
+                    if (body.access_token) {
+                        resolve(body);
+                    }
+                    else {
+                        reject(new ErrorMsg_1.default(false, body.errmsg));
+                    }
+                });
+            });
+        }, {
+            stdTTL: 2 * 60 * 60
+        });
+    }
     static getUserinfoByCode(code) {
         return this.getAccesstoken(code).then(res => this.getUserinfo(res.access_token, res.openid));
     }
@@ -73,6 +113,8 @@ class WeixinHelper {
                     reject({ success: false, message: "解析出错" });
                     return;
                 }
+                const userModel = body;
+                userModel.accesstoken = accesstoken;
                 resolve(body);
             });
         });
@@ -162,22 +204,24 @@ class WeixinHelper {
             });
         });
     }
-    static getJsConfig(access_token, url) {
+    static getJsConfig(url) {
         if (!url) {
             return Promise.reject(new ErrorMsg_1.default(false, "url为空"));
         }
-        return this.getJsTicket(access_token).then(data => {
-            const obj = objectHelper_1.default.parseJSON(data);
-            const timestamp = Date.now();
-            const nonce_str = util_1.createNonceStr();
-            const signStr = `jsapi_ticket=${obj.ticket}&noncestr=${nonce_str}&timestamp=${timestamp}&url=${url}`;
-            console.log(signStr);
-            const sign = crypto.createHash('sha1').update(signStr).digest('hex');
-            return Promise.resolve({
-                appid: appid,
-                nonceStr: nonce_str,
-                timestamp: timestamp,
-                signature: sign
+        return this.getBaseAccessToken().then(res => {
+            return this.getJsTicket(res.access_token).then(data => {
+                const obj = objectHelper_1.default.parseJSON(data);
+                const timestamp = Date.now();
+                const nonce_str = util_1.createNonceStr();
+                const signStr = `jsapi_ticket=${obj.ticket}&noncestr=${nonce_str}&timestamp=${timestamp}&url=${url}`;
+                console.log(signStr);
+                const sign = crypto.createHash('sha1').update(signStr).digest('hex');
+                return Promise.resolve({
+                    appid: appid,
+                    nonceStr: nonce_str,
+                    timestamp: timestamp,
+                    signature: sign
+                });
             });
         });
     }

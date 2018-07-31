@@ -2,9 +2,9 @@ import * as NodeCache from "node-cache";
 import * as Bluebird from "bluebird";
 import ObjectHelper from "./objectHelper";
 const myCache = new NodeCache();
-export function getCacheData<T>(key: string, cb:()=>Bluebird<T>, options:NodeCache.Options): Bluebird<T> {
+export function getCacheData<T>(key: string, cb:()=>Bluebird<T>|Promise<T>, options:NodeCache.Options): Promise<T> {
     //优先使用MemCache
-    return new Bluebird<T>(function(resolve,reject){
+    return new Promise<T>(function(resolve,reject){
         try{
             myCache.get(key,function(err,data){
                 if(err||!data){
@@ -19,7 +19,7 @@ export function getCacheData<T>(key: string, cb:()=>Bluebird<T>, options:NodeCac
     }).then(res=>{
         if(!res){
             let promise = cb();
-            promise.then(res=>{
+            (<Promise<T>>promise).then(res=>{
                 myCache.set(key,ObjectHelper.serialize(res));
             });
             return promise;

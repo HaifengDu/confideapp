@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const NodeCache = require("node-cache");
-const Bluebird = require("bluebird");
 const objectHelper_1 = require("./objectHelper");
 const myCache = new NodeCache();
 function getCacheData(key, cb, options) {
     //优先使用MemCache
-    return new Bluebird(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         try {
             myCache.get(key, function (err, data) {
                 if (err || !data) {

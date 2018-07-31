@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Payment = require('wechat-pay').Payment;
-const fs = require("fs");
 const wxconfig = require("../../config/wxconfig.json");
 const globalconfig = require("../../config/globalconfig.json");
 const origin = globalconfig.origin;
 exports.initConfig = {
     partnerKey: wxconfig.appkey,
-    appId: wxconfig.appId,
+    appId: wxconfig.appid,
     mchId: wxconfig.mch_id,
     notifyUrl: `${origin}/pay/payaction`,
 };
@@ -25,8 +24,8 @@ class WxPayHelper {
             body: '千寻倾听支付',
             attach: '千寻倾听支付',
             out_trade_no: orderNo,
-            total_fee: total_fee,
-            spbill_create_ip: ip,
+            total_fee: total_fee * 100,
+            spbill_create_ip: '172.5.20.6',
             openid: openid,
             trade_type: 'JSAPI'
         };

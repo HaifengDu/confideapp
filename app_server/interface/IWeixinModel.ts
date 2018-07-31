@@ -7,5 +7,6 @@ export interface IWeixinModel{
 	province: string,
 	country: string,
 	headimgurl: string,
-	privilege: Array<any>
+	privilege: Array<any>,
+	accesstoken:string
 }

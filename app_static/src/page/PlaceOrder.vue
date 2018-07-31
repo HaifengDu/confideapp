@@ -42,6 +42,7 @@ import { MessageBox } from 'mint-ui';
 const orderService = OrderService.getInstance();
 const calculate = CalucateService.Factory();
 declare var WeixinJSBridge:any;
+declare var wx:any;
 @Component
 export default class PlaceOrder extends Vue{
     private balance:number=0.15;
@@ -85,9 +86,10 @@ export default class PlaceOrder extends Vue{
             comment:this.comment
         }
         orderService.placeOrder(params).then((res:any)=>{
-            if(res.data.success){
-                this.order = res.data.data;
-                const jsParam = res.data.jsParam;
+            const data = res.data;
+            if(data.success){
+                this.order = data.data.order;
+                const jsParam = data.data.jsParam;
                 //TODO:调用微信支付接口
                 if (typeof WeixinJSBridge == "undefined"){
                     if( document.addEventListener ){
@@ -106,27 +108,44 @@ export default class PlaceOrder extends Vue{
     }
 
     private onBridgeReady(params:any){
-        WeixinJSBridge.invoke(
-            'getBrandWCPayRequest', params,
-            (res:any)=>{
-                if(res.err_msg == "get_brand_wcpay_request:ok" ){
-                    alert("get_brand_wcpay_request:ok");
-                    MessageBox.confirm('是否完成支付?','提示',{
-                        showCancelButton:true,
-                        closeOnClickModal:false,
-                        confirmButtonText:'已完成支付',
-                        cancelButtonText:'稍后支付'
-                    }).then((res:any) => {
-                        this.toOrderDetail(this.order.id);
-                    },(cancel:any)=>{
-                        this.toOrderDetail(this.order.id);
-                    });
-                }else{
-                    MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
-                        this.toOrderDetail(this.order.id);
-                    });
-                }
-        }); 
+        wx.chooseWXPay({
+            timestamp: params.timestamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+            nonceStr: params.nonceStr, // 支付签名随机串，不长于 32 位
+            package: params.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=\*\*\*）
+            signType: params.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: params.paySign, // 支付签名
+            success: function (res:any) {
+            // 支付成功后的回调函数
+                console.log(res);
+            },
+            fail:function(){
+                console.log(arguments);
+            },
+            cancel:function(){
+                console.log(arguments);
+            }
+        });
+        // WeixinJSBridge.invoke(
+        //     'getBrandWCPayRequest', params,
+        //     (res:any)=>{
+        //         if(res.err_msg == "get_brand_wcpay_request:ok" ){
+        //             alert("get_brand_wcpay_request:ok");
+        //             MessageBox.confirm('是否完成支付?','提示',{
+        //                 showCancelButton:true,
+        //                 closeOnClickModal:false,
+        //                 confirmButtonText:'已完成支付',
+        //                 cancelButtonText:'稍后支付'
+        //             }).then((res:any) => {
+        //                 this.toOrderDetail(this.order.id);
+        //             },(cancel:any)=>{
+        //                 this.toOrderDetail(this.order.id);
+        //             });
+        //         }else{
+        //             MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
+        //                 this.toOrderDetail(this.order.id);
+        //             });
+        //         }
+        // }); 
     }
 
     private toOrderDetail(id:number){

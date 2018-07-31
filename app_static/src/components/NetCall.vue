@@ -1,21 +1,29 @@
 <template>
-    <div>
+    <div style="height:100%;   background: #616161; width: 100%;color: #d1d1d1;">
         <div v-show="status===ENetCallStatus.WaitCall">
-            <div @click="makeCall">打电话</div> 
-            <div>千寻不会记录您的任何倾诉内容，请放心使用</div>
+            <div @click="makeCall" class="phone-btn-wrapper">
+                <div class="phone-btn">
+                    <i class="fa fa-phone" aria-hidden="true"></i>
+                </div>
+                <div>千寻不会记录您的任何倾诉内容，请放心使用</div>
+            </div> 
         </div>
-        <div v-show="status===ENetCallStatus.BeCalling">
-            <div>等待通话</div>
-            <div>
-                <button @click="accept">接受</button>
-                <button @click="reject">拒绝</button>
+        <div class="call-container" v-show="status===ENetCallStatus.BeCalling">
+            <img :src="toUser.headimgurl" class="call-img"/>
+            <div class="call-nick-name">{{toUser.nickname}}</div>
+            <div class="call-word">邀请音频通话...</div>
+            <div class="call-handle-btn">
+                <mt-button @click="accept" type="primary">接受</mt-button>
+                <mt-button @click="reject" type="danger">拒绝</mt-button>
             </div>
         </div>
-        <div v-show="status===ENetCallStatus.Calling||status===ENetCallStatus.Talking">
-            <div v-show="status===ENetCallStatus.Calling">等待接听中</div>
-            <div v-show="status===ENetCallStatus.Talking">通话中</div>
-            <div>
-                <button @click="hangup">挂断</button>
+        <div class="call-container" v-show="status===ENetCallStatus.Calling||status===ENetCallStatus.Talking">
+            <img :src="toUser.headimgurl" class="call-img"/>
+            <div class="call-nick-name">{{toUser.nickname}}</div>
+            <div class="call-word" v-show="status===ENetCallStatus.Calling">等待对方接听……</div>
+            <div class="call-word" v-show="status===ENetCallStatus.Talking">通话中</div>
+            <div class="call-handle-btn">
+                <mt-button @click="hangup" type="danger">挂断</mt-button>
             </div>
         </div>
     </div>
@@ -136,6 +144,53 @@ export default class NetCall extends Vue{
 </script>
 
 <style lang="less" scoped>
+@import "../assets/common.less";
+.phone-btn-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    flex-direction: column;
+    width: 100%;
+    top: 40%;
+}
+.phone-btn{
+    margin:3px;
+    height: 6rem;
+    width: 6rem;
+    line-height: 6rem;
+    background: @mainColor;
+    color: #fff;
+    font-size: 4rem;
+    border-radius: 50%;
+}
+.call-img{
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+}
+.call-word{
+    margin:5px;
+}
 
+.call-handle-btn{
+    position: fixed;
+    bottom:10rem;
+    width:100%;
+    button{
+        padding:0 20px;
+        margin:0 10px;
+    }
+}
+
+.call-container{
+    padding-top:30%;
+}
+
+.call-nick-name{
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+}
 </style>
 

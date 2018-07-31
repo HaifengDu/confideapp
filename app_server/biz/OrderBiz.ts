@@ -4,6 +4,9 @@ import _ = require("lodash");
 import { EPriceType } from "../enum/EPriceType";
 import CalucateService from "../helper/CalucateService";
 import { EOrderSource } from "../enum/order/EOrderSource";
+import Order from "../model/Order";
+import { Op } from "sequelize";
+import EOrderStatus from "../enum/order/EOrderStatus";
 
 export default class OrderBizService {
 
@@ -80,6 +83,25 @@ export default class OrderBizService {
         }
 
         return new ErrorMsg(true);
+    }
+
+    /**
+     * 是否存在可服务订单
+     * @param uid 
+     * @param lid 
+     */
+    hasOrder(uid:number,lid:number){
+        return Order.find({
+            where:{
+                uid,
+                lid,
+                [Op.or]:[{
+                    status:EOrderStatus.Paid
+                },{
+                    status:EOrderStatus.Servicing
+                }]
+            }
+        });
     }
 
     static getInstance() {

@@ -1,5 +1,5 @@
 <template>
-    <div style="height:calc(100vh - 58px);background-color:#eee">
+    <div class="chat-container" :class="{'chat-on-container':topChatType===1}">
         <div class="info-container" v-if="toRole===1&&showDetail">
           <div class="status">
             {{toUser.nickname}}
@@ -80,9 +80,7 @@
                 <mt-button v-show="chatType===1" type="primary" @click="send">发送</mt-button>
             </div>
         </div>
-        <div v-show="topChatType===2">
-            <net-call :to-user="toUser"></net-call>
-        </div> 
+        <net-call v-show="topChatType===2" :to-user="toUser"></net-call>
         <select-order v-show="false" :toUser="toUser"></select-order>
     </div>
 </template>
@@ -277,6 +275,13 @@ export default class Chat extends Vue{
 
 <style lang="less" scoped>
 @import "../assets/common.less";
+.chat-container{
+    height:100vh;
+}
+.chat-on-container{
+    height:~'calc(100vh - 58px)';
+    background-color:#eee;
+}
 .info-container{
   height:10rem;
   background:#fff;

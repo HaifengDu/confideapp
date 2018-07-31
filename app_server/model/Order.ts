@@ -30,6 +30,6 @@ const Order = sequelize.define<IOrder,IOrder>('order',{
     freezeTableName: true
 });
 
-Order.sync({force:true});
+// Order.sync({force:true});
 
 export default Order;

@@ -15,7 +15,7 @@ export default class OrderService {
             return Promise.reject(new ErrorMsg(false,"参数不正确"));
         }
         //TODO:后期去掉这里的userid
-        return Axios.post("/order?userid=3", {data:JSON.stringify(params)});
+        return Axios.post("/order?userid=4", {data:JSON.stringify(params)});
     }
 
     public checkHasOrder(uid:number,lid:number):AxiosPromise<IResponse<IOrder>>{

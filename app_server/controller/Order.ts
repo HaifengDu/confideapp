@@ -5,7 +5,7 @@ import UserService from "./User";
 import ErrorMsg from "../model/ErrorMsg";
 import { ERole } from "../enum/ERole";
 // import { wxPay, recieve } from "../helper/wxPay";
-import WxPayHelper from "../helper/WxPayHelper";
+import WxPayHelper from "../helper/wxPayHelper";
 import { EOrderStatus } from "../enum/order/EOrderStatus";
 import Order from "../model/Order";
 import { EPayType } from "../enum/order/EPayType";
@@ -79,6 +79,15 @@ export default class OrderService {
                     return Bluebird.reject(new ErrorMsg(false,"用户余额不足"));
                 }
             }
+            //都是倾听者验证是否存在反向订单，如果有，则还有未完成订单
+            if(datas[0].role===ERole.Listener&&datas[1].role === ERole.Listener){
+                this.biz.hasOrder(orderParam.lid,orderParam.uid).then(order=>{
+                    if(order){
+                        return Bluebird.reject(new ErrorMsg(false,"当前有未完成订单，请查看我的订单"));
+                    }
+                    return Bluebird.resolve(datas);
+                });
+            }
             return Bluebird.resolve(datas);
         }).then(datas=>{
             const user = datas[0];
@@ -102,7 +111,7 @@ export default class OrderService {
                     body:err.message,
                     message:"支付获取参数失败"
                 });
-                return err;
+                return Promise.reject(err);
             });
         });
         
@@ -120,14 +129,31 @@ export default class OrderService {
             if(order.uid!==userid){
                 return Bluebird.reject(new ErrorMsg(false,"用户id与订单用户不一致"));
             }
-            return this.userService.find(order.uid).then(user=>{
-                if(!user){
+            const findCurrentUser = this.userService.find(order.uid);
+            const findListener = this.userService.find(order.lid);
+            return Bluebird.all([findCurrentUser,findListener]).then(datas=>{
+                if(!datas[0]){
                     return Bluebird.reject(new ErrorMsg(false,"用户不存在"));
                 }
+                if(!datas[1]){
+                    return Bluebird.reject(new ErrorMsg(false,"倾听者不存在"));
+                }
                 return Bluebird.resolve({
-                    user,
+                    user:datas[0],
+                    listener:datas[1],
                     order
                 })
+            }).then(orderModel=>{
+                //都是倾听者验证是否存在已经反向订单，如果有，则还有未完成订单
+                if(orderModel.user.role===ERole.Listener){
+                    this.biz.hasOrder(orderModel.order.lid,orderModel.order.uid).then(order=>{
+                        if(order){
+                            return Bluebird.reject(new ErrorMsg(false,"当前有未完成订单，请查看我的订单"));
+                        }
+                        return Bluebird.resolve(orderModel);
+                    });
+                }
+                return orderModel;
             }).then(orderModel=>{
                 const user = orderModel.user;
                 const order = orderModel.order;
@@ -172,7 +198,8 @@ export default class OrderService {
                 },{
                     status:EOrderStatus.Servicing
                 }]
-            }
+            },
+            order: [['ctime']]
         });
     }
 
@@ -319,7 +346,7 @@ export default class OrderService {
                 body:result,
                 message:err.message
             });
-            return err;
+            return Promise.reject(err);
         });
     }
 
@@ -443,10 +470,10 @@ export default class OrderService {
             }
         }).then((data:any)=>{
             if(!data.ucount){
-                data.ucount=0;
+                data.setDataValue('ucount',0);
             }
             if(!data.stime){
-                data.stime = 0;
+                data.setDataValue('stime',0);
             }
             return <{ucount:number,stime:number}>data;
         });

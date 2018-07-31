@@ -10,6 +10,7 @@ NetCallEventConstant.reject = `${eventkey_prefix}reject`;
 NetCallEventConstant.close = `${eventkey_prefix}close`;
 NetCallEventConstant.accept = `${eventkey_prefix}accept`;
 NetCallEventConstant.hangup = `${eventkey_prefix}hangup`;
+NetCallEventConstant.busy = `${eventkey_prefix}busy`;
 class NetCallSocket {
     constructor(socket) {
         this.socket = socket;
@@ -20,6 +21,7 @@ class NetCallSocket {
         this.socket.on(NetCallEventConstant.accept, this.accept.bind(this));
         this.socket.on(NetCallEventConstant.reject, this.reject.bind(this));
         this.socket.on(NetCallEventConstant.hangup, this.hangup.bind(this));
+        this.socket.on(NetCallEventConstant.busy, this.busy.bind(this));
     }
     calling(obj, ackFn) {
         const toSocket = socketMananger.get(obj.touid);
@@ -69,6 +71,13 @@ class NetCallSocket {
             toSocket.emit(NetCallEventConstant.hangup, {
                 fromid: obj.uid, fromname: ""
             });
+            ackFn();
+        }
+    }
+    busy(obj, ackFn) {
+        const toSocket = socketMananger.get(obj.touid);
+        if (toSocket) {
+            toSocket.emit(NetCallEventConstant.busy);
             ackFn();
         }
     }

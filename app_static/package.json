@@ -16,6 +16,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "@types/howler": "^2.0.5",
     "@types/lodash": "^4.14.104",
     "@types/socket.io": "^1.4.36",
     "@types/socket.io-client": "^1.4.32",
@@ -23,6 +24,7 @@
     "babel-polyfill": "^6.26.0",
     "better-scroll": "^1.12.5",
     "element-ui": "^2.4.4",
+    "howler": "^2.0.14",
     "less": "^2.7.3",
     "less-loader": "^4.0.5",
     "mint-ui": "^2.2.13",

@@ -7,13 +7,13 @@ import ErrorMsg from '../model/ErrorMsg';
 import BaseDataService from '../api/BaseDataService';
 import {launchSocket} from '../socketLaunch';
 const myService = My.getInstance();
-const baseDataService = BaseDataService.getInstance()
+const baseDataService = BaseDataService.getInstance();
 
 export const getUserInfo:Action<IRootState,IRootState> = ({commit},WXid:string)=>{
     return myService.getUserInfobyWXid(WXid).then(res => {
         const data = res.data;
         if(data.success&&data.data){
-            
+            const accesstoken = (<any>data.data).accesstoken;
             launchSocket(<number>data.data.id)({
                 connect:function(){
                     console.log("connect");

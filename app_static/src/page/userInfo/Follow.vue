@@ -71,7 +71,7 @@ export default class Follow extends Vue{
                 if(this.pager.getPage().page==1){
                     this.followDatas = data;
                 }else{
-                    this.followDatas.concat(data);
+                    this.followDatas = this.followDatas.concat(data);
                 }
                 this.pager.setNext();
             }

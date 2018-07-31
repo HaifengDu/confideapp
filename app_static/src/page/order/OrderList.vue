@@ -21,8 +21,13 @@
                     </ul>
                 </div>
             </div>
-            <div class="body">
-                <div class="order-list" ref="orderList">
+            <div class="body" ref="body">
+                <div 
+                    v-infinite-scroll="loadMore"
+                    infinite-scroll-disabled="loading"
+                    infinite-scroll-distance="10"
+                    class="order-list" 
+                    ref="orderList">
                     <ul class="content">
                         <li
                         v-for="(item,index) in list"
@@ -58,28 +63,27 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
 import BScroll from 'better-scroll';
+import Pager from "@/helper/Pager.ts"; 
 
 @Component
 export default class OrderList extends Vue{
+    private pager = new Pager().setLimit(20);
     private isListener = true;
     private isMySale = true;
     private status = [
-        {status:-1,name:'全部',active:true},
-        {status:1,name:'待付款',active:false},
+        {status:-1,name:'全部',active:false},
+        {status:1,name:'待付款',active:true},
         {status:2,name:'已付款',active:false},
         {status:3,name:'已取消',active:false},
         {status:4,name:'服务中',active:false},
         {status:5,name:'待评论',active:false},
         {status:6,name:'已完成',active:false}
     ];
-    private list = [
-        {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
-        {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
-    ];
+    private currentStatus:number = 1;
+    private list:any = [];
 
     create(){
         //TODO:判断当前用户是否是倾听者
-
     }
 
     mounted() {
@@ -90,7 +94,8 @@ export default class OrderList extends Vue{
                 click: true,
                 bounceTime: 500
             });
-        })
+        });
+        this.loadData();
     }
 
     changeType(){
@@ -105,7 +110,11 @@ export default class OrderList extends Vue{
                 item.active = false;
             }
         });
+        this.currentStatus = status;
         //TODO:根据status获取对应的单据
+        this.pager.clear().setLimit(20);
+        this.loadData();
+        (<any>this.$refs.body).scrollTop = 0;
     }
 
     private getStatusClass(status:number){
@@ -115,6 +124,38 @@ export default class OrderList extends Vue{
 
     toOrderDetail(id:number){
         this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
+    }
+
+    loadData(){
+        //TODO:获取订单数据
+        let params = {
+            status:this.currentStatus
+        }
+        Object.assign(params,this.pager);
+        let result = [
+            {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:3,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:4,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:5,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:6,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:7,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:8,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:9,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:10,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
+        ];
+        if(this.pager.getPage().page === 1){
+            this.list = result;
+        }else{
+            this.list = this.list.concat(result);
+        }
+        this.pager.setNext();
+    }
+
+    loadMore(){
+        //TODO:获取数据
+        if(this.pager.getPage().page===1)return;
+        this.loadData();
     }
 
 }
@@ -140,12 +181,14 @@ export default class OrderList extends Vue{
     }
     .container{
         height:100%;
+        overflow:hidden;
         background:rgb(229,229,229);
         .p-rl;
         .header{
             background:@default-white;
             .wrapper{
                 margin:10px 0;
+                overflow: hidden;
                 .content{
                     width:600px;
                     .tab{
@@ -191,6 +234,8 @@ export default class OrderList extends Vue{
         }
     }
     .body{
+        height:~'calc(100vh - 92px)';
+        overflow-y:auto;
         .order-list{
             .content{
                 .list{

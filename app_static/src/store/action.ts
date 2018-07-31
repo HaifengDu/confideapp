@@ -57,7 +57,7 @@ export const bindUser:Action<IRootState,IRootState> = ({commit},code:string)=>{
                     console.log("connect_timeout");
                 }
             });
-            commit(mutation_type.UPDATE_USER, res.data);
+            commit(mutation_type.UPDATE_USER, data.data);
         }
         return res;
     });

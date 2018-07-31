@@ -34,16 +34,6 @@ app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS,PUT,DELETE');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'x-requested-with,content-type,Rsa-word,proxy-cookie');
-
-    if (req.url && req.url.startsWith("/dist")) {
-        const maxAge = 30 * 60 * 24 * 365 * 1000;
-        res.setHeader('Cache-Control', `max-age=${maxAge},public`);
-        let expires = new Date();
-        expires.setTime(expires.getTime() + 100 * 1000);
-        res.setHeader('Expires', expires.toUTCString());
-    } else {
-        res.setHeader('Cache-Control', 'no-store');
-    }
     if (req.method === "OPTIONS") {
         res.json({ success: true });
         res.end();
@@ -73,7 +63,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
 }));
-app.use('/static', express.static(path.join(__dirname, 'static'), { fallthrough: true }));
+app.use('/static', express.static(path.join(__dirname, 'static/static'), { fallthrough: true }));
 app.use('/files', express.static(path.join(__dirname, 'files'), { fallthrough: true }));
 
 app.use('/', index);

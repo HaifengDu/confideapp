@@ -21,7 +21,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="body">
+            <div class="body" ref="body">
                 <div 
                     v-infinite-scroll="loadMore"
                     infinite-scroll-disabled="loading"
@@ -114,6 +114,7 @@ export default class OrderList extends Vue{
         //TODO:根据status获取对应的单据
         this.pager.clear().setLimit(20);
         this.loadData();
+        (<any>this.$refs.body).scrollTop = 0;
     }
 
     private getStatusClass(status:number){
@@ -131,7 +132,6 @@ export default class OrderList extends Vue{
             status:this.currentStatus
         }
         Object.assign(params,this.pager);
-        console.log(params);
         let result = [
             {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
             {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},

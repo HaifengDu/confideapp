@@ -200,7 +200,8 @@ export default class UserInfo extends Vue{
     }
 
     getUserAge(birthday:string){
-        return new Date().getFullYear() - new Date(birthday).getFullYear();
+        const age = new Date().getFullYear() - new Date(birthday).getFullYear();
+        return isNaN(age)?18:age;
     }
 
     checkFollow(id:number){

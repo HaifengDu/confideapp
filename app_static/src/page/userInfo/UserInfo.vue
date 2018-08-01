@@ -42,11 +42,11 @@
                         <p class="content">起步价(元)</p>
                     </div>
                     <div>
-                        <p class="count">{{helpNum}}</p>
+                        <p class="count">{{summaryData.ucount}}</p>
                         <p class="content">帮助人数</p>
                     </div>
                     <div>
-                        <p class="count">{{saledHours}}</p>
+                        <p class="count">{{summaryData.stime}}</p>
                         <p class="content">已售时长(时)</p>
                     </div>
                 </div>
@@ -100,7 +100,6 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import Message from './Message';
-import { mapActions, mapGetters } from 'vuex';
 import { ERole } from '../../enum/ERole';
 import MyService from "../../api/UserService.ts";
 import { setTimeout } from 'timers';
@@ -108,16 +107,6 @@ const userService = MyService.getInstance();
 
 const SHOW_MSG_TIME = 2000;
 @Component({
-    methods:{
-        ...mapActions({
-            getUserInfo:'getUserInfo'
-        })
-    },
-    computed:{
-        ...mapGetters({
-            user:'user'
-        })
-    },
     components:{
         "message":Message
     }
@@ -125,8 +114,7 @@ const SHOW_MSG_TIME = 2000;
 export default class UserInfo extends Vue{
     private weixinid = '';
     private stepPrice = 0;
-    private helpNum = 1;
-    private saledHours = 0.3;
+    private summaryData:any = {};
     
     private goodEvaRate = '100%';
     private evaluateNum = 1;
@@ -139,6 +127,7 @@ export default class UserInfo extends Vue{
     private isFollowed = true;
     private exps:any = [];
     private message:string = '';
+    private user:any = {};
 
     //TODO:测试数据
     
@@ -149,11 +138,13 @@ export default class UserInfo extends Vue{
     private msgVisible = false;
     private tag:any = {};
 
-    private concernSrc = 'static/images/userInfo/add.png';
+    private concernSrc = '/static/images/userInfo/add.png';
     private tags:any = [];
     created(){
-        this.weixinid = (<any>this).$route.query.weixinid||'oRtVK06i1JN_GkUA5NPk7pXzOJ3s';
-        (<any>this).getUserInfo(this.weixinid).then((res:any)=>{
+        // oRtVK06i1JN_GkUA5NPk7pXzOJ3s
+
+        //通过uid获取用户信息
+        userService.getUser(parseInt(this.$route.params.uid)||3).then((res:any)=>{
             if(res.data.success){
                 this.initData(res.data.data);
             }else{
@@ -162,13 +153,14 @@ export default class UserInfo extends Vue{
         });
 
         //测试消息
-        setTimeout(()=>{
-            this.showMessage('您好');
-        },3000);
+        // setTimeout(()=>{
+        //     this.showMessage('您好');
+        // },3000);
     }
 
     initData(data:any){
         this.isListener = data.role === ERole.Listener;
+        this.user = data;
         if(this.isListener){
             let listener = data.listener;
             //我的标签部分
@@ -193,15 +185,24 @@ export default class UserInfo extends Vue{
             this.exps = exps;
             //起步价
             this.stepPrice = listener.minprice||0;
+            this.getSummaryData(parseInt(this.$route.params.uid)||3);
         }
         //简介
         this.resume = data.resume;
         this.checkFollow(data.id);
     }
 
-    getUserAge(birthday:string){
+    private getUserAge(birthday:string){
         const age = new Date().getFullYear() - new Date(birthday).getFullYear();
         return isNaN(age)?18:age;
+    }
+
+    private getSummaryData(uid:number){
+        userService.getSummaryData(uid).then((res:any)=>{
+            if(res.data.success){
+                this.summaryData = res.data.data;
+            }
+        });
     }
 
     checkFollow(id:number){

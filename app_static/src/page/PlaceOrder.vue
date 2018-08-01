@@ -23,7 +23,7 @@
             
             <div class="lisence">
                 <p>确认支付代表同意<span class="text">《千寻倾听平台倾诉者协议》</span></p>
-                <p>还需支付<span class="total">￥{{getTotal()}}</span></p>
+                <p>还需支付<span class="total">￥{{payprice}}</span></p>
             </div>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="paymoney">确认支付</mt-button>
@@ -36,9 +36,11 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
+import {EOrderSource} from "@/enum/EOrderSource";
 import OrderService from "@/api/OrderService.ts";
 import CalucateService from "@/helper/CalucateService.ts";
 import { MessageBox } from 'mint-ui';
+import { Indicator } from 'mint-ui';
 const orderService = OrderService.getInstance();
 const calculate = CalucateService.Factory();
 declare var WeixinJSBridge:any;
@@ -46,7 +48,8 @@ declare var wx:any;
 @Component
 export default class PlaceOrder extends Vue{
     private balance:number=0.15;
-    private total:number = 9.9;
+    private total:number = 0.16;
+    private payprice:number = 0;
     private timecircle = 15;
     private isUserBalance = true;
     private comment = '';
@@ -58,16 +61,23 @@ export default class PlaceOrder extends Vue{
         //TODO:获取调起微信支付接口所需的签名等数据
     }
 
+    mounted(){
+        this.payprice = this.getTotal();
+    }
+
     getServiceTypeIcon(){
-        return this.serviceType==EPriceType.EWord?'static/images/pay/chat.png':'static/images/pay/microphone.png'
+        return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
     }
 
     getTotal(){
+        if(this.isUserBalance&&calculate.numSub(this.total,this.balance)<=0){
+            return 0;
+        }
         return this.isUserBalance?calculate.numSub(this.total,this.balance):this.total;
     }
 
     paymoney(){
-        this.toOrderDetail(1);
+        // this.toOrderDetail(1);
         /*
         *  1.先生成订单
            2.调用微信支付接口，同时弹出支付完成确认弹窗
@@ -78,13 +88,14 @@ export default class PlaceOrder extends Vue{
             lid:2,         //倾听者id
             payprice:this.getTotal(),  //待支付
             totalprice:this.total,   //合计
-            balance:this.isUserBalance?this.balance:0,  //使用的余额
-            source:1,
+            balance:this.isUserBalance?this.balance<=this.total?this.balance:this.total:0,  //使用的余额
+            source:EOrderSource.Auto,
             servicetype:this.serviceType,      //服务类型
             payservicetime:this.timecircle,    //服务时长
             uprice:this.uprice,
             comment:this.comment
         }
+        Indicator.open();
         orderService.placeOrder(params).then((res:any)=>{
             const data = res.data;
             if(data.success){
@@ -104,6 +115,9 @@ export default class PlaceOrder extends Vue{
             }else{
                 this.$toast(res.data.message);
             }
+            Indicator.close();
+        },(err:any)=>{
+            Indicator.close();
         });
     }
 
@@ -117,11 +131,25 @@ export default class PlaceOrder extends Vue{
             success: function (res:any) {
             // 支付成功后的回调函数
                 console.log(res);
+                MessageBox.confirm('是否完成支付?','提示',{
+                    showCancelButton:true,
+                    closeOnClickModal:false,
+                    confirmButtonText:'已完成支付',
+                    cancelButtonText:'稍后支付'
+                }).then((res:any) => {
+                    this.toOrderDetail(this.order.id);
+                },(cancel:any)=>{
+                    this.toOrderDetail(this.order.id);
+                });
             },
             fail:function(){
                 console.log(arguments);
+                MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
+                    this.toOrderDetail(this.order.id);
+                });
             },
             cancel:function(){
+                //TODO:取消支付需要做什么
                 console.log(arguments);
             }
         });

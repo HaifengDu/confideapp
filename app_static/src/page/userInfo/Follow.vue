@@ -95,15 +95,14 @@ export default class Follow extends Vue{
     }
 
     toUserInfo(item:any){
-        if(item.weixinid){
-            (<any>this).$router.push({path:'/userInfo',query:{weixinid:item.weixinid}});
+        if(item.id){
+            this.$router.push({name:'userInfo',params:{uid:item.id}});
         }
     }
 
     followMe(item:any){
         if(!item.record){
             userService.addfavorite(item.id).then((res:any)=>{
-                console.log(res);
                 if(res.data.success){
                     item.record = true;
                 }

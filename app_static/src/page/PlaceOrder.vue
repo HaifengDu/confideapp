@@ -106,6 +106,7 @@ export default class PlaceOrder extends Vue{
             uprice:this.uprice,
             comment:this.comment
         }
+        //TODO:如果payprice为0，则不需要调微信支付
         Indicator.open();
         orderService.placeOrder(params).then((res:any)=>{
             const data = res.data;

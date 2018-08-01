@@ -2,16 +2,16 @@
     <div class="container">
         <div class="header">
             <div class="image">
-                <img :src="user.headimgurl"/>
+                <img :src="curUser.headimgurl"/>
             </div>
-            <div class="nickname">{{user.nickname}}</div>
+            <div class="nickname">{{curUser.nickname}}</div>
             <div class="user-lab">北京市</div>
             <div class="user-lab">
-                <span v-if="isListener&&user.listener">{{user.listener?user.listener.familyname:''}} | </span>
-                <span v-if="isListener&&user.listener">{{user.listener?user.listener.eduname:''}} | </span> 
-                <span v-if="isListener&&user.listener">{{user.listener?user.listener.jobname:''}} | </span>
-                <span>{{user.sex==1?'女':'男'}} | </span>
-                <span>{{getUserAge(user.birthday)}}</span>
+                <span v-if="isListener&&curUser.listener">{{curUser.listener?curUser.listener.familyname:''}} | </span>
+                <span v-if="isListener&&curUser.listener">{{curUser.listener?curUser.listener.eduname:''}} | </span> 
+                <span v-if="isListener&&curUser.listener">{{curUser.listener?curUser.listener.jobname:''}} | </span>
+                <span>{{curUser.sex==1?'女':'男'}} | </span>
+                <span>{{getUserAge(curUser.birthday)}}</span>
             </div>
             <div v-if="!isSelf" class="option">
                 <div class="action">
@@ -31,7 +31,7 @@
                 <img src="static/images/userInfo/order.png">
             </div>
             <div class="register">
-                {{user.createdAt&&user.createdAt.split('T')[0]}}注册
+                {{curUser.createdAt&&curUser.createdAt.split('T')[0]}}注册
             </div>
         </div>
         <div class="body">
@@ -92,7 +92,7 @@
             <div class="btn" @click="contact">和TA聊聊</div>
         </mt-popup>
         <message :visible="msgVisible" :message="message" position="top"></message>
-        <mt-button @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
+        <mt-button v-if="!isSelf" @click="contact" type="primary" size="large" class="contact-btn">进入聊天</mt-button>
     </div>
 </template>
 
@@ -103,12 +103,18 @@ import Message from './Message';
 import { ERole } from '../../enum/ERole';
 import MyService from "../../api/UserService.ts";
 import { setTimeout } from 'timers';
+import { mapGetters } from 'vuex';
 const userService = MyService.getInstance();
 
 const SHOW_MSG_TIME = 2000;
 @Component({
     components:{
         "message":Message
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
     }
 })
 export default class UserInfo extends Vue{
@@ -127,7 +133,7 @@ export default class UserInfo extends Vue{
     private isFollowed = true;
     private exps:any = [];
     private message:string = '';
-    private user:any = {};
+    private curUser:any = {};
 
     //TODO:测试数据
     
@@ -144,7 +150,7 @@ export default class UserInfo extends Vue{
         // ozOuJ1qTKu7bKUu9yBDXinnz9v8M
 
         //通过uid获取用户信息
-        userService.getUser(parseInt(this.$route.params.uid)||3).then((res:any)=>{
+        userService.getUser(parseInt(this.$route.params.uid)).then((res:any)=>{
             if(res.data.success){
                 this.initData(res.data.data);
             }else{
@@ -152,15 +158,24 @@ export default class UserInfo extends Vue{
             }
         });
 
+        //通过vuex中的user判断当前登录用户与当前浏览页面的用户是否一致
+        if((<any>this).user&&(<any>this).user.id){
+            this.isSelf = (<any>this).user.id === parseInt(this.$route.params.uid);
+        }
+
         //测试消息
         // setTimeout(()=>{
         //     this.showMessage('您好');
         // },3000);
     }
 
+    mounted() {
+        
+    }
+
     initData(data:any){
         this.isListener = data.role === ERole.Listener;
-        this.user = data;
+        this.curUser = data;
         if(this.isListener){
             let listener = data.listener;
             //我的标签部分
@@ -185,7 +200,7 @@ export default class UserInfo extends Vue{
             this.exps = exps;
             //起步价
             this.stepPrice = listener.minprice||0;
-            this.getSummaryData(parseInt(this.$route.params.uid)||3);
+            this.getSummaryData(parseInt(this.$route.params.uid));
         }
         //简介
         this.resume = data.resume;
@@ -220,12 +235,8 @@ export default class UserInfo extends Vue{
     }
 
     addConcern(){
-        const user = (<any>this).user;
-        if(!user){
-            return;
-        }
         if(!this.isFollowed){
-            userService.addfavorite(user.id).then((res:any)=>{
+            userService.addfavorite(this.curUser.id).then((res:any)=>{
                 console.log(res);
                 if(res.data.success){
                     this.isFollowed = !this.isFollowed;
@@ -234,7 +245,7 @@ export default class UserInfo extends Vue{
             });
         }else{
             //取消关注
-            userService.delfavorite(user.id).then((res:any)=>{
+            userService.delfavorite(this.curUser.id).then((res:any)=>{
                 console.log(res);
                 if(res.data.success){
                     this.isFollowed = !this.isFollowed;

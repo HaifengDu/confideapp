@@ -7,8 +7,8 @@
                 </div>
                 <div class="detail">
                     <div class="time">
-                        <p>通话服务</p>
-                        <p class="timecircle">时长{{timecircle}}分钟</p>
+                        <p>{{serviceType==2?'通话':'文字'}}服务</p>
+                        <p class="timecircle">{{timecircle}}{{serviceType==2?'分钟':'条'}}</p>
                     </div>
                     <div class="total">
                         <p>合计</p>
@@ -23,7 +23,7 @@
             
             <div class="lisence">
                 <p>确认支付代表同意<span class="text">《千寻倾听平台倾诉者协议》</span></p>
-                <p>还需支付<span class="total">￥{{payprice}}</span></p>
+                <p>还需支付<span class="total">￥{{isUserBalance?payprice:total}}</span></p>
             </div>
             <div class="button-box">
                 <mt-button size="normal" type="primary" @click.native="paymoney">确认支付</mt-button>
@@ -39,30 +39,42 @@ import {EPriceType} from "@/enum/EPriceType";
 import {EOrderSource} from "@/enum/EOrderSource";
 import OrderService from "@/api/OrderService.ts";
 import CalucateService from "@/helper/CalucateService.ts";
+import { mapGetters } from 'vuex';
 import { MessageBox } from 'mint-ui';
 import { Indicator } from 'mint-ui';
 const orderService = OrderService.getInstance();
 const calculate = CalucateService.Factory();
 declare var WeixinJSBridge:any;
 declare var wx:any;
-@Component
+@Component({
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
+})
 export default class PlaceOrder extends Vue{
-    private balance:number=0.15;
-    private total:number = 0.16;
-    private payprice:number = 0;
-    private timecircle = 15;
+    private balance:number=0;  //余额数
+    private total:number = 0.01;   //TODO:总计钱数
+    private payprice:number = 0; //TODO:待支付钱数
+    private timecircle = 15;    //TODO:通话服务时长或文字服务条数
     private isUserBalance = true;
     private comment = '';
-    private serviceType = 2;   //服务类型，文字服务，还是通话服务
+    private serviceType = 2;   //TODO:服务类型，文字服务，还是通话服务
     private uprice = 0.66;  //TODO:单价
     private order:any = null;
 
-    create(){
-        //TODO:获取调起微信支付接口所需的签名等数据
+    created() {
+        if((<any>this).user&&(<any>this).user.money){
+            this.balance = (<any>this).user.money;
+        }   
     }
 
     mounted(){
-        this.payprice = this.getTotal();
+        const payprice = this.getTotal();
+        if(!isNaN(payprice)){
+            this.payprice = payprice;
+        }
     }
 
     getServiceTypeIcon(){
@@ -77,7 +89,6 @@ export default class PlaceOrder extends Vue{
     }
 
     paymoney(){
-        // this.toOrderDetail(1);
         /*
         *  1.先生成订单
            2.调用微信支付接口，同时弹出支付完成确认弹窗
@@ -85,13 +96,13 @@ export default class PlaceOrder extends Vue{
            4.点支付完成向后台发送订单号，点稍后支付跳转到订单详情页面
         */
         const params = {
-            lid:2,         //倾听者id
+            lid:2,         //TODO:倾听者id
             payprice:this.getTotal(),  //待支付
             totalprice:this.total,   //合计
             balance:this.isUserBalance?this.balance<=this.total?this.balance:this.total:0,  //使用的余额
             source:EOrderSource.Auto,
             servicetype:this.serviceType,      //服务类型
-            payservicetime:this.timecircle,    //服务时长
+            payservicetime:this.timecircle,    //通话服务时长或文字服务条数
             uprice:this.uprice,
             comment:this.comment
         }
@@ -101,7 +112,6 @@ export default class PlaceOrder extends Vue{
             if(data.success){
                 this.order = data.data.order;
                 const jsParam = data.data.jsParam;
-                //TODO:调用微信支付接口
                 if (typeof WeixinJSBridge == "undefined"){
                     if( document.addEventListener ){
                         document.addEventListener('WeixinJSBridgeReady', this.onBridgeReady, false);

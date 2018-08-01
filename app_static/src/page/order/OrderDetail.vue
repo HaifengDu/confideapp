@@ -86,7 +86,7 @@ export default class OrderDetail extends Vue{
     }
 
     getServiceTypeIcon(){
-        return this.serviceType==EPriceType.EWord?'static/images/pay/chat.png':'static/images/pay/microphone.png'
+        return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
     }
 
     cancelOrder(){

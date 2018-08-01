@@ -141,7 +141,7 @@ export default class UserInfo extends Vue{
     private concernSrc = '/static/images/userInfo/add.png';
     private tags:any = [];
     created(){
-        // oRtVK06i1JN_GkUA5NPk7pXzOJ3s
+        // ozOuJ1qTKu7bKUu9yBDXinnz9v8M
 
         //通过uid获取用户信息
         userService.getUser(parseInt(this.$route.params.uid)||3).then((res:any)=>{

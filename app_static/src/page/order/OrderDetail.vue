@@ -58,8 +58,8 @@
                 </div>
             </div>
             <div class="button-box">
-                <mt-button size="normal" type="default" @click.native="cancelOrder">取消订单</mt-button>
-                <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder">支付订单</mt-button>
+                <mt-button size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
+                <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder(item.id)">支付订单</mt-button>
             </div>
         </div>
     </div>
@@ -69,6 +69,8 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
+import OrderService from "../../api/OrderService.ts";
+const orderService = OrderService.getInstance();
 @Component
 export default class OrderDetail extends Vue{
     private serviceName = '通话服务';
@@ -89,12 +91,14 @@ export default class OrderDetail extends Vue{
         return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
     }
 
-    cancelOrder(){
+    cancelOrder(id:number){
         //TODO:取消订单,然后跳回到上一页面
     }
 
-    payOrder(){
-        //TODO:支付订单
+    payOrder(id:number){
+        orderService.pay(id).then((res:any)=>{
+            console.log(res);
+        });
     }
 
 }

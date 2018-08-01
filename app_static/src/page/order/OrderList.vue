@@ -9,7 +9,7 @@
                     </div>
                 </div>
                 <div class="wrapper" ref="wrapper">
-                    <ul class="content" style="width:700px;">
+                    <ul class="content" style="width:600px;">
                         <li
                         style="width:60px;"
                         v-for="(item,index) in status"
@@ -50,6 +50,10 @@
                                     <i class="arrow"></i>
                                 </div>
                             </div>
+                            <div class="btn-box">
+                                <mt-button style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
+                                <mt-button style="margin-right:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="toOrderDetail(item.id)">支付订单</mt-button>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -62,16 +66,25 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
+import { ERole } from '../../enum/ERole';
 import BScroll from 'better-scroll';
 import Pager from "@/helper/Pager.ts"; 
+import { mapGetters } from 'vuex';
+import OrderService from "../../api/OrderService.ts";
+const orderService = OrderService.getInstance();
 
-@Component
+@Component({
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
+})
 export default class OrderList extends Vue{
     private pager = new Pager().setLimit(20);
-    private isListener = true;
+    private isListener = false;
     private isMySale = true;
     private status = [
-        {status:-1,name:'全部',active:false},
         {status:1,name:'待付款',active:true},
         {status:2,name:'已付款',active:false},
         {status:3,name:'已取消',active:false},
@@ -83,7 +96,9 @@ export default class OrderList extends Vue{
     private list:any = [];
 
     create(){
-        //TODO:判断当前用户是否是倾听者
+        if((<any>this).user&&(<any>this).user.role){
+            this.isListener = (<any>this).user.role === ERole.Listener;
+        }
     }
 
     mounted() {
@@ -126,12 +141,19 @@ export default class OrderList extends Vue{
         this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
     }
 
+    cancelOrder(id:number){
+        //TODO:取消订单,然后跳回到上一页面
+    }
+
     loadData(){
         //TODO:获取订单数据
         let params = {
             status:this.currentStatus
         }
         Object.assign(params,this.pager);
+        // orderService.getOrderList(params).then((res:any)=>{
+        //     console.log(res);
+        // });
         let result = [
             {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
             {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
@@ -291,6 +313,22 @@ export default class OrderList extends Vue{
                         }
                         .arrow{
                             background-image: url(../../../static/images/userInfo/arrow-right.png);
+                        }
+                    }
+                    .btn-box{
+                        .m-width;
+                        width: 100%;
+                        text-align:right;
+                        padding:10px 20px 0 20px;
+                        margin-top:10px;
+                        margin-left:-10px;
+                        border-top:1px solid #eee;
+                        button{
+                            min-width: 80px;
+                            padding:0 12px;
+                            .mint-button-text{
+                                font-size:16px;
+                            }
                         }
                     }
                 }

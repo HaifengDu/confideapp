@@ -14,24 +14,12 @@
             </mt-cell>
             <mt-cell title="最低服务数量" class="cell-con" v-if="priceData.available">
                 <div class="price-wrapper">
-                    <input class="entry" type="number" min="15" v-model="priceData.timecircle"/>条
+                    <input class="entry" type="number" min="5" v-model="priceData.timecircle"/>条
                 </div>
             </mt-cell>
             <mt-cell title="起步价" class="cell-con" value="9.9元" v-if="priceData.available">
                 
             </mt-cell>
-            <!-- <div v-for="(item,index) in priceDatas" :key="index">
-                <mt-cell :title="titles[item.timecircle-1]" class="cell-con">
-                    <mt-switch v-model="item.available"></mt-switch>
-                </mt-cell>
-                <mt-cell title="价格" class="cell-con" v-if="item.available">
-                    <div class="price-wrapper">
-                        <span>设定价</span>
-                        <input class="entry" type="number" min="5" max="100" v-model="item.price"/>元
-                        <p class="tax-price">显示价(含税)：{{calPriceWithTax(item.price)}}元</p>
-                    </div>
-                </mt-cell>
-            </div> -->
             <div class="reminder">
                 <p>温馨提示：</p>
                 <p>1、文字服务为即时服务，订单将在倾诉者下单后开始计时，为保证服务质量，请您做好即时服务准备。</p>
@@ -72,82 +60,16 @@ const listenerService = ListenerService.getInstance();
     }
 })
 export default class TextService extends Vue{
-    // private priceDatas:any = [];
-    // private titles = ['15分钟文字服务','30分钟文字服务','45分钟文字服务','60分钟文字服务'];
     private priceData:any = {};
     created(){
         if((<any>this).user.pricesettings){
             let priceData = (<any>this).user.pricesettings.find((price:any)=>price.type==EPriceType.EWord);
-            // prices.forEach((item:any)=>{
-            //     let tempData = Object.assign({},item);
-            //     tempData.available = tempData.status==EPriceStatus.Enable;
-            //     this.priceDatas.push(tempData);
-            // });
             if(priceData){
                 priceData.available = priceData.status==EPriceStatus.Enable;
                 this.priceData = Object.assign({},priceData);
             }
         }
     }
-
-    // pricesCheck(prices:any){
-    //     let result = {success:true,msg:''}
-    //     for(let i=0;i<prices.length;i++){
-    //         if(isNaN(prices[i].price)){
-    //             result.success = false;
-    //             result.msg = '请输入数字';
-    //             break;
-    //         }
-    //         if(prices[i].timecircle === EPriceCircle.Fifteen && (prices[i].price<5||prices[i].price>100)){
-    //             result.success = false;
-    //             result.msg = '15分钟文字服务价格需大于等于5小于等于100';
-    //             break;
-    //         }
-    //         if(prices[i].timecircle === EPriceCircle.Thirty && (prices[i].price<5||prices[i].price>200)){
-    //             result.success = false;
-    //             result.msg = '30分钟文字服务价格需大于等于5小于等于200';
-    //             break;
-    //         }
-    //         if(prices[i].timecircle === EPriceCircle.FortyFive && (prices[i].price<5||prices[i].price>300)){
-    //             result.success = false;
-    //             result.msg = '45分钟文字服务价格需大于等于5小于等于300';
-    //             break;
-    //         }
-    //         if(prices[i].timecircle === EPriceCircle.Sixty && (prices[i].price<5||prices[i].price>400)){
-    //             result.success = false;
-    //             result.msg = '60分钟文字服务价格需大于等于5小于等于400';
-    //             break;
-    //         }
-    //     }
-    //     return result;
-    // }
-
-    // save(){
-    //     let prices:any = [];
-    //     this.priceDatas.forEach((price:any)=>{
-    //         prices.push({
-    //             id:price.id,
-    //             type:price.type,
-    //             status:price.available?EPriceStatus.Enable:EPriceStatus.Disable,
-    //             timecircle:price.timecircle,
-    //             price:parseFloat(price.price)
-    //         });
-    //     });
-    //     const result = this.pricesCheck(prices);
-    //     if(!result.success){
-    //         this.$toast(result.msg);
-    //         return;
-    //     }
-    //     listenerService.updatePrice({prices:JSON.stringify(prices),type:EPriceType.EWord}).then((res:any)=>{
-    //         if(res.data.success){
-    //             this.$toast('保存成功');
-    //             (<any>this).setPrices(prices);
-    //             this.$router.back();
-    //         }else{
-    //             this.$toast(res.data.message);
-    //         }
-    //     });
-    // }
 
     checkPrice(price:any){
         if(isNaN(price.price)){
@@ -162,16 +84,16 @@ export default class TextService extends Vue{
                 msg : '最低服务数量必须是数字'
             };
         }
-        if(price.price<0.6||price.price>20){
+        if(price.price<0.1||price.price>20){
             return {
                 success : false,
-                msg : '文字服务价格需大于等于0.6/条小于等于20/条'
+                msg : '文字服务价格需大于等于0.1/条小于等于20/条'
             };
         }
-        if(price.timecircle<15){
+        if(price.timecircle<=5){
             return {
                 success : false,
-                msg : '最低服务数量需大于10条'
+                msg : '最低服务数量需大于5条'
             };
         }
         return {success:true,msg:''};

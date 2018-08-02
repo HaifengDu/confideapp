@@ -11,7 +11,7 @@
                     </div>
                     <div class="detail">
                         <div class="status">
-                            <p class="status-text">{{statuNamesDic[status]}}</p>
+                            <p class="status-text">{{statuNamesDic[order.status]}}</p>
                             <p class="text">订单状态</p>
                         </div>
                         <div class="total">
@@ -69,9 +69,17 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
+import {EOrderStatus} from "@/enum/EOrderStatus";
+import {mapGetters} from "vuex";
 import OrderService from "../../api/OrderService.ts";
 const orderService = OrderService.getInstance();
-@Component
+@Component({
+    computed:{
+        ...mapGetters({
+            order:'order'
+        })
+    }
+})
 export default class OrderDetail extends Vue{
     private serviceName = '通话服务';
     private status = 1;
@@ -81,10 +89,9 @@ export default class OrderDetail extends Vue{
     private isToBePaid = true;
 
     mounted() {
-        //TODO:根据订单单号获取订单支付状态，更具已支付还是未支付，展示对应的订单详情页面
-        const orderid = this.$route.query.orderid;
-        console.log(orderid);
-        this.isToBePaid = true;        
+        if((<any>this).order){
+            this.isToBePaid = (<any>this).order.status === EOrderStatus.Awaiting_Payment;        
+        }
     }
 
     getServiceTypeIcon(){
@@ -97,6 +104,7 @@ export default class OrderDetail extends Vue{
 
     payOrder(id:number){
         orderService.pay(id).then((res:any)=>{
+            //TODO:支付成功，跳转到聊天页面？
             console.log(res);
         });
     }

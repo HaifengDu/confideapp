@@ -8,7 +8,7 @@
             <mt-cell title="价格" class="cell-con" v-if="priceData.available">
                 <div class="price-wrapper">
                     <span>设定价</span>
-                    <input class="entry" type="number" min="0.6" max="20" v-model="priceData.price"/>元/条
+                    <input class="entry" type="number" min="0.05" max="20" v-model="priceData.price"/>元/条
                     <p class="tax-price">显示价(含税)：{{priceData.price | getTaxPrice}}元/条</p>
                 </div>
             </mt-cell>
@@ -17,7 +17,7 @@
                     <input class="entry" type="number" min="5" v-model="priceData.timecircle"/>条
                 </div>
             </mt-cell>
-            <mt-cell title="起步价" class="cell-con" value="9.9元" v-if="priceData.available">
+            <mt-cell title="起步价" class="cell-con" :value="priceData.price * priceData.timecircle" v-if="priceData.available">
                 
             </mt-cell>
             <div class="reminder">
@@ -84,10 +84,10 @@ export default class TextService extends Vue{
                 msg : '最低服务数量必须是数字'
             };
         }
-        if(price.price<0.1||price.price>20){
+        if(price.price<0.05||price.price>20){
             return {
                 success : false,
-                msg : '文字服务价格需大于等于0.1/条小于等于20/条'
+                msg : '文字服务价格需大于等于0.05/条小于等于20/条'
             };
         }
         if(price.timecircle<=5){

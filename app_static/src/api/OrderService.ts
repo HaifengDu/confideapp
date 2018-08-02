@@ -74,7 +74,7 @@ export default class OrderService {
     }  
 
     /**
-     * 支付订单
+     * 支付订单   支付待支付的单子，不需要创建订单，直接支付
      */
     public pay(orderid:number):AxiosPromise<IResponse<IOrder>> {
         return Axios.post("/order/pay",{

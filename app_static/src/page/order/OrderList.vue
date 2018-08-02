@@ -33,7 +33,7 @@
                         v-for="(item,index) in list"
                         class="list"
                         :key="index"
-                        @click="toOrderDetail(item.id)">
+                        @click="toOrderDetail(item)">
                             <p class="title">
                                 <span class="date">{{item.date}}</span>
                                 <span class="status-name" :class="getStatusClass(item.status)">{{item.statusname}}</span>
@@ -52,7 +52,7 @@
                             </div>
                             <div class="btn-box">
                                 <mt-button style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
-                                <mt-button style="margin-right:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="toOrderDetail(item.id)">支付订单</mt-button>
+                                <mt-button style="margin-right:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="toOrderDetail(item)">支付订单</mt-button>
                             </div>
                         </li>
                     </ul>
@@ -69,11 +69,16 @@ import {EPriceType} from "@/enum/EPriceType";
 import { ERole } from '../../enum/ERole';
 import BScroll from 'better-scroll';
 import Pager from "@/helper/Pager.ts"; 
-import { mapGetters } from 'vuex';
+import { mapGetters,mapActions } from 'vuex';
 import OrderService from "../../api/OrderService.ts";
 const orderService = OrderService.getInstance();
 
 @Component({
+    methods:{
+        ...mapActions({
+            setOrder:'setOrder'
+        })
+    },
     computed:{
         ...mapGetters({
             user:'user'
@@ -137,8 +142,9 @@ export default class OrderList extends Vue{
         return classArray[status - 1];
     }
 
-    toOrderDetail(id:number){
-        this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
+    toOrderDetail(order:any){
+        (<any>this).setOrder(order);
+        this.$router.push({path:'/orderDetail',query:{orderid:String(order.id)}});
     }
 
     cancelOrder(id:number){
@@ -146,7 +152,7 @@ export default class OrderList extends Vue{
     }
 
     loadData(){
-        //TODO:获取订单数据
+        //TODO:从store中获取订单数据
         let params = {
             status:this.currentStatus
         }

@@ -9,7 +9,7 @@
                 <div class="price-wrapper">
                     <span>设定价</span>
                     <input class="entry" type="number" min="0.6" max="20" v-model="priceData.price"/>元
-                    <p class="tax-price">显示价(含税)：{{calPriceWithTax(priceData.price)}}元</p>
+                    <p class="tax-price">显示价(含税)：{{priceData.price | getTaxPrice}}元</p>
                 </div>
             </mt-cell>
             <mt-cell title="最低服务时长" class="cell-con" v-if="priceData.available">
@@ -50,6 +50,11 @@ const listenerService = ListenerService.getInstance();
         ...mapGetters({
             user:'user'
         })
+    },
+    filters: {
+        getTaxPrice:(price:number)=>{
+            return (price*(1+0.066)).toFixed(2);
+        }
     }
 })
 export default class CallService extends Vue{
@@ -65,10 +70,6 @@ export default class CallService extends Vue{
             }
             
         }
-    }
-
-    calPriceWithTax(price:number){
-        return (price*(1+0.066)).toFixed(2);
     }
 
     checkPrice(price:any){

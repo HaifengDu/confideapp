@@ -93,7 +93,7 @@ const router = new Router({
       component: Tags
     },
     {
-      path: "/userInfo",
+      path: "/userInfo/:uid",
       name: "UserInfo",
       component: UserInfo
     },

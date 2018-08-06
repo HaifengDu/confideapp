@@ -5,16 +5,18 @@ import * as actions from "./actions";
 import IRootState from '../../interface/IRootState';
 export const store:Module<IOrderState,IRootState> = {
     state:{
-
+        order:{}
     },
     getters:{
-
+        order:state=>state.order
     },
     actions:{
         ...actions
     },
     mutations:{
-
+        [Mtype.UPDATE_ORDER](state,order){
+            state.order = order
+        }
     }
 };
 

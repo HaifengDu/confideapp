@@ -56,6 +56,32 @@ export default class OrderService {
         });
     }   
 
+    /**
+     * 获取订单列表
+     * @param params 
+     */
+    public getOrderList(params:any):AxiosPromise<IResponse<IOrder>>{
+        return Axios.get("/order/getOrderList",{params:params});
+    }
+
+    /**
+     * 退款
+     */
+    public refound(orderid:number):AxiosPromise<IResponse<IOrder>> {
+        return Axios.post("/order/refound",{
+            orderid:orderid
+        });
+    }  
+
+    /**
+     * 支付订单   支付待支付的单子，不需要创建订单，直接支付
+     */
+    public pay(orderid:number):AxiosPromise<IResponse<IOrder>> {
+        return Axios.post("/order/pay",{
+            orderid:orderid
+        });
+    } 
+
     private constructor() {}
 
     public static getInstance() {

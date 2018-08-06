@@ -45,7 +45,7 @@
             <div class="word fa fa-commenting-o" :class="{'active':topChatType==1}" @click="changeTab(EChatType.word)"></div>
             <div class="phone fa fa-phone" :class="{'active':topChatType==2}" @click="changeTab(EChatType.phone)"></div>
           </div>
-          <div class="order" v-if="toRole===1">马上下单</div>
+          <div class="order" v-if="toRole===1" @click="orderRightNow">马上下单</div>
         </div>
         <div class="chat-wrapper" ref="scrollContainer">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
@@ -80,7 +80,7 @@
                 <mt-button v-show="chatType===1" type="primary" @click="send">发送</mt-button>
             </div>
         </div>
-        <select-order :toUser="toUser"></select-order>
+        <select-order :toUser="toUser" v-if="orderSelectShow"></select-order>
     </div>
 </template>
 <script lang="ts">
@@ -129,7 +129,8 @@ export default class Chat extends Vue{
     private EChatType:EChatType;
     private ERecieveStatus:ERecieveStatus;
     private summaryData:any;
-    private showDetail:boolean=true;
+    private showDetail:boolean = true;
+    private orderSelectShow:boolean = false;
     follow(){
 
     }
@@ -253,6 +254,9 @@ export default class Chat extends Vue{
         let scrollContainer = <HTMLDivElement>this.$refs.scrollContainer
         scrollContainer.scrollTop = scrollContainer.offsetHeight
       }, 100);
+    }
+    orderRightNow(){
+      this.orderSelectShow = true
     }
     beforeDestroy() {
         if(this.chatListener){

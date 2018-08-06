@@ -11,21 +11,23 @@
         <div class="item" :class="{'active':curTab==2}" @click="changeTab(2)">通话</div>
         <div class="item" :class="{'active':curTab==1}" @click="changeTab(1)">文字</div>
       </div>
-      <div class="list">
+      <div class="list" v-if="curTab==2">
         <div class="name">单价</div>
-        <div class="price">{{phonePrice.taxprice}}/分钟</div>
+        <div class="price">{{list.phone.taxprice}}/分钟</div>
       </div>
       <div class="list">
         <div class="name">时长</div>
         <div class="price">
-         <el-input-number v-model="base" :step="15*curStep" size="mini" :min="15" :max="720" @change="watchChange"></el-input-number>
-          分钟</div>
+          <el-input-number v-if="curTab==1" v-model="base" :step="15" size="mini" :min="min" :max="max" @change="watchChange"></el-input-number>
+          <el-input-number v-else v-model="phonebase" :step="15" size="mini" :min="15" :max="720"></el-input-number>
+          分钟
+        </div>
       </div>
       <div class="tip">该订单为{{curTab==1?'文字':'通话'}}订单，将以{{curTab==1?'文字':'通话'}}形式进行服务。</div>
     </div>
     <div class="bottom">
-      <div class="total">合计:<span class="orange">￥9.90</span></div>
-      <div class="button">确认下单</div>
+      <div class="total">合计:<span class="orange">￥{{curTab==1?wordtotal:phonebase*list.phone.taxprice}}</span></div>
+      <div class="button" @click="preOrder">确认下单</div>
     </div>
   </div>
 </div>
@@ -38,9 +40,18 @@ import UserIcon from '@/components/UserIcon';
 import EChatType from '../enum/EChatType';
 import { EPriceStatus } from '../enum/EPriceStatus';
 import { EPriceType } from '../enum/EPriceType';
+import { IPriceSetting } from '../interface/model/IPriceSetting';
+import { IUser } from '../interface/model/IUser';
+import { mapActions } from 'vuex';
+import { INoop } from '../util/methods';
 @Component({
   components:{
     UserIcon
+  },
+  methods:{
+    ...mapActions({
+      updatePreOrder:"order/updatePreOrder"
+    })
   }
 })
 export default class SelectOrder extends Vue {
@@ -48,39 +59,73 @@ export default class SelectOrder extends Vue {
     type:Object,
     default:""
   })
-  private toUser:any;
-  private wordTime:any[] = [];
-  private phonePrice:any = {};
+  private toUser:IUser;
   private curTab:EChatType = 2;
+  private list:{
+    word:IPriceSetting[],
+    phone:IPriceSetting
+  }= {word:[],phone:{}}
   private base = 15;
-  private curStep:any = null;
-  private wordPriceStepIndex = 0;/*计算步长  当前index*/
-  changeTab(tab:EChatType){
-    (<any>this.curTab) = tab
-  }
-  watchChange(e:any){
-    console.error(e)
-  }
-  compStep(){
-    if(this.wordPriceStepIndex==this.wordTime.length-1){
-      this.curStep = 0;
-    }else{
-      this.curStep = this.wordTime[this.wordPriceStepIndex+1].timecircle-this.wordTime[this.wordPriceStepIndex].timecircle;
+  private phonebase = 15;
+  private min = 15;
+  private max = 15;
+  private wordtotal = 0;
+  @Watch('toUser')
+  ontoUserchanged(n:any,o:any){
+    const list:{
+      word:IPriceSetting[],
+      phone:IPriceSetting
+    } = {word:[],phone:{}}
+    if(this.toUser.pricesettings){
+
+    this.toUser.pricesettings.forEach(item=>item.status=EPriceStatus.Enable)
+    this.toUser.pricesettings[2].status = EPriceStatus.Disable;
     }
-  }
-  created(){
+
     this.toUser&&this.toUser.pricesettings&&this.toUser.pricesettings.forEach((item:any) => {
       if(item.status===EPriceStatus.Enable){
         if(item.type===EPriceType.EWord){
-          this.wordTime.push(item);
-          this.wordTime.sort((a,b)=>b-a)
-          this.base = this.wordTime[0];
-
+          list.word.push(item);
         }else if(item.type===EPriceType.ECall){
-          this.phonePrice = item;
+          list.phone = item;
         }
       }
     });
+    if(list.word.length>1){
+      list.word.sort((a,b)=><number>a.timecircle-<number>b.timecircle)
+    }
+    if(list.word.length){
+      this.base = <number>list.word[0].timecircle*15;
+      this.min = <number>list.word[0].timecircle*15;
+      this.max = <number>list.word[list.word.length - 1].timecircle*15;
+      this.wordtotal = <number>list.word[0].price;
+    }
+    (<any>this).list = list;
+  }
+  changeTab(tab:EChatType){
+    (<any>this.curTab) = tab
+  }
+  watchChange(n:number,o:number){
+    let index = 0;
+      index = this.list.word.findIndex(item=><number>item.timecircle*15>=n);
+    if(n<o&&index){
+      index--;
+    }
+    this.wordtotal = <number>this.list.word[index].price
+    this.base = <number>this.list.word[index].timecircle*15;
+  }
+  private updatePreOrder:INoop;
+  preOrder(){
+    let time = this.curTab===1?this.base:this.phonebase;
+    let price = this.curTab===1?this.wordtotal:this.phonebase*<number>this.list.phone.taxprice;
+    this.updatePreOrder({
+      type:this.curTab,
+      time,
+      price
+    })
+  }
+  created(){
+
   }
 
 }

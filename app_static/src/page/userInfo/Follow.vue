@@ -20,6 +20,7 @@ import {Component} from 'vue-property-decorator';
 import {EFollowType} from "@/enum/EFollowType";
 import Pager from "@/helper/Pager.ts"; 
 import MyService from "../../api/UserService.ts";
+import { Indicator } from 'mint-ui';
 const userService = MyService.getInstance();
 
 @Component({
@@ -51,6 +52,7 @@ export default class Follow extends Vue{
     getRecordStatus(){
         const tempData = this.followDatas.slice(this.pager.getPage().limit*(this.pager.getPage().page-2));
         let params = tempData.map((item:any)=>item.id);
+        Indicator.open();
         userService.getCheckRecord(params).then((res:any)=>{
             if(res.data.success){   
                 res.data.data.forEach((item:any)=>{
@@ -59,11 +61,17 @@ export default class Follow extends Vue{
                         temp.record = item.record;
                     }
                 })
+            }else{
+                this.$toast(res.data.message);
             }
+            Indicator.close();
+        },err=>{
+            Indicator.close();
         });
     }
 
     getFavoriteData(){
+        Indicator.open();
         userService.getFavorites(this.pager).then((res:any)=>{
             if(res.data.success){   
                 const data = res.data.data;
@@ -71,10 +79,15 @@ export default class Follow extends Vue{
                 if(this.pager.getPage().page==1){
                     this.followDatas = data;
                 }else{
-                    this.followDatas.concat(data);
+                    this.followDatas = this.followDatas.concat(data);
                 }
                 this.pager.setNext();
+            }else{
+                this.$toast(res.data.message);
             }
+            Indicator.close();
+        },err=>{
+            Indicator.close();
         });
     }
 
@@ -95,15 +108,14 @@ export default class Follow extends Vue{
     }
 
     toUserInfo(item:any){
-        if(item.weixinid){
-            (<any>this).$router.push({path:'/userInfo',query:{weixinid:item.weixinid}});
+        if(item.id){
+            this.$router.push({name:'userInfo',params:{uid:item.id}});
         }
     }
 
     followMe(item:any){
         if(!item.record){
             userService.addfavorite(item.id).then((res:any)=>{
-                console.log(res);
                 if(res.data.success){
                     item.record = true;
                 }

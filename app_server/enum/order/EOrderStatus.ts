@@ -27,6 +27,10 @@ export enum EOrderStatus{
      */
     Completed,
     /**
+     * 退款审核中
+     */
+    RefundAudit,
+    /**
      * 退款
      */
     Refund

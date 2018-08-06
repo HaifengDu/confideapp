@@ -13,7 +13,6 @@ import { EChatMsgStatus } from "../enum/EChatMsgStatus";
 import _ from "lodash";
 import ChatService from "../api/ChatService";
 import { EOrderStatus } from "../enum/EOrderStatus";
-const socketWrapper = getSocket();
 const orderService = OrderService.getInstance();
 const userService = MyService.getInstance();
 declare var wx:any;
@@ -83,6 +82,7 @@ export class ChatListener{
                 }
             });
         }
+        const socketWrapper = getSocket();
         //NOTE:不能改成this
         ChatListener._VUE.$emit(ChatEventContants.sendEvent,obj);
         //接受消息，更新已读
@@ -113,6 +113,14 @@ export class ChatListener{
         this.chatService = ChatService.getInstance();
     }
 
+    private reconnect = ()=>{
+        this.join(this.uid,this.touid,"");
+    }
+
+    setOrder(order:IOrder){
+        this.order = order;
+    }
+
     /**
      * 加入房间
      * @param uid
@@ -122,6 +130,7 @@ export class ChatListener{
     join(uid:number,lid:number,username:string){
         this.uid = uid;
         this.touid = lid;
+        const socketWrapper = getSocket();
         return new Promise<string>((resolve,reject)=>{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
@@ -134,6 +143,7 @@ export class ChatListener{
                 resolve(roomid);
             });
         }).then(roomid=>{
+            socketWrapper.on("reconnect",this.reconnect);
             this.chatService.getDefaultChatRecords(roomid).then(res=>{
                 const data = res.data;
                 if(data.success&&data.data){
@@ -147,6 +157,7 @@ export class ChatListener{
                     .filter(item=>item.status===EChatMsgStatus.Send&&item.touid===this.uid)
                     .map(item=>item.tokenid);
                     if(tokenids.length){
+                        const socketWrapper = getSocket();
                         //将收到的消息标记为已读
                         socketWrapper.emit(ChatEventContants.readEvent,{
                             tokenid:tokenids,
@@ -191,6 +202,7 @@ export class ChatListener{
                 }else{
                     ChatListener._VUE.$emit(ChatEventContants.vueOrderComplete,order);
                     clearInterval(this.checkOrderFlag);
+                    this.checkOrderFlag = 0;
                 }
             },1000);
         }
@@ -203,7 +215,8 @@ export class ChatListener{
         //订单为支付完成时 更新订单
         //NOTE:只会返回已支付和服务中的订单
         if(this.order){
-            if(this.order.status===EOrderStatus.Paid){
+            //倾诉者更新
+            if(this.order.status===EOrderStatus.Paid&&this.currentRole===ERole.Pourouter){
                 if(this.isUpdating){
                     return;
                 }
@@ -246,6 +259,7 @@ export class ChatListener{
             const flag = setTimeout(function(){
                 reject(new ErrorMsg(false,"socket无应答"));
             },ChatListener.MAX_COUNT);
+            const socketWrapper = getSocket();
             socketWrapper.emit(ChatEventContants.sendEvent,chatMsgObj,function(obj:any){
                 chatMsgObj.ismy = true;
                 chatMsgObj.tokenid = obj.tokenid;
@@ -261,17 +275,22 @@ export class ChatListener{
      */
     leave(){
         clearInterval(this.checkOrderFlag);
+        const socketWrapper = getSocket();
         socketWrapper.emit(ChatEventContants.leaveEvent,{
             roomid:this.roomid
         });
     }
 
     addEvent(){
+        const socketWrapper = getSocket();
         socketWrapper.on(ChatEventContants.readEvent,ChatListener.read);
         socketWrapper.on(ChatEventContants.sendEvent,ChatListener.send);
     }
 
     removeEvent(){
+        const socketWrapper = getSocket();
+        
+        socketWrapper.on("reconnect",this.reconnect);
         socketWrapper.remove(ChatEventContants.sendEvent,ChatListener.send);
         socketWrapper.remove(ChatEventContants.readEvent,ChatListener.read)
     }
@@ -285,6 +304,7 @@ export default class ChatManagerBiz{
     private userService:MyService;
 
     private order?:IOrder;
+    private chatListener:ChatListener;
     constructor(){
         this.userService = MyService.getInstance();
         this.chatRole.Current = <ERole>rootStore.state.user.role;
@@ -297,21 +317,28 @@ export default class ChatManagerBiz{
      * @param touid
      */
     public joinRoom(vue:Vue,touid:number){
-        const chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
+        this.chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
         const currentUid = <number>rootStore.state.user.id;
         //NOTE:暂时没有名字
-        chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
-        return chatListener;
+        this.chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
+        return this.chatListener;
     }
 
+    /**
+     * 完成订单
+     * @param order 
+     */
     public completeOrder(order:IOrder){
         if(!order.id){
             return Promise.reject(new ErrorMsg(false,"订单非法"));
         }
         if(!('servicetime' in order)){
             return Promise.reject(new ErrorMsg(false,"服务时长不正确"));
+        } //倾诉者
+        if(this.chatRole.Current===ERole.Pourouter){
+            return orderService.chatComplete(order.id,order.servicetime);
         }
-        return orderService.chatComplete(order.id,order.servicetime);
+        return Promise.reject(new ErrorMsg(true,"非本人单据，默认完成成功"));
     }
 
     /**
@@ -324,7 +351,11 @@ export default class ChatManagerBiz{
         if(!('servicetime' in order)){
             return Promise.reject(new ErrorMsg(false,"服务时长不正确"));
         }
-        return orderService.updateServicetime(order.id,order.servicetime);
+        //倾诉者
+        if(this.chatRole.Current===ERole.Pourouter){
+            return orderService.updateServicetime(order.id,order.servicetime);
+        }
+        return Promise.reject(new ErrorMsg(true,"非本人单据，默认更新成功"));
     }
 
     /**
@@ -368,7 +399,24 @@ export default class ChatManagerBiz{
               });
           }
           return tempData;
-        })
+        });
+    }
+
+    /**
+     * 获取订单
+     * @param lid 
+     */
+    public getOrder(lid:number){
+        const currentUid = rootStore.state.user.id;
+        return orderService.checkHasOrder(<number>currentUid,lid).then(res=>{
+            const data =res.data;
+            if(data.success&&data.data){
+                this.chatListener.setOrder(data.data);
+            }else{
+                return Promise.reject(new ErrorMsg(false,"无可用订单"));
+            }
+            return Promise.resolve(data.data);
+        });
     }
 
     /**

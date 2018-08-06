@@ -30,7 +30,8 @@ router.get("/", function(req, res, next) {
 });
 
 router.get("/getConfig",function(req,res){
-    WeixinHelper.getJsConfig(req.query.accesstoken,req.query.url).then(data=>{
+    console.log(req.query);
+    WeixinHelper.getJsConfig(req.query.url).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
         });

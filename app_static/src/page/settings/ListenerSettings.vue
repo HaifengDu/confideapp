@@ -25,7 +25,7 @@
             </div>
             <div @click="toPage('textService')" class="cell-box">
                 <mt-cell title="文字服务" is-link class="cell-con cell-prev">
-                    <span v-if="this.textPrice.price" class="cell-text">{{this.textPrice.price}}元/{{this.textPrice.timecircle*15}}分钟</span>
+                    <span v-if="this.textPrice.price" class="cell-text">{{this.textPrice.price}}元/条</span>
                 </mt-cell>
             </div>
             <div @click="toPage('callService')" class="cell-box">

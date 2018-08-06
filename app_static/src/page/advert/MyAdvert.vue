@@ -42,8 +42,8 @@ export default class MyAdvert extends Vue{
     private money:number = 0;
     private isAdverting = false;
     created() {
-        if((<any>this).user&&(<any>this).user.listener){
-            this.money = (<any>this).user.listener.money;
+        if((<any>this).user){
+            this.money = (<any>this).user.money;
         }
         listenerService.getGeneralsetting().then((res:any)=>{
             if(res.data.success&&res.data.data){

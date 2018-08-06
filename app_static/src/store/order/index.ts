@@ -5,10 +5,11 @@ import * as actions from "./actions";
 import IRootState from '../../interface/IRootState';
 export const store:Module<IOrderState,IRootState> = {
     state:{
-      preOrder:{}
+      preOrder:{},
+      order:{}
     },
     getters:{
-
+        order:state=>state.order
     },
     actions:{
         ...actions
@@ -16,6 +17,9 @@ export const store:Module<IOrderState,IRootState> = {
     mutations:{
       [OrderType.UPDATE_PRE_ORDER](state,preOrder){
         state.preOrder = preOrder
+      },
+      [OrderType.UPDATE_ORDER](state,order){
+          state.order = order
       }
     },
     namespaced:true

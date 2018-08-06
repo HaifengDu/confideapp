@@ -7,7 +7,6 @@ const Bluebird = require("bluebird");
 const _ = require("lodash");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const EPriceStatus_1 = require("../enum/EPriceStatus");
-const EPriceCircle_1 = require("../enum/EPriceCircle");
 const CalucateService_1 = require("../helper/CalucateService");
 const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
 class PriceSettingService {
@@ -22,33 +21,49 @@ class PriceSettingService {
      */
     createDefaultPrice(userid, options) {
         const priceList = [];
+        // priceList.push({
+        //     uid:userid,
+        //     type:EPriceType.EWord,
+        //     timecircle:EPriceCircle.Fifteen,
+        //     price:PriceSettingBiz.WordLimit[EPriceCircle.Fifteen].min,
+        //     taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Fifteen].min,0.8),
+        //     status:EPriceStatus.Enable
+        // },{
+        //     uid:userid,
+        //     type:EPriceType.EWord,
+        //     timecircle:EPriceCircle.Thirty,
+        //     price:PriceSettingBiz.WordLimit[EPriceCircle.Thirty].min,
+        //     taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Thirty].min,0.8),
+        //     status:EPriceStatus.Enable
+        // },{
+        //     uid:userid,
+        //     type:EPriceType.EWord,
+        //     timecircle:EPriceCircle.FortyFive,
+        //     price:PriceSettingBiz.WordLimit[EPriceCircle.FortyFive].min,
+        //     taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.FortyFive].min,0.8),
+        //     status:EPriceStatus.Enable
+        // },{
+        //     uid:userid,
+        //     type:EPriceType.EWord,
+        //     timecircle:EPriceCircle.Sixty,
+        //     price:PriceSettingBiz.WordLimit[EPriceCircle.Sixty].min,
+        //     taxprice:CalucateService.numDiv(PriceSettingBiz.WordLimit[EPriceCircle.Sixty].min,0.8),
+        //     status:EPriceStatus.Enable
+        // },{
+        //     uid:userid,
+        //     type:EPriceType.ECall,
+        //     timecircle:PriceSettingBiz.CallMinTime,
+        //     price:PriceSettingBiz.CallLimit.min,
+        //     taxprice:CalucateService.numDiv(PriceSettingBiz.CallLimit.min,0.8),
+        //     status:EPriceStatus.Enable
+        // });
+        //TODO:计算税额
         priceList.push({
             uid: userid,
             type: EPriceType_1.EPriceType.EWord,
-            timecircle: EPriceCircle_1.default.Fifteen,
-            price: PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Fifteen].min,
-            taxprice: CalucateService_1.default.numDiv(PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Fifteen].min, 0.8),
-            status: EPriceStatus_1.EPriceStatus.Enable
-        }, {
-            uid: userid,
-            type: EPriceType_1.EPriceType.EWord,
-            timecircle: EPriceCircle_1.default.Thirty,
-            price: PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Thirty].min,
-            taxprice: CalucateService_1.default.numDiv(PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Thirty].min, 0.8),
-            status: EPriceStatus_1.EPriceStatus.Enable
-        }, {
-            uid: userid,
-            type: EPriceType_1.EPriceType.EWord,
-            timecircle: EPriceCircle_1.default.FortyFive,
-            price: PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.FortyFive].min,
-            taxprice: CalucateService_1.default.numDiv(PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.FortyFive].min, 0.8),
-            status: EPriceStatus_1.EPriceStatus.Enable
-        }, {
-            uid: userid,
-            type: EPriceType_1.EPriceType.EWord,
-            timecircle: EPriceCircle_1.default.Sixty,
-            price: PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Sixty].min,
-            taxprice: CalucateService_1.default.numDiv(PriceSettingBiz_1.default.WordLimit[EPriceCircle_1.default.Sixty].min, 0.8),
+            timecircle: PriceSettingBiz_1.default.CallMinTime,
+            price: PriceSettingBiz_1.default.WordLimit.min,
+            taxprice: CalucateService_1.default.numDiv(PriceSettingBiz_1.default.WordLimit.min, 0.8),
             status: EPriceStatus_1.EPriceStatus.Enable
         }, {
             uid: userid,
@@ -77,7 +92,7 @@ class PriceSettingService {
         let checkPromise = Bluebird.resolve(new ErrorMsg_1.default(true));
         switch (type) {
             case EPriceType_1.EPriceType.EWord:
-                result = this.biz.checkWordSetting(pricesettings);
+                result = this.biz.checkCallSetting(pricesettings);
                 if (!result.success) {
                     promise = Bluebird.reject(result);
                 }
@@ -100,7 +115,7 @@ class PriceSettingService {
                         return this.listenerMediator.checkChangePriceMaxCount(userid, type);
                     }).then(res => {
                         return Bluebird.all(pricesettings.map(item => PriceSetting_1.default.update(item, { where: { id: item.id } }))).then(res => {
-                            return this.listenerMediator.syncMinPrice(userid, Math.min.apply(null, pricesettings.map(item => item.price)), type);
+                            return this.listenerMediator.syncMinPrice(userid, Math.min.apply(null, pricesettings.map(item => item.taxprice)), type);
                         });
                     });
                 }
@@ -129,7 +144,7 @@ class PriceSettingService {
                         return this.listenerMediator.checkChangePriceMaxCount(userid, type);
                     }).then(res => {
                         return PriceSetting_1.default.update(pricesettings[0], { where: { id: pricesettings[0].id } }).then(res => {
-                            return this.listenerMediator.syncMinPrice(userid, pricesettings[0].price, type);
+                            return this.listenerMediator.syncMinPrice(userid, pricesettings[0].taxprice, type);
                         });
                     });
                 }

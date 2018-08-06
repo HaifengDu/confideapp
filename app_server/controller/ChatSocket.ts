@@ -54,7 +54,9 @@ export class ChatSocket{
         
         this.socket.join(roomid);
         this.socket.to(roomid).emit(ChatSocket.joinEvent,{msg:`${data.name}加入房间`,roomid}); 
-        ackFn(roomid);  
+        if(ackFn){
+            ackFn(roomid);  
+        }
     }
 
     /**
@@ -100,7 +102,9 @@ export class ChatSocket{
         this.socket.to(roomid).broadcast.emit(ChatSocket.sendEvent,msgObj);
         //去指定的用户通知
         this.socket.to(temptouid.toString()).broadcast.emit(ChatSocket.notifyEvent,msgObj);
-        ackFn(msgObj);
+        if(ackFn){
+            ackFn(msgObj);  
+        }
     }
 
     private read(data:{tokenid:string|string[],roomid:string}){

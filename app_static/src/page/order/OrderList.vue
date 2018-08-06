@@ -9,7 +9,7 @@
                     </div>
                 </div>
                 <div class="wrapper" ref="wrapper">
-                    <ul class="content" style="width:700px;">
+                    <ul class="content" style="width:600px;">
                         <li
                         style="width:60px;"
                         v-for="(item,index) in status"
@@ -21,14 +21,19 @@
                     </ul>
                 </div>
             </div>
-            <div class="body">
-                <div class="order-list" ref="orderList">
+            <div class="body" ref="body">
+                <div 
+                    v-infinite-scroll="loadMore"
+                    infinite-scroll-disabled="loading"
+                    infinite-scroll-distance="10"
+                    class="order-list" 
+                    ref="orderList">
                     <ul class="content">
                         <li
                         v-for="(item,index) in list"
                         class="list"
                         :key="index"
-                        @click="toOrderDetail(item.id)">
+                        @click="toOrderDetail(item)">
                             <p class="title">
                                 <span class="date">{{item.date}}</span>
                                 <span class="status-name" :class="getStatusClass(item.status)">{{item.statusname}}</span>
@@ -45,6 +50,10 @@
                                     <i class="arrow"></i>
                                 </div>
                             </div>
+                            <div class="btn-box">
+                                <mt-button style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
+                                <mt-button style="margin-right:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="toOrderDetail(item)">支付订单</mt-button>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -57,29 +66,44 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import {EPriceType} from "@/enum/EPriceType";
+import { ERole } from '../../enum/ERole';
 import BScroll from 'better-scroll';
+import Pager from "@/helper/Pager.ts"; 
+import { mapGetters,mapActions } from 'vuex';
+import OrderService from "../../api/OrderService.ts";
+const orderService = OrderService.getInstance();
 
-@Component
+@Component({
+    methods:{
+        ...mapActions({
+            setOrder:'setOrder'
+        })
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
+    }
+})
 export default class OrderList extends Vue{
-    private isListener = true;
+    private pager = new Pager().setLimit(20);
+    private isListener = false;
     private isMySale = true;
     private status = [
-        {status:-1,name:'全部',active:true},
-        {status:1,name:'待付款',active:false},
+        {status:1,name:'待付款',active:true},
         {status:2,name:'已付款',active:false},
         {status:3,name:'已取消',active:false},
         {status:4,name:'服务中',active:false},
         {status:5,name:'待评论',active:false},
         {status:6,name:'已完成',active:false}
     ];
-    private list = [
-        {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
-        {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
-    ];
+    private currentStatus:number = 1;
+    private list:any = [];
 
     create(){
-        //TODO:判断当前用户是否是倾听者
-
+        if((<any>this).user&&(<any>this).user.role){
+            this.isListener = (<any>this).user.role === ERole.Listener;
+        }
     }
 
     mounted() {
@@ -90,7 +114,8 @@ export default class OrderList extends Vue{
                 click: true,
                 bounceTime: 500
             });
-        })
+        });
+        this.loadData();
     }
 
     changeType(){
@@ -105,7 +130,11 @@ export default class OrderList extends Vue{
                 item.active = false;
             }
         });
+        this.currentStatus = status;
         //TODO:根据status获取对应的单据
+        this.pager.clear().setLimit(20);
+        this.loadData();
+        (<any>this.$refs.body).scrollTop = 0;
     }
 
     private getStatusClass(status:number){
@@ -113,8 +142,48 @@ export default class OrderList extends Vue{
         return classArray[status - 1];
     }
 
-    toOrderDetail(id:number){
-        this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
+    toOrderDetail(order:any){
+        (<any>this).setOrder(order);
+        this.$router.push({path:'/orderDetail',query:{orderid:String(order.id)}});
+    }
+
+    cancelOrder(id:number){
+        //TODO:取消订单,然后跳回到上一页面
+    }
+
+    loadData(){
+        //TODO:从store中获取订单数据
+        let params = {
+            status:this.currentStatus
+        }
+        Object.assign(params,this.pager);
+        // orderService.getOrderList(params).then((res:any)=>{
+        //     console.log(res);
+        // });
+        let result = [
+            {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:3,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:4,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:5,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:6,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:7,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:8,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:9,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:10,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
+        ];
+        if(this.pager.getPage().page === 1){
+            this.list = result;
+        }else{
+            this.list = this.list.concat(result);
+        }
+        this.pager.setNext();
+    }
+
+    loadMore(){
+        //TODO:获取数据
+        if(this.pager.getPage().page===1)return;
+        this.loadData();
     }
 
 }
@@ -140,12 +209,14 @@ export default class OrderList extends Vue{
     }
     .container{
         height:100%;
+        overflow:hidden;
         background:rgb(229,229,229);
         .p-rl;
         .header{
             background:@default-white;
             .wrapper{
                 margin:10px 0;
+                overflow: hidden;
                 .content{
                     width:600px;
                     .tab{
@@ -191,6 +262,8 @@ export default class OrderList extends Vue{
         }
     }
     .body{
+        height:~'calc(100vh - 92px)';
+        overflow-y:auto;
         .order-list{
             .content{
                 .list{
@@ -246,6 +319,22 @@ export default class OrderList extends Vue{
                         }
                         .arrow{
                             background-image: url(../../../static/images/userInfo/arrow-right.png);
+                        }
+                    }
+                    .btn-box{
+                        .m-width;
+                        width: 100%;
+                        text-align:right;
+                        padding:10px 20px 0 20px;
+                        margin-top:10px;
+                        margin-left:-10px;
+                        border-top:1px solid #eee;
+                        button{
+                            min-width: 80px;
+                            padding:0 12px;
+                            .mint-button-text{
+                                font-size:16px;
+                            }
                         }
                     }
                 }

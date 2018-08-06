@@ -5,6 +5,9 @@ const _ = require("lodash");
 const EPriceType_1 = require("../enum/EPriceType");
 const CalucateService_1 = require("../helper/CalucateService");
 const EOrderSource_1 = require("../enum/order/EOrderSource");
+const Order_1 = require("../model/Order");
+const sequelize_1 = require("sequelize");
+const EOrderStatus_1 = require("../enum/order/EOrderStatus");
 class OrderBizService {
     constructor() {
     }
@@ -39,7 +42,7 @@ class OrderBizService {
         if (order.totalprice <= 0) {
             return new ErrorMsg_1.default(false, "支付总金额必须大于0");
         }
-        if (!order.payprice || !_.isNumber(order.payprice)) {
+        if (!_.isNumber(order.payprice)) {
             return new ErrorMsg_1.default(false, "支付价格不能为空");
         }
         if (!order.uprice || !_.isNumber(order.uprice)) {
@@ -69,6 +72,24 @@ class OrderBizService {
             return new ErrorMsg_1.default(false, "订单来源非法");
         }
         return new ErrorMsg_1.default(true);
+    }
+    /**
+     * 是否存在可服务订单
+     * @param uid
+     * @param lid
+     */
+    hasOrder(uid, lid) {
+        return Order_1.default.find({
+            where: {
+                uid,
+                lid,
+                [sequelize_1.Op.or]: [{
+                        status: EOrderStatus_1.default.Paid
+                    }, {
+                        status: EOrderStatus_1.default.Servicing
+                    }]
+            }
+        });
     }
     static getInstance() {
         return this._instance || (this._instance = new this());

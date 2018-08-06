@@ -7,7 +7,7 @@
         :position="position">
         <div class="msg-box">
             <div class="title"><img src="static/images/userInfo/message.png"/>新消息提醒</div>
-            <div class="content">星空下的嗳:你好</div>
+            <div class="content">星空下的嗳:{{message}}</div>
             <span class="time">刚刚</span>
             <i class="arrow"></i>
         </div>
@@ -28,6 +28,12 @@ export default class Message extends Vue{
         default:false
     })
     visible:boolean;
+
+    @Prop({
+        type:String,
+        default:''
+    })
+    message:string;
 
     @Prop({
         type:String,

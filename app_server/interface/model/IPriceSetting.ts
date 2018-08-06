@@ -6,7 +6,7 @@ export interface IPriceSetting{
     id?:number,
     uid?:number,
     type?:EPriceType,
-    timecircle?:EPriceCircle,
+    timecircle?:number,
     price?:number,
     taxprice?:number,
     status?:EPriceStatus

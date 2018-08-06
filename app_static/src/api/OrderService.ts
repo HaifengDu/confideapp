@@ -14,8 +14,7 @@ export default class OrderService {
         if(!params){
             return Promise.reject(new ErrorMsg(false,"参数不正确"));
         }
-        //TODO:后期去掉这里的userid
-        return Axios.post("/order?userid=3", {data:JSON.stringify(params)});
+        return Axios.post("/order", {data:JSON.stringify(params)});
     }
 
     public checkHasOrder(uid:number,lid:number):AxiosPromise<IResponse<IOrder>>{
@@ -56,6 +55,32 @@ export default class OrderService {
             orderid:orderid
         });
     }   
+
+    /**
+     * 获取订单列表
+     * @param params 
+     */
+    public getOrderList(params:any):AxiosPromise<IResponse<IOrder>>{
+        return Axios.get("/order/getOrderList",{params:params});
+    }
+
+    /**
+     * 退款
+     */
+    public refound(orderid:number):AxiosPromise<IResponse<IOrder>> {
+        return Axios.post("/order/refound",{
+            orderid:orderid
+        });
+    }  
+
+    /**
+     * 支付订单   支付待支付的单子，不需要创建订单，直接支付
+     */
+    public pay(orderid:number):AxiosPromise<IResponse<IOrder>> {
+        return Axios.post("/order/pay",{
+            orderid:orderid
+        });
+    } 
 
     private constructor() {}
 

@@ -43,7 +43,9 @@ class ChatSocket {
         const roomid = ChatSocket.createRoom(pid, lid);
         this.socket.join(roomid);
         this.socket.to(roomid).emit(ChatSocket.joinEvent, { msg: `${data.name}加入房间`, roomid });
-        ackFn(roomid);
+        if (ackFn) {
+            ackFn(roomid);
+        }
     }
     /**
      * 发送消息事件
@@ -87,7 +89,9 @@ class ChatSocket {
         this.socket.to(roomid).broadcast.emit(ChatSocket.sendEvent, msgObj);
         //去指定的用户通知
         this.socket.to(temptouid.toString()).broadcast.emit(ChatSocket.notifyEvent, msgObj);
-        ackFn(msgObj);
+        if (ackFn) {
+            ackFn(msgObj);
+        }
     }
     read(data) {
         //数组直接更新为已读

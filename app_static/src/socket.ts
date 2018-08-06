@@ -2,18 +2,22 @@ import ISocketEvent from "./interface/ISocketEvent";
 import io from "socket.io-client";
 
 // declare var io:any;
-export default class SocketWrapper {
-                 private socket: SocketIOClient.Socket;
-                 private static readonly chatUrl = "http://172.16.182.115:3001/chat";
-                 //应该是权限
-                 constructor(private userid: number, events: ISocketEvent) {
-                   this.init();
-                   this.initEvent(events);
-                 }
+export default class SocketWrapper{
+    private socket:SocketIOClient.Socket;
+    private static readonly reconnectionAttempts = 10;
+    private static readonly chatUrl = "/chat";
+    //应该是权限
+    constructor(private userid:number,events:ISocketEvent){
+        this.init();
+        this.initEvent(events);
+    }
 
-                 private init() {
-                   this.socket = io(SocketWrapper.chatUrl);
-                 }
+    private init(){
+        this.socket = io(`${SocketWrapper.chatUrl}?uid=${this.userid}`,{
+            reconnectionAttempts:SocketWrapper.reconnectionAttempts,
+            reconnectionDelay:3000
+        });
+    }
 
                  private initEvent(events: ISocketEvent) {
                    for (let key in events) {

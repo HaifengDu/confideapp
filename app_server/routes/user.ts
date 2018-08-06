@@ -9,6 +9,7 @@ import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
 import ClickRateService from "../controller/ClickRate";
 import _ = require("lodash");
+import * as Bluebird from "bluebird";
 const router = express.Router();
 const listenerCtrl = ListenerService.getInstance();
 const userContrl = UserService.getInstance(listenerCtrl);
@@ -17,12 +18,24 @@ const clickRateCtrl = ClickRateService.getInstance();
 router.put("/",[
     body("code").not().isEmpty().withMessage('微信code不能为空'),
     body("code").isString().withMessage('微信code必须是字符串')
-],(req,res)=>{
+],(req:express.Request,res:express.Response)=>{
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
-    userContrl.bindUser(req.body.code).then(data => { 
+
+    let promise:Bluebird<any>;
+    if(req.cookies.uid){
+        promise = userContrl.findByUserid(parseInt(req.cookies.uid));
+    }else{
+        promise = <any>userContrl.bindUser(req.body.code).then(user=>{
+            res.cookie('uid',user.id.toString(),{
+                maxAge: 30*24*60*60 , httpOnly: true
+            });
+            return user;
+        });
+    }
+    promise.then(data => { 
         res.json({ data:data ,...new ErrorMsg(true,"绑定成功")});
     },err => {
         res.json(new ErrorMsg(false,err.message,err));

@@ -1,5 +1,5 @@
 <template>
-    <div style="height:calc(100vh - 58px);background-color:#eee">
+    <div class="chat-container" :class="{'chat-on-container':topChatType===1}">
         <div class="info-container" v-if="toRole===1&&showDetail">
           <div class="status">
             {{toUser.nickname}}
@@ -47,7 +47,7 @@
           </div>
           <div class="order" v-if="toRole===1" @click="orderRightNow">马上下单</div>
         </div>
-        <div class="chat-wrapper" ref="scrollContainer">
+        <div v-show="topChatType===1" class="chat-wrapper" ref="scrollContainer">
             <div :class="{'chat-my':item.ismy}" class="chat-record" v-for="(item, index) in msgList" :key="index">
               <template v-if="item.ismy">
                 <div class="msg-status">{{item.status==2?'已读':'已发送'}}</div>
@@ -62,7 +62,7 @@
               </template>
             </div>
         </div>
-        <div class="big-wrapper">
+        <div v-show="topChatType===1" class="big-wrapper">
             <div class="send-wrapper">
                 <mt-button @click="changeType" class="microphone-btn" type="default">
                     <i v-show="chatType===1" class="fa fa-microphone" aria-hidden="true"></i>
@@ -81,6 +81,8 @@
             </div>
         </div>
         <select-order :toUser="toUser" v-if="orderSelectShow"></select-order>
+        <net-call v-show="topChatType===2" :to-user="toUser"></net-call>
+        <select-order v-show="false" :toUser="toUser"></select-order>
     </div>
 </template>
 <script lang="ts">
@@ -100,11 +102,13 @@ import { EOrderStatus } from '../enum/order/EOrderStatus';
 import {EChatType} from '../enum/EChatType';
 import {ERecieveStatus} from '../enum/ERecieveStatus';
 import SelectOrder from '@/components/SelectOrder';
+import NetCall from "@/components/NetCall"
 
 @Component({
     components:{
       UserIcon,
-      SelectOrder
+      SelectOrder,
+      NetCall
     },
     methods:{
 
@@ -276,6 +280,13 @@ export default class Chat extends Vue{
 
 <style lang="less" scoped>
 @import "../assets/common.less";
+.chat-container{
+    height:100vh;
+}
+.chat-on-container{
+    height:~'calc(100vh - 58px)';
+    background-color:#eee;
+}
 .info-container{
   height:10rem;
   background:#fff;

@@ -19,7 +19,19 @@ router.put("/", [
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
-    userContrl.bindUser(req.body.code).then(data => {
+    let promise;
+    if (req.cookies.uid) {
+        promise = userContrl.findByUserid(parseInt(req.cookies.uid));
+    }
+    else {
+        promise = userContrl.bindUser(req.body.code).then(user => {
+            res.cookie('uid', user.id.toString(), {
+                maxAge: 30 * 24 * 60 * 60, httpOnly: true
+            });
+            return user;
+        });
+    }
+    promise.then(data => {
         res.json(Object.assign({ data: data }, new ErrorMsg_1.default(true, "绑定成功")));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

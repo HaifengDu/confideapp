@@ -26,7 +26,8 @@ router.get("/", function (req, res, next) {
     }
 });
 router.get("/getConfig", function (req, res) {
-    weixinHelper_1.default.getJsConfig(req.query.accesstoken, req.query.url).then(data => {
+    console.log(req.query);
+    weixinHelper_1.default.getJsConfig(req.query.url).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

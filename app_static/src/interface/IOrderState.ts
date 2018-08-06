@@ -1,4 +1,5 @@
 export interface IOrderState{
-  preOrder:any
+  preOrder:any;
+  order?: any;
 }
 export default IOrderState;

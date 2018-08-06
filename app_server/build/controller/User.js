@@ -31,13 +31,12 @@ class UserService {
                 sex: res.sex
             };
             //查看是否绑定了微信
-            return this.findByWeixin(userModel.weixinid).then((res) => {
-                if (res) {
-                    return Bluebird.resolve(res);
+            return this.findUserByWxid(userModel.weixinid).then((user) => {
+                if (user) {
+                    return Bluebird.resolve(user);
                 }
                 return this.create(userModel);
             });
-            // return this.create(userModel);
         });
     }
     update(user, transtion) {
@@ -77,19 +76,13 @@ class UserService {
             }
         });
     }
-    findByWeixin(weixinid) {
-        if (!weixinid) {
-            return Bluebird.reject({ message: "微信id不能为空" });
-        }
+    findUserByWxid(weixinid) {
         return User_1.default.find({
             where: {
                 weixinid: weixinid
             }
         }).then(user => {
-            if (!user) {
-                return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
-            }
-            if (user.role === ERole_1.ERole.Listener) {
+            if (user && user.role === ERole_1.ERole.Listener) {
                 if (this.listenerService) {
                     return this.listenerService.findByUserid(user.id).then(listener => {
                         const userTemp = objectHelper_1.default.serialize(user);
@@ -99,6 +92,17 @@ class UserService {
                         return userTemp;
                     });
                 }
+            }
+            return user;
+        });
+    }
+    findByWeixin(weixinid) {
+        if (!weixinid) {
+            return Bluebird.reject({ message: "微信id不能为空" });
+        }
+        return this.findUserByWxid(weixinid).then(user => {
+            if (!user) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, "未找到对应用户"));
             }
             return user;
         });

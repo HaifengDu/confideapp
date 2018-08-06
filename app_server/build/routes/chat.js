@@ -12,6 +12,10 @@ const service = ChatRecord_1.default.getInstance();
 router.get("/", [
     check_1.query("roomid").not().isEmpty().withMessage("roomid不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     service.getRecord(req.query.roomid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {

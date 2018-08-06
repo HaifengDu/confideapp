@@ -4,6 +4,7 @@ import io from "socket.io-client";
 // declare var io:any;
 export default class SocketWrapper{
     private socket:SocketIOClient.Socket;
+    private static readonly reconnectionAttempts = 10;
     private static readonly chatUrl = "/chat";
     //应该是权限
     constructor(private userid:number,events:ISocketEvent){
@@ -12,7 +13,10 @@ export default class SocketWrapper{
     }
 
     private init(){
-        this.socket = io(`${SocketWrapper.chatUrl}?uid=${this.userid}`);
+        this.socket = io(`${SocketWrapper.chatUrl}?uid=${this.userid}`,{
+            reconnectionAttempts:SocketWrapper.reconnectionAttempts,
+            reconnectionDelay:3000
+        });
     }
 
     private initEvent(events:ISocketEvent){

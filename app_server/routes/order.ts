@@ -176,6 +176,65 @@ router.get("/getSummaryData",[
     }).catch(err=>{
         res.json(new ErrorMsg(false,err.message,err));
     });
-})
+});
+
+/**
+ * 退款
+ */
+router.post("/refound",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("orderid").isNumeric().withMessage("订单id不能为空")
+],function(req:express.Request,res:express.Response){
+    orderService.refund(req.query.userid,req.body.orderid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+/**
+ * 支付
+ */
+router.post("/pay",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("orderid").isNumeric().withMessage("订单id不能为空")
+],function(req:express.Request,res:express.Response){
+    orderService.pay(req.query.userid,req.body.orderid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
+
+/**
+ * 获取订单列表
+ */
+router.get("/getOrderList",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    query("status").not().isEmpty().withMessage("状态不能为空"),
+    query("start").isNumeric().withMessage("分页数据出错"),
+    query("limit").isNumeric().withMessage("分页数据错误")
+],function(req:express.Request,res:express.Response){
+    const status = req.query.status.split(",").map(item=>parseInt(item));
+    const start = parseInt(req.query.start);
+    const limit = parseInt(req.query.limit);
+    orderService.getOrderList(req.query.userid,status,{start,limit}).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+});
 
 module.exports = router;

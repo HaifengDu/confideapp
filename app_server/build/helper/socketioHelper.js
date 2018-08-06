@@ -16,7 +16,7 @@ module.exports = class SocketHelper {
                 ChatSocket_1.ChatSocket.getInstance(socket);
                 NetCallSocket_1.NetCallSocket.getInstance(socket);
             }
-            socket.on("disconnect", socket => {
+            socket.on("disconnect", () => {
                 socketManager.remove(socket);
             });
             socketManager.add(uid, socket);

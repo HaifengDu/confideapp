@@ -82,6 +82,14 @@ export interface IOrder{
      */
     ctime?:Date,
     /**
+     * 开始退款时间
+     */
+    srefoundtime?:Date,
+    /**
+     * 完成退款时间
+     */
+    erefoundtime?:Date,
+    /**
      * 开始支付时间
      */
     paytime?:Date,

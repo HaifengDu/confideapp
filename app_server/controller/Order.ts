@@ -18,6 +18,10 @@ import { Op } from "sequelize";
 import * as moment from "moment";
 
 import { ECompleteType } from "../enum/order/ECompleteType";
+import sequelize from "../mysqlSeq";
+import CalucateService from "../helper/CalucateService";
+import { IPager } from "../interface/IPager";
+import User from "../model/User";
 
 export default class OrderService {
 
@@ -32,6 +36,38 @@ export default class OrderService {
         this.wxPayHelper = WxPayHelper.getInstance();
         this.biz = OrderBizService.getInstance();
         this.userService =  UserService.getInstance();
+    }
+
+    private checkPay(orderModel:IOrder){
+        const findCurrentUser = this.userService.find(orderModel.uid);
+        const findListener = this.userService.find(orderModel.lid);
+        return Bluebird.all([findCurrentUser,findListener]).then(datas=>{
+            if(!datas[0]||!datas[1]){
+                return Bluebird.reject(new ErrorMsg(false,"用户或倾听者不存在"));
+            }
+            if(datas[1].role!==ERole.Listener){
+                return Bluebird.reject(new ErrorMsg(false,"购买对象不是倾听者"));
+            }
+            const user = datas[0];
+            if(orderModel.balance){
+                if(!user.money){
+                    return Bluebird.reject(new ErrorMsg(false,"用户余额为空"));
+                }
+                if(user.money<orderModel.balance){
+                    return Bluebird.reject(new ErrorMsg(false,"用户余额不足"));
+                }
+            }
+            //都是倾听者验证是否存在反向订单，如果有，则还有未完成订单
+            if(datas[0].role===ERole.Listener&&datas[1].role === ERole.Listener){
+                this.biz.hasOrder(orderModel.lid,orderModel.uid).then(order=>{
+                    if(order){
+                        return Bluebird.reject(new ErrorMsg(false,"当前有未完成订单，请查看我的订单"));
+                    }
+                    return Bluebird.resolve(datas);
+                });
+            }
+            return Bluebird.resolve(datas);
+        })
     }
 
     /**
@@ -61,38 +97,18 @@ export default class OrderService {
             status:EOrderStatus.Awaiting_Payment,
             paytype:EPayType.WX//默认微信
         };
-        const findCurrentUser = this.userService.find(orderParam.uid);
-        const findListener = this.userService.find(orderParam.lid);
-        return Bluebird.all([findCurrentUser,findListener]).then(datas=>{
-            if(!datas[0]||!datas[1]){
-                return Bluebird.reject(new ErrorMsg(false,"用户或倾听者不存在"));
-            }
-            if(datas[1].role!==ERole.Listener){
-                return Bluebird.reject(new ErrorMsg(false,"购买对象不是倾听者"));
-            }
+        return this.checkPay(orderModel).then(datas=>{
             const user = datas[0];
-            if(orderModel.balance){
-                if(!user.money){
-                    return Bluebird.reject(new ErrorMsg(false,"用户余额为空"));
-                }
-                if(user.money<orderModel.balance){
-                    return Bluebird.reject(new ErrorMsg(false,"用户余额不足"));
-                }
-            }
-            //都是倾听者验证是否存在反向订单，如果有，则还有未完成订单
-            if(datas[0].role===ERole.Listener&&datas[1].role === ERole.Listener){
-                this.biz.hasOrder(orderParam.lid,orderParam.uid).then(order=>{
-                    if(order){
-                        return Bluebird.reject(new ErrorMsg(false,"当前有未完成订单，请查看我的订单"));
-                    }
-                    return Bluebird.resolve(datas);
+            //启动事务，创建订单和更改余额
+            return sequelize.transaction(tran=>{
+                const createOrder = Order.create(orderModel,).then(order=>{
+                    return {user,order};
                 });
-            }
-            return Bluebird.resolve(datas);
-        }).then(datas=>{
-            const user = datas[0];
-            return Order.create(orderModel).then(order=>{
-                return {user,order};
+                const updateUser = this.userService.update({
+                    money:CalucateService.numSub(user.money,orderModel.balance),
+                    id:orderModel.uid
+                },tran);
+                return Bluebird.all([createOrder,updateUser]);
             });
         }).then(orderModel=>{
             const user = orderModel.user;
@@ -129,37 +145,12 @@ export default class OrderService {
             if(order.uid!==userid){
                 return Bluebird.reject(new ErrorMsg(false,"用户id与订单用户不一致"));
             }
-            const findCurrentUser = this.userService.find(order.uid);
-            const findListener = this.userService.find(order.lid);
-            return Bluebird.all([findCurrentUser,findListener]).then(datas=>{
-                if(!datas[0]){
-                    return Bluebird.reject(new ErrorMsg(false,"用户不存在"));
-                }
-                if(!datas[1]){
-                    return Bluebird.reject(new ErrorMsg(false,"倾听者不存在"));
-                }
-                return Bluebird.resolve({
-                    user:datas[0],
-                    listener:datas[1],
-                    order
-                })
-            }).then(orderModel=>{
-                //都是倾听者验证是否存在已经反向订单，如果有，则还有未完成订单
-                if(orderModel.user.role===ERole.Listener){
-                    this.biz.hasOrder(orderModel.order.lid,orderModel.order.uid).then(order=>{
-                        if(order){
-                            return Bluebird.reject(new ErrorMsg(false,"当前有未完成订单，请查看我的订单"));
-                        }
-                        return Bluebird.resolve(orderModel);
-                    });
-                }
-                return orderModel;
-            }).then(orderModel=>{
-                const user = orderModel.user;
-                const order = orderModel.order;
+            return this.checkPay(order).then(orderModel=>{
+                const user = orderModel[0];
                 return this.wxPayHelper.pay(order.ip,user.weixinid,order.id,order.payprice).then(data=>{
                     this.logHelper.errorOrder({
                         body:data,
+                        orderid:order.id,
                         message:"支付获取参数成功"
                     });
                     return {
@@ -169,6 +160,7 @@ export default class OrderService {
                 },err=>{
                     this.logHelper.errorOrder({
                         body:err.message,
+                        orderid:order.id,
                         message:"支付获取参数失败"
                     });
                     return err;
@@ -219,7 +211,8 @@ export default class OrderService {
                 //更新微信订单号和状态
                 return Order.update({
                     status:EOrderStatus.Paid,
-                    wxorderid:wxorderid
+                    wxorderid:wxorderid,
+                    paidtime:new Date()
                 },{
                     where:{
                         id:orderid
@@ -360,6 +353,9 @@ export default class OrderService {
             if(!order){
                 return Promise.reject(new ErrorMsg(false,"订单不存在"));
             }
+            if(order.status !== EOrderStatus.Paid){
+                return Promise.reject(new ErrorMsg(false,"订单非已支付状态"));
+            }
             if(order.uid!==userid){
                 return Promise.reject(new ErrorMsg(false,"当前用户和订单不一致"));
             }
@@ -369,19 +365,33 @@ export default class OrderService {
             if(moment(new Date()).diff(moment(order.paidtime),"year")>1){
                 return Promise.reject(new ErrorMsg(false,"退款的订单不能超过一年"));
             }
-            this.wxPayHelper.refund(orderid,order.payprice).then(data=>{
+            return Order.update({
+                status:EOrderStatus.RefundAudit,
+                srefoundtime:new Date
+            },{
+                where:{
+                    id:orderid
+                }
+            }).then(res=>{
                 this.logHelper.appendOrder({
-                    body:data,
-                    message:"订单退款成功"
+                    body:res,
+                    message:"申请订单退款"
                 });
-                return data;
-            },err=>{
-                this.logHelper.appendOrder({
-                    body:err,
-                    message:"订单退款失败"
-                });
-                return err;
+                return res;
             });
+            // this.wxPayHelper.refund(orderid,order.payprice).then(data=>{
+            //     this.logHelper.appendOrder({
+            //         body:data,
+            //         message:"订单退款成功"
+            //     });
+            //     return data;
+            // },err=>{
+            //     this.logHelper.appendOrder({
+            //         body:err,
+            //         message:"订单退款失败"
+            //     });
+            //     return err;
+            // });
         });
     }
 
@@ -451,6 +461,19 @@ export default class OrderService {
     }
 
     /**
+     * 取消订单
+     * @param userid 
+     * @param orderid 
+     */
+    public cancelOrder(userid:number, orderid:number){
+        return this.update(userid,{
+            status:EOrderStatus.Cancelled,
+            canceltime:new Date(),
+            id:orderid
+        });
+    }
+
+    /**
      * 获取统计数据
      * @param listenerid 
      */
@@ -476,6 +499,54 @@ export default class OrderService {
                 data.setDataValue('stime',0);
             }
             return <{ucount:number,stime:number}>data;
+        });
+    }
+
+    /**
+     * 获取订单列表
+     * @param userid 
+     * @param status 
+     * @param page 
+     */
+    public getOrderList(userid:number,status:EOrderStatus|EOrderStatus[],page:IPager={
+        start:0,
+        limit:20
+    }){
+        if(!userid){
+            return Bluebird.reject(new ErrorMsg(false,"用户id不能为空"));
+        }
+        let tempStatus:EOrderStatus[] = [];
+        if(_.isArray(status)){
+            if(!status.length){
+                return Bluebird.reject(new ErrorMsg(false,"订单状态不能为空"));
+            }
+            const isAllIn = status.every(item=>{
+                return item in _.values(EOrderStatus)
+            });
+            if(!isAllIn){
+                return Bluebird.reject(new ErrorMsg(false,"订单状态不正确"));
+            }
+            tempStatus = status;
+        }else{
+            if(!(status in _.values(EOrderStatus))){
+                return Bluebird.reject(new ErrorMsg(false,"订单状态不正确"));
+            }
+            tempStatus.push(status);
+        }
+        return Order.findAll({
+            where:{
+                uid:userid,
+                status:{
+                    [Op.in]:tempStatus
+                }
+            },
+            limit:page.limit,
+            offset:page.start,
+            include:[{
+                model: User,
+                as: "luser",
+                required:false
+            }]
         });
     }
 

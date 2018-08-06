@@ -50,7 +50,8 @@ class WxPayHelper {
                 out_trade_no: orderNo,
                 out_refund_no: orderNo + '_refund',
                 total_fee: total_fee,
-                refund_fee: total_fee
+                refund_fee: total_fee,
+                notify_url: "${origin}/pay/payrefound"
             }, function (err, result) {
                 /**
                  * 微信收到正确的请求后会给用户退款提醒

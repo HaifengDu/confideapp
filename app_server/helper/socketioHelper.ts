@@ -20,7 +20,7 @@ export = class SocketHelper {
                 ChatSocket.getInstance(socket);
                 NetCallSocket.getInstance(socket);
             }
-            socket.on("disconnect",socket=>{
+            socket.on("disconnect",()=>{
                 socketManager.remove(socket);
             });
             socketManager.add(uid,socket);
@@ -33,7 +33,7 @@ export = class SocketHelper {
         });
         this.socketio.on('error',()=>{
             socketManager.clear();
-        })
+        });
     }
 
     static createInstance(socketio:SocketIO.Server) {

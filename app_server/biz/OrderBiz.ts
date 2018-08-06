@@ -49,7 +49,7 @@ export default class OrderBizService {
         if(order.totalprice<=0){
             return new ErrorMsg(false,"支付总金额必须大于0");
         }
-        if(!order.payprice||!_.isNumber(order.payprice)){
+        if(!_.isNumber(order.payprice)){
             return new ErrorMsg(false,"支付价格不能为空");
         }
         if(!order.uprice||!_.isNumber(order.uprice)){

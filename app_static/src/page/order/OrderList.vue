@@ -8,8 +8,8 @@
                         <span :class="{'active':!isMySale,'positive':isMySale}" @click="changeType">我下的单</span>
                     </div>
                 </div>
-                <div class="wrapper" ref="wrapper">
-                    <ul class="content" style="width:600px;">
+                <div class="wrapper" ref="wrapper" :class="{'min-wrapper':!isListener}">
+                    <ul class="content" style="width:700px;">
                         <li
                         style="width:60px;"
                         v-for="(item,index) in status"
@@ -21,7 +21,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="body" ref="body">
+            <div class="body" ref="body" :class="{'min-height':!isListener}">
                 <div 
                     v-infinite-scroll="loadMore"
                     infinite-scroll-disabled="loading"
@@ -36,7 +36,7 @@
                         @click="toOrderDetail(item)">
                             <p class="title">
                                 <span class="date">{{item.date}}</span>
-                                <span class="status-name" :class="getStatusClass(item.status)">{{item.statusname}}</span>
+                                <span class="status-name" :class="classArray[item.status-1]">{{item.statusname}}</span>
                             </p>
                             <div style="text-align:left;position:relative;">
                                 <img :src="item.src" style="width:40px;vertical-align:bottom;">
@@ -51,8 +51,11 @@
                                 </div>
                             </div>
                             <div class="btn-box">
-                                <mt-button style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
-                                <mt-button style="margin-right:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="toOrderDetail(item)">支付订单</mt-button>
+                                <mt-button v-if="item.status==1" style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
+                                <mt-button v-if="item.status==1" style="margin-right:10px;" size="normal" type="primary" @click.native="toOrderDetail(item)">支付订单</mt-button>
+                                <mt-button v-if="item.status==4" style="margin-right:10px;" size="normal" type="primary" @click.native="evaluate(item.id)">去评价</mt-button>
+                                <mt-button v-if="item.status==2" style="margin-right:10px;" size="normal" type="default" @click.native="refound(item.id)">去退款</mt-button>                                
+                                <mt-button v-if="item.status==2" style="margin-right:10px;" size="normal" type="primary" @click.native="talk(item.id)">去倾诉</mt-button>
                             </div>
                         </li>
                     </ul>
@@ -92,11 +95,13 @@ export default class OrderList extends Vue{
     private status = [
         {status:1,name:'待付款',active:true},
         {status:2,name:'已付款',active:false},
-        {status:3,name:'已取消',active:false},
-        {status:4,name:'服务中',active:false},
-        {status:5,name:'待评论',active:false},
-        {status:6,name:'已完成',active:false}
+        {status:3,name:'服务中',active:false},
+        {status:4,name:'待评论',active:false},
+        {status:5,name:'已取消',active:false},
+        {status:6,name:'已完成',active:false},
+        {status:7,name:'已退款',active:false}
     ];
+    private classArray = ['to-be-pay','payed','service','to-be-evaluate','canceled','complete','refound'];
     private currentStatus:number = 1;
     private list:any = [];
 
@@ -137,11 +142,6 @@ export default class OrderList extends Vue{
         (<any>this.$refs.body).scrollTop = 0;
     }
 
-    private getStatusClass(status:number){
-        const classArray = ['to-be-pay','payed','canceled','service','to-be-evaluate','complete'];
-        return classArray[status - 1];
-    }
-
     toOrderDetail(order:any){
         (<any>this).setOrder(order);
         this.$router.push({path:'/orderDetail',query:{orderid:String(order.id)}});
@@ -161,16 +161,16 @@ export default class OrderList extends Vue{
         //     console.log(res);
         // });
         let result = [
-            {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:1,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:4,statusname:'待评论',date:'2018-06-26',serviceType:1},
             {id:2,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
-            {id:3,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
-            {id:4,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
-            {id:5,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
+            {id:3,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:3,statusname:'服务中',date:'2018-06-26',serviceType:1},
+            {id:4,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:1,statusname:'待付款',date:'2018-07-26',serviceType:2},
+            {id:5,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:4,statusname:'待评论',date:'2018-06-26',serviceType:1},
             {id:6,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
-            {id:7,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
-            {id:8,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2},
+            {id:7,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'已取消',date:'2018-06-26',serviceType:1},
+            {id:8,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:6,statusname:'已完成',date:'2018-07-26',serviceType:2},
             {id:9,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:15,price:9.9,status:5,statusname:'待评论',date:'2018-06-26',serviceType:1},
-            {id:10,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:2,statusname:'已付款',date:'2018-07-26',serviceType:2}
+            {id:10,src:'static/images/tab/my-active.png',name:'重新的开始',timecircle:30,price:19.9,status:7,statusname:'已退款',date:'2018-07-26',serviceType:2}
         ];
         if(this.pager.getPage().page === 1){
             this.list = result;
@@ -201,6 +201,7 @@ export default class OrderList extends Vue{
     .service{color:purple;}
     .to-be-evaluate{color:#11b7f3;}
     .complete{color:#333;}
+    .refound{color:#37efcf}
     .con-bg{
         background:@bgColor;
     }
@@ -225,6 +226,9 @@ export default class OrderList extends Vue{
                         width:60px;
                     }
                 }
+            }
+            .min-wrapper{
+                margin-top:0;
             }
         }
         .tog-btn-box{
@@ -261,9 +265,13 @@ export default class OrderList extends Vue{
             }
         }
     }
+    .min-height{
+        height: ~'calc(100vh - 50px)' !important;
+    }
     .body{
         height:~'calc(100vh - 92px)';
         overflow-y:auto;
+        overflow-x: hidden;
         .order-list{
             .content{
                 .list{

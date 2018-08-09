@@ -23,7 +23,7 @@ import {Prop} from "vue-property-decorator";
 export default class Rate extends Vue{
     
     @Prop({
-        type:Object,
+        type:Number,
         default:{}
     })
     value:any

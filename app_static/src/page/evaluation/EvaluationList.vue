@@ -15,6 +15,23 @@
                 </div>
             </div>
         </div>
+        <div class="tags">
+            <span 
+            v-for="(tag,index) in tags" 
+            :key="index" 
+            class="tag">{{tag.text}}({{tag.num}})</span>
+        </div>
+        <div class="divider"></div>
+        <div class="tabs">
+            <div class="tab" 
+                v-for="(tab,index) in tabs" 
+                :key="index">
+                <div class="con" @click="tabChange(tab)" :class="{'active':tab.active}">
+                    <p class="text">{{tab.text}}</p>
+                    <p class="text">{{tab.num}}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -35,8 +52,28 @@ export default class EvaluationList extends Vue {
         ability:5
     }
 
+    private tags:any = [
+        {text:'很懂得安抚',num:1},
+        {text:'受益匪浅',num:1},
+        {text:'知己',num:1},
+    ];
+
+    private tabs:any = [
+        {id:1,text:'满意',num:2,active:true},
+        {id:2,text:'一般',num:0,active:false},
+        {id:3,text:'不满意',num:0,active:false},
+    ];
+
     created(){
         console.log(666);
+    }
+
+    tabChange(tab:any){
+        if(tab.active)return;
+        this.tabs.forEach((item:any)=>{
+            item.active = item.id === tab.id;
+        });
+        //TODO:根据tab的状态获取对应的评论列表
     }
 }
 </script>
@@ -89,6 +126,40 @@ export default class EvaluationList extends Vue {
             .eva-box{
                 margin-top:50%;
                 transform:translate(0,-50%);
+            }
+        }
+    }
+    .tags{
+        padding:15px 20px;
+        text-align:left;
+        .tag{
+            padding:5px 8px;
+            border-radius:5px;
+            background:rgb(230,248,249);
+            display:inline-block;
+            margin-right:15px;
+        }
+    }
+    .divider{
+        height:10px;
+        background:#eee;
+    }
+    .tabs{
+        overflow: hidden;
+        .tab{
+            width:33.3%;
+            float:left;
+            .con{
+                width:70px;
+                margin:0 auto;
+                padding:5px 0;
+                border-bottom:1px solid transparent;
+                .text{
+                    color:@mainColor;
+                }
+            }
+            .con.active{
+                border-bottom-color:@mainColor;
             }
         }
     }

@@ -32,6 +32,30 @@
                 </div>
             </div>
         </div>
+        <div class="eva-title">
+            最新评论
+        </div>
+        <div class="eva-list">
+            <div class="head-img">
+                <img width="40px" src="/static/images/tab/my-active.png" alt="">
+            </div>
+            <div class="content">
+                <p class="name">正直的嘉熙</p>
+                <p class="info">
+                    <span class="time">18-06-28</span>
+                    <span class="type">购买了通话服务</span>
+                </p>
+                <p class="comment">非常满意，受益匪浅</p>
+                <p class="comment"><span class="default">默认</span>太棒了，服务很赞，倾诉体验超好。</p>
+                <p class="tags" style="padding-left:0;">
+                    <span 
+                    v-for="(tag,index) in tags" 
+                    :key="index" 
+                    class="tag">{{tag.text}}</span>
+                </p>
+                <p class="reply">倾听者回复：</p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -56,6 +80,9 @@ export default class EvaluationList extends Vue {
         {text:'很懂得安抚',num:1},
         {text:'受益匪浅',num:1},
         {text:'知己',num:1},
+        {text:'很懂得安抚',num:1},
+        {text:'受益匪浅',num:1},
+        {text:'知己',num:1},
     ];
 
     private tabs:any = [
@@ -74,6 +101,7 @@ export default class EvaluationList extends Vue {
             item.active = item.id === tab.id;
         });
         //TODO:根据tab的状态获取对应的评论列表
+        console.log(tab.id);
     }
 }
 </script>
@@ -138,6 +166,7 @@ export default class EvaluationList extends Vue {
             background:rgb(230,248,249);
             display:inline-block;
             margin-right:15px;
+            margin-bottom: 5px;
         }
     }
     .divider{
@@ -155,11 +184,53 @@ export default class EvaluationList extends Vue {
                 padding:5px 0;
                 border-bottom:1px solid transparent;
                 .text{
-                    color:@mainColor;
+                    color:#666;
                 }
             }
             .con.active{
                 border-bottom-color:@mainColor;
+                .text{
+                    color:@mainColor;
+                }
+            }
+        }
+    }
+    .eva-title{
+        text-align:left;
+        padding:10px 20px;
+    }
+    .eva-list{
+        padding:10px 20px;
+        overflow: hidden;
+        border-bottom:1px solid @gray;
+        .head-img,.content{
+            float:left;
+        }
+        .head-img{
+            width:40px;
+        }
+        .content{
+            text-align:left;
+            padding-left:10px;
+            .name,.info{
+                color:#adadad;
+            }
+            .info{
+                margin-bottom: 10px;
+                .time{
+                    padding-right:10px;
+                }
+            }
+            .comment{
+                padding-bottom:2px;
+                .t-ellipsis(3);
+                .default{
+                    .f-sm;
+                    padding: 2px;
+                    border: 1px solid #adadad;
+                    color: #adadad;
+                    border-radius: 3px;
+                }
             }
         }
     }

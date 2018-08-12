@@ -19,7 +19,7 @@ class MongoSyncBiz {
             edu: res.edu,
             sealtimes: 0,
             receivestatus: res.recievestatus,
-            labelids: res.labelids
+            labelids: objectHelper_1.default.parseJSON(res.labelids) || []
         });
     }
     updateByUser(user) {

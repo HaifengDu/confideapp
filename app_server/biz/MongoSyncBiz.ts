@@ -24,7 +24,7 @@ export default class MongoSyncBiz {
             edu:res.edu,
             sealtimes:0,
             receivestatus:res.recievestatus,
-            labelids:res.labelids
+            labelids:ObjectHelper.parseJSON(<string>res.labelids)||[]
         });
     }
 

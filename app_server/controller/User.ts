@@ -15,6 +15,7 @@ import ListenerService from "./Listener";
 import ObjectHelper from "../helper/objectHelper";
 import { IListener } from "../interface/model/IListener";
 import MongoSyncBiz from "../biz/MongoSyncBiz";
+import { ERoleStatus } from "../enum/ERoleStatus";
 
 export default class UserService {
 
@@ -216,5 +217,4 @@ export default class UserService {
     static getInstance(listenerService?:ListenerService) {
         return this._instance || (this._instance = new this(listenerService));
     }
-
 }

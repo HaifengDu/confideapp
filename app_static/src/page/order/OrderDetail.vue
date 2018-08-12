@@ -2,7 +2,7 @@
     <div style="height:100%;">
         <div v-if="!isToBePaid" class="container con-bg">
             <div class="body">
-                <div class="type">{{serviceName}}</div>
+                <div class="type">{{serviceType==1?'文字服务':'通话服务'}}</div>
                 <div class="main">
                     <div class="icon-container">
                         <div class="icon">
@@ -11,7 +11,7 @@
                     </div>
                     <div class="detail">
                         <div class="status">
-                            <p class="status-text">{{statuNamesDic[order.status]}}</p>
+                            <p class="status-text">{{statuNamesDic[order.status-1]}}</p>
                             <p class="text">订单状态</p>
                         </div>
                         <div class="total">
@@ -20,11 +20,11 @@
                         </div>
                     </div>
                     <mt-cell title="倾听者" class="cell-con cell-prev">重新的开始</mt-cell>
-                    <mt-cell title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
-                    <mt-cell title="服务时长" class="cell-con cell-prev">15分钟</mt-cell>
+                    <mt-cell v-if="serviceType==2" title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
+                    <mt-cell v-if="serviceType==2" title="服务时长" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell v-if="serviceType==1" title="购买数量" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell v-if="serviceType==1" title="服务数量" class="cell-con cell-prev">15分钟</mt-cell>
                     <mt-cell title="付款时间" class="cell-con cell-prev">2018-06-26 21:15</mt-cell>
-                    <mt-cell title="网络通话时长" class="cell-con cell-prev">00:15:00</mt-cell>
-                    <mt-cell title="优质专线时长" class="cell-con cell-prev">00:00:00</mt-cell>
                     <mt-cell title="订单号" class="cell-con cell-prev">1509006</mt-cell>
                     <mt-cell style="border-bottom:none;" title="有效期至" class="cell-con cell-prev">2018年06月29日 21:19</mt-cell>
                 </div>
@@ -58,8 +58,8 @@
                 </div>
             </div>
             <div class="button-box">
-                <mt-button size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
-                <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder(item.id)">支付订单</mt-button>
+                <mt-button size="normal" type="default" @click.native="cancelOrder()">取消订单</mt-button>
+                <mt-button style="margin-left:20px;background:rgb(239,146,55);color:#fff;" size="normal" type="primary" @click.native="payOrder()">支付订单</mt-button>
             </div>
         </div>
     </div>
@@ -72,7 +72,11 @@ import {EPriceType} from "@/enum/EPriceType";
 import {EOrderStatus} from "@/enum/EOrderStatus";
 import {mapGetters} from "vuex";
 import OrderService from "../../api/OrderService.ts";
+import { MessageBox } from 'mint-ui';
+import { Indicator } from 'mint-ui';
 const orderService = OrderService.getInstance();
+declare var WeixinJSBridge:any;
+declare var wx:any;
 @Component({
     computed:{
         ...mapGetters({
@@ -81,16 +85,16 @@ const orderService = OrderService.getInstance();
     }
 })
 export default class OrderDetail extends Vue{
-    private serviceName = '通话服务';
     private status = 1;
     private total = 9.9;
     private serviceType = 1;
-    private statuNamesDic = ['待支付','已结束 '];
+    private statuNamesDic = ['待支付','已付款','服务中','待评论','已取消','已完成','已退款'];
     private isToBePaid = true;
 
     mounted() {
         if((<any>this).order){
             this.isToBePaid = (<any>this).order.status === EOrderStatus.Awaiting_Payment;        
+            this.serviceType = (<any>this).order.serviceType;
         }
     }
 
@@ -98,14 +102,73 @@ export default class OrderDetail extends Vue{
         return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
     }
 
-    cancelOrder(id:number){
+    cancelOrder(){
         //TODO:取消订单,然后跳回到上一页面
+        console.log((<any>this).order.id);
+        this.$router.back();
     }
 
-    payOrder(id:number){
-        orderService.pay(id).then((res:any)=>{
+    refound(){
+        orderService.refound((<any>this).order.id).then((res:any)=>{
+            if(res.data.success){
+                this.$toast(res.data.message);
+                this.$router.back();
+            }else{
+                MessageBox.alert(res.data.message,'提示',{closeOnClickModal:false});
+            }
+        },(err:any)=>{
+            MessageBox.alert('网络错误，请稍后重试','提示',{closeOnClickModal:false});
+        });
+    }
+
+    payOrder(){
+        // if (typeof WeixinJSBridge == "undefined"){
+        //     if( document.addEventListener ){
+        //         document.addEventListener('WeixinJSBridgeReady', this.onBridgeReady, false);
+        //     }else if ((<any>document).attachEvent){
+        //         (<any>document).attachEvent('WeixinJSBridgeReady', this.onBridgeReady); 
+        //         (<any>document).attachEvent('onWeixinJSBridgeReady', this.onBridgeReady);
+        //     }
+        // }else{
+        //     this.onBridgeReady(jsParam);
+        // }
+        orderService.pay((<any>this).order.id).then((res:any)=>{
             //TODO:支付成功，跳转到聊天页面？
             console.log(res);
+        });
+    }
+
+    private onBridgeReady(params:any){
+        wx.chooseWXPay({
+            timestamp: params.timestamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+            nonceStr: params.nonceStr, // 支付签名随机串，不长于 32 位
+            package: params.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=\*\*\*）
+            signType: params.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: params.paySign, // 支付签名
+            success: function (res:any) {
+            // 支付成功后的回调函数
+                console.log(res);
+                MessageBox.confirm('是否完成支付?','提示',{
+                    showCancelButton:true,
+                    closeOnClickModal:false,
+                    confirmButtonText:'已完成支付',
+                    cancelButtonText:'稍后支付'
+                }).then((res:any) => {
+                    this.toOrderDetail(this.order.id);
+                },(cancel:any)=>{
+                    this.toOrderDetail(this.order.id);
+                });
+            },
+            fail:function(){
+                console.log(arguments);
+                MessageBox.alert('支付遇到问题','提示',{closeOnClickModal:false}).then((res:any) => {
+                    this.toOrderDetail(this.order.id);
+                });
+            },
+            cancel:function(){
+                //TODO:取消支付需要做什么
+                console.log(arguments);
+            }
         });
     }
 

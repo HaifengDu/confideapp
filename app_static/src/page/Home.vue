@@ -41,7 +41,7 @@
       </mt-swipe>
     </div>
     <div class="spread">
-      <list-item :user="user" v-for="(item,idx) in 3" :key="idx"></list-item>
+      <list-item :listener="item" v-for="(item,idx) in list" :key="idx"></list-item>
     </div>
   </div>
 </div>
@@ -51,8 +51,10 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import ListItem from '@/components/ListItem'
+import HomeService from "../api/HomeService";
 import { mapGetters } from 'vuex';
 import { ESex } from '../enum/ESex';
+import { IListener } from '../interface/model/IListener';
 
 @Component({
   components:{
@@ -65,6 +67,7 @@ import { ESex } from '../enum/ESex';
   }
 })
 export default class Home extends Vue{
+  private homeService = HomeService.getInstance();
   toSearchFilter(){
     this.$router.push({
       path:"/searchFilter"
@@ -75,6 +78,7 @@ export default class Home extends Vue{
       path:"/searchPanel"
     })
   }
+  private list:IListener[] = [];
   private summaryOpen = false;
   private esex = ESex;
   private subjects = [{
@@ -113,6 +117,15 @@ export default class Home extends Vue{
   }]
   summarySwitch(){
     this.summaryOpen = !this.summaryOpen
+  }
+  
+  created() {
+    this.homeService.getRecommendList().then(res=>{
+      const data = res.data;
+      if(data.success){
+        this.list = data.data;
+      }
+    })
   }
 }
 

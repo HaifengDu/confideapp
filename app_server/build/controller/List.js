@@ -74,6 +74,15 @@ class ListService {
             return this.listenerService.findInUserids(res.map(item => item.uid));
         });
     }
+    getListNotinIds(uids, count) {
+        return MongoSortFilterModel_1.default.find({
+            uid: {
+                $nin: uids
+            }
+        }).sort({
+            praisepercent: -1, sealtimes: -1
+        }).limit(count);
+    }
     getSearch(name, page) {
         return this.listenerService.findByName(name, page);
     }

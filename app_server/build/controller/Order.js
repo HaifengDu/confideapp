@@ -374,7 +374,7 @@ class OrderService {
      * @param userid
      * @param order
      */
-    update(userid, order) {
+    update(userid, order, tran) {
         if (!order.id) {
             return Bluebird.reject(new ErrorMsg_1.default(false, "订单id非法"));
         }
@@ -387,23 +387,54 @@ class OrderService {
             if (order.uid !== userid) {
                 return Bluebird.reject(new ErrorMsg_1.default(false, "订单用户不一致"));
             }
-            return Order_1.default.update(order, {
+            const updateOpions = {
                 where: {
                     id: orderid
                 }
-            });
+            };
+            if (tran) {
+                updateOpions.transaction = tran;
+            }
+            return Order_1.default.update(order, updateOpions);
         });
     }
     /**
      * 聊天完成
      * @param orderid
      */
-    chatComplete(userid, orderid, servicetime) {
+    chatComplete(userid, orderid) {
+        return Order_1.default.findOne({
+            where: {
+                uid: userid,
+                id: orderid
+            }
+        }).then(order => {
+            if (!order) {
+                return Promise.reject(new ErrorMsg_1.default(false, "未查询到对应的订单"));
+            }
+            return mysqlSeq_1.default.transaction(tran => {
+                const updateOrderPromise = this.update(userid, {
+                    status: EOrderStatus_1.EOrderStatus.Awaiting_Comment,
+                    completetype: ECompleteType_1.ECompleteType.Auto,
+                    completedtime: new Date(),
+                    id: orderid
+                }, tran);
+                const updateListenerMoney = this.userService.find(userid).then(res => {
+                    if (!res) {
+                        return Promise.reject(new ErrorMsg_1.default(false, "用户不存在"));
+                    }
+                    return this.userService.update({
+                        id: res.id,
+                        money: (res.money || 0) + order.totalprice
+                    }, tran);
+                });
+                return Promise.all([updateOrderPromise, updateListenerMoney]);
+            });
+        });
         return this.update(userid, {
             status: EOrderStatus_1.EOrderStatus.Awaiting_Comment,
             completetype: ECompleteType_1.ECompleteType.Auto,
             completedtime: new Date(),
-            servicetime: servicetime || 0,
             id: orderid
         });
     }
@@ -413,10 +444,29 @@ class OrderService {
      * @param orderid
      * @param servicetime
      */
-    updateServicetime(userid, orderid, servicetime) {
-        return this.update(userid, {
-            servicetime: servicetime || 0,
-            id: orderid
+    updateServicetime(userid, orderid, servicedtime) {
+        return Order_1.default.findOne({
+            where: {
+                id: orderid
+            }
+        }).then(order => {
+            const servicetime = order.servicetime || 0;
+            let updatedServiceTime = servicetime - servicedtime;
+            if (updatedServiceTime < 0) {
+                updatedServiceTime = 0;
+            }
+            const updatedField = {
+                servicetime: updatedServiceTime,
+                id: orderid
+            };
+            if (updatedServiceTime === 0) {
+                Object.assign(updatedField, {
+                    status: EOrderStatus_1.EOrderStatus.Awaiting_Comment,
+                    completetype: ECompleteType_1.ECompleteType.Auto,
+                    completedtime: new Date(),
+                });
+            }
+            return this.update(userid, updatedField);
         });
     }
     /**
@@ -436,10 +486,42 @@ class OrderService {
      * @param orderid
      */
     cancelOrder(userid, orderid) {
-        return this.update(userid, {
-            status: EOrderStatus_1.EOrderStatus.Cancelled,
-            canceltime: new Date(),
-            id: orderid
+        return Order_1.default.findOne({
+            where: {
+                uid: userid,
+                id: orderid
+            }
+        }).then(order => {
+            if (!order) {
+                return Promise.reject(new ErrorMsg_1.default(false, "未查询到对应的订单"));
+            }
+            if (!(order.status === EOrderStatus_1.EOrderStatus.Awaiting_Payment || order.status === EOrderStatus_1.EOrderStatus.Paid)) {
+                return Promise.reject(new ErrorMsg_1.default(false, "订单状态不正确"));
+            }
+            if (order.status === EOrderStatus_1.EOrderStatus.Paid) {
+                const updateBalance = this.userService.find(order.uid).then(user => {
+                    if (!user) {
+                        return Promise.reject(new ErrorMsg_1.default(false, "用户不存在"));
+                    }
+                    return this.userService.update({
+                        id: user.id,
+                        money: (user.money || 0) + order.totalprice
+                    });
+                });
+                const updateOrder = this.update(userid, {
+                    status: EOrderStatus_1.EOrderStatus.Cancelled,
+                    canceltime: new Date(),
+                    id: orderid
+                });
+                return Promise.all([updateBalance, updateOrder]);
+            }
+            else {
+                return this.update(userid, {
+                    status: EOrderStatus_1.EOrderStatus.Cancelled,
+                    canceltime: new Date(),
+                    id: orderid
+                });
+            }
         });
     }
     /**
@@ -460,6 +542,33 @@ class OrderService {
                         status: EOrderStatus_1.EOrderStatus.Awaiting_Comment
                     }]
             }
+        }).then((data) => {
+            if (!data.ucount) {
+                data.setDataValue('ucount', 0);
+            }
+            if (!data.stime) {
+                data.setDataValue('stime', 0);
+            }
+            return data;
+        });
+    }
+    getSummeryDatas(lids) {
+        return Order_1.default.find({
+            attributes: [
+                [Sequelize.fn("COUNT", Sequelize.literal('DISTINCT `uid`')), 'ucount'],
+                [Sequelize.fn("SUM", Sequelize.literal('`payservicetime`')), 'stime']
+            ],
+            where: {
+                lid: {
+                    [Sequelize.Op.in]: lids
+                },
+                [Sequelize.Op.or]: [{
+                        status: EOrderStatus_1.EOrderStatus.Completed
+                    }, {
+                        status: EOrderStatus_1.EOrderStatus.Awaiting_Comment
+                    }]
+            },
+            group: 'lid'
         }).then((data) => {
             if (!data.ucount) {
                 data.setDataValue('ucount', 0);

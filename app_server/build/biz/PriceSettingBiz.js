@@ -57,7 +57,7 @@ class PriceSettingBiz {
             return new ErrorMsg_1.default(false, `时长必须大于等于${PriceSettingBiz.CallMinTime}分钟`);
         }
         if (pricesettings[0].type === EPriceType_1.EPriceType.EWord && timecircle < PriceSettingBiz.WordMinTime) {
-            return new ErrorMsg_1.default(false, `服务数量必须大于等于${PriceSettingBiz.CallMinTime}调`);
+            return new ErrorMsg_1.default(false, `服务数量必须大于等于${PriceSettingBiz.CallMinTime}条`);
         }
         const limit = pricesettings[0].type === EPriceType_1.EPriceType.ECall ? PriceSettingBiz.CallLimit : PriceSettingBiz.WordLimit;
         const result = this.simpleCheck(pricesettings[0], limit);

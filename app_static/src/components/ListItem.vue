@@ -3,33 +3,43 @@
   <div class="detail">
     <div class="icon-container">
       <div class="icon">
-        <user-icon size="6.4"  :user="user"></user-icon>
+        <user-icon size="6.4"  :user="listener.user"></user-icon>
       </div>
-      <div :class="['sex',{'female':user.sex=esex.Famale}]">男  35</div>
-      <div class="exprience" :class="{'female':user.sex=esex.Famale}">经历</div>
+      <div :class="['sex',{'female':listener.user.sex===esex.Famale}]">
+        <span v-if="listener.user.sex === esex.Famale">
+          男
+        </span>  
+        <span v-if="listener.user.sex === esex.Male">
+          女
+        </span>&nbsp;&nbsp;<span>{{listener.user.birthday|agefilter}}</span>
+      </div>
+      <div class="exprience" :class="{'female':listener.user.sex===esex.Famale}">经历</div>
     </div>
     <div class="info-container">
       <div class="item name">
-        <div class="text">小猪佩奇</div>
-        <div class="auth"></div>
+        <div class="text">{{listener.user.nickname}}</div>
+        <div v-if="listener.authstatus==1" class="auth"></div>
       </div>
       <div class="item times">
         <div class="time">月售12345小时</div>
         <div class="comment">收到评价4321条>></div>
       </div>
       <div class="info">
-        <div class="items job">培训师</div>
-        <div class="items family">单身</div>
-        <div class="items edu">博士</div>
-        <div class="items star">射手座</div>
+        <div class="items job">{{listener.jobname}}</div>
+        <div class="items family">{{listener.familyname}}</div>
+        <div class="items edu">{{listener.eduname}}</div>
+        <div class="items star">{{listener.user.birthday|astrofilter}}</div>
       </div>
       <div class="tags">
-        <div class="tag" v-for="(item,index) in 3" :key="index">情感挽回</div>
+        <div class="exp" v-for="(item,index) in listener.exps" :key="index">{{item.name}}</div>
+        <div class="tag" v-for="(item,index) in listener.labels" :key="index">{{item.name}}</div>
       </div>
     </div>
   </div>
   <div class="summary" :class="{'max':summaryOpen}" @click="summarySwitch">
-    <div class="content">个人简介：哈哈哈是小狗🐕🐱🐥🐷哈哈哈是小狗🐕🐱🐥🐷哈哈哈是小狗🐕🐱🐥🐷哈哈哈是小狗🐕🐱🐥🐷哈哈哈是小狗🐕🐱🐥🐷</div>
+    <div class="content">个人简介：
+      {{listener.user.resume}}
+    </div>
     <div class="switch" v-if="!summaryOpen">展开</div>
   </div>
 </div>
@@ -40,6 +50,7 @@ import Vue from 'vue'
 import {Component, Prop, Watch, Emit} from 'vue-property-decorator';
 import { ESex } from '../enum/ESex';
 import UserIcon from '@/components/UserIcon'
+import { IListener } from '../interface/model/IListener';
 
 @Component({
   components:{
@@ -47,8 +58,10 @@ import UserIcon from '@/components/UserIcon'
   }
 })
 export default class ListItem extends Vue{
-@Prop()
-private user:any
+@Prop({
+  required:true
+})
+private listener:IListener;
 private summaryOpen = false;
 private esex = ESex;
 summarySwitch(){
@@ -169,6 +182,15 @@ summarySwitch(){
           margin:.2rem .4rem .2rem 0;
           color:@mainColor;
           border:1px solid @mainColor;
+          border-radius: .8rem;
+        }
+        .exp{
+          height:1.6rem;
+          line-height: 1.6rem;
+          padding:0 .3rem;
+          margin:.2rem .4rem .2rem 0;
+          color:#ff746f;
+          border:1px solid #ff746f;
           border-radius: .8rem;
         }
       }

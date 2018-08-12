@@ -84,6 +84,16 @@ export default class ListService {
         }) as Bluebird<IListener[]>;
     }
 
+    public getListNotinIds(uids:number[],count:number){
+        return MongoSortFilterModel.find({
+            uid:{
+                $nin:uids
+            }
+        }).sort({
+            praisepercent:-1,sealtimes:-1
+        }).limit(count);
+    }
+
     public getSearch(name:string,page:IPager){
         return this.listenerService.findByName(name,page);
     }

@@ -202,24 +202,7 @@ class ListenerService {
                 return;
             }
             const listener = objectHelper_1.default.serialize(res);
-            const labels = this.parseLabels(res.labelids, res.labeldesc, false);
-            const exps = this.parseExprience(res.expids, res.expdesc, false);
-            objectHelper_1.default.merge(listener, {
-                labels,
-                exps
-            });
-            const job = this.baseDataHelper.getJob(listener.job);
-            if (job) {
-                listener.jobname = job.name;
-            }
-            const edu = this.baseDataHelper.getEdu(listener.edu);
-            if (edu) {
-                listener.eduname = edu.name;
-            }
-            const family = this.baseDataHelper.getFamily(listener.family);
-            if (edu) {
-                listener.familyname = family.name;
-            }
+            this.mergeBaseData(listener);
             return Promise.resolve(listener);
         });
     }
@@ -236,15 +219,7 @@ class ListenerService {
         }).then(res => {
             const listeners = objectHelper_1.default.serialize(res);
             listeners.forEach(item => {
-                const labels = this.parseLabels(item.labelids, item.labeldesc);
-                const exps = this.parseExprience(item.expids, item.expdesc);
-                objectHelper_1.default.merge(item, {
-                    labels: labels,
-                    exps
-                });
-                // if(item){
-                //     ObjectHelper.mergeChildToSource(item);
-                // }
+                this.mergeBaseData(item);
             });
             return Bluebird.resolve(listeners);
         });
@@ -277,18 +252,30 @@ class ListenerService {
         }).then(res => {
             const listeners = objectHelper_1.default.serialize(res);
             listeners.forEach(item => {
-                const labels = this.parseLabels(item.labelids, item.labeldesc);
-                const exps = this.parseExprience(item.expids, item.expdesc);
-                objectHelper_1.default.merge(item, {
-                    labels: labels,
-                    exps
-                });
-                // if(item){
-                //     ObjectHelper.mergeChildToSource(item);
-                // }
+                this.mergeBaseData(item);
             });
             return Bluebird.resolve(listeners);
         });
+    }
+    mergeBaseData(listener) {
+        const labels = this.parseLabels(listener.labelids, listener.labeldesc, false);
+        const exps = this.parseExprience(listener.expids, listener.expdesc, false);
+        objectHelper_1.default.merge(listener, {
+            labels,
+            exps
+        }, true);
+        const job = this.baseDataHelper.getJob(listener.job);
+        if (job) {
+            listener.jobname = job.name;
+        }
+        const edu = this.baseDataHelper.getEdu(listener.edu);
+        if (edu) {
+            listener.eduname = edu.name;
+        }
+        const family = this.baseDataHelper.getFamily(listener.family);
+        if (edu) {
+            listener.familyname = family.name;
+        }
     }
     /**
      * 更新标签

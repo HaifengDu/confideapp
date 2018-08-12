@@ -57,7 +57,9 @@ export class NetCallHelper {
 
     private rejectCb = (obj:{fromid:number,fromname:string})=>{
         stopPlay(this.ringSound);
-        play("reject");
+        if(NetCallHelper.isBeCalling||NetCallHelper.isCalling){
+            play("reject");
+        }
         clearTimeout(this.callingFlag);
         NetCallHelper.resetStatus();
         this.listener.reject();
@@ -119,6 +121,7 @@ export class NetCallHelper {
                 isSoundStop = true;
                 stopPlay(this.ringSound);
                 stopPlay(sound);
+                clearTimeout(this.callingFlag);
                 reject();
             },max_wait_time);
             this.callingFlag = setTimeout(()=>{

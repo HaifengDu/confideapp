@@ -98,7 +98,7 @@ import {EFollowType} from "../../enum/EFollowType.ts";
 export default class My extends Vue{
   //TODO:正式删掉
   private isget = false;
-  private wxid="ozOuJ1qTKu7bKUu9yBDXinnz9v8M";
+  private wxid="oRtVK09SoIKSYUYqP3RHV2aOyHr8";
   private entranceArr:any[] = [
     {
         children:[

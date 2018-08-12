@@ -400,7 +400,7 @@ export default class OrderService {
      * @param userid 
      * @param order 
      */
-    private update(userid:number,order:IOrder){
+    private update(userid:number,order:IOrder,tran?: Sequelize.Transaction){
         if(!order.id){
             return Bluebird.reject(new ErrorMsg(false,"订单id非法"));
         }
@@ -413,11 +413,15 @@ export default class OrderService {
             if(order.uid!==userid){
                 return Bluebird.reject(new ErrorMsg(false,"订单用户不一致"));
             }
-            return Order.update(order,{
+            const updateOpions:Sequelize.UpdateOptions = {
                 where:{
                     id:orderid
                 }
-            });
+            };
+            if(tran){
+                updateOpions.transaction = tran;
+            }
+            return Order.update(order,updateOpions);
         });
     }
 
@@ -425,12 +429,39 @@ export default class OrderService {
      * 聊天完成
      * @param orderid 
      */
-    public chatComplete(userid:number,orderid:number,servicetime:number){
+    public chatComplete(userid:number,orderid:number){
+        return Order.findOne({
+            where:{
+                uid:userid,
+                id:orderid
+            }
+        }).then(order=>{
+            if(!order){
+                return Promise.reject(new ErrorMsg(false,"未查询到对应的订单"));
+            }
+            return sequelize.transaction(tran=>{
+                const updateOrderPromise = this.update(userid,{
+                    status:EOrderStatus.Awaiting_Comment,
+                    completetype:ECompleteType.Auto,
+                    completedtime:new Date(),
+                    id:orderid
+                },tran);
+                const updateListenerMoney = this.userService.find(userid).then(res=>{
+                    if(!res){
+                        return Promise.reject(new ErrorMsg(false, "用户不存在"));
+                    }
+                    return this.userService.update({
+                        id:res.id,
+                        money:(res.money||0)+order.totalprice
+                    },tran);
+                });
+                return Promise.all([updateOrderPromise,updateListenerMoney]);
+            });
+        });
         return this.update(userid,{
             status:EOrderStatus.Awaiting_Comment,
             completetype:ECompleteType.Auto,
             completedtime:new Date(),
-            servicetime:servicetime||0,
             id:orderid
         });
     }
@@ -441,10 +472,29 @@ export default class OrderService {
      * @param orderid 
      * @param servicetime 
      */
-    public updateServicetime(userid:number,orderid:number,servicetime:number){
-        return this.update(userid,{
-            servicetime:servicetime||0,
-            id:orderid
+    public updateServicetime(userid:number,orderid:number,servicedtime:number){
+        return Order.findOne({
+            where:{
+                id:orderid
+            }
+        }).then(order=>{
+            const servicetime = order.servicetime||0;
+            let updatedServiceTime = servicetime - servicedtime;
+            if(updatedServiceTime<0){
+                updatedServiceTime = 0;
+            }
+            const updatedField:IOrder = {
+                servicetime:updatedServiceTime,
+                id:orderid
+            };
+            if(updatedServiceTime===0){
+                Object.assign(updatedField,{
+                    status:EOrderStatus.Awaiting_Comment,
+                    completetype:ECompleteType.Auto,
+                    completedtime:new Date(),
+                });
+            }
+            return this.update(userid,updatedField);
         });
     }
 
@@ -466,10 +516,41 @@ export default class OrderService {
      * @param orderid 
      */
     public cancelOrder(userid:number, orderid:number){
-        return this.update(userid,{
-            status:EOrderStatus.Cancelled,
-            canceltime:new Date(),
-            id:orderid
+        return Order.findOne({
+            where:{
+                uid:userid,
+                id:orderid
+            }
+        }).then(order=>{
+            if(!order){
+                return Promise.reject(new ErrorMsg(false,"未查询到对应的订单"));
+            }
+            if(!(order.status===EOrderStatus.Awaiting_Payment||order.status===EOrderStatus.Paid)){
+                return Promise.reject(new ErrorMsg(false, "订单状态不正确"));
+            }
+            if(order.status === EOrderStatus.Paid){
+                const updateBalance = this.userService.find(order.uid).then(user=>{
+                    if(!user){
+                        return Promise.reject(new ErrorMsg(false, "用户不存在"));
+                    }
+                    return this.userService.update({
+                        id:user.id,
+                        money:(user.money||0) + order.totalprice
+                    });
+                });
+                const updateOrder = this.update(userid,{
+                    status:EOrderStatus.Cancelled,
+                    canceltime:new Date(),
+                    id:orderid
+                });
+                return Promise.all([updateBalance,updateOrder]) as Promise<any>;
+            }else{
+                return this.update(userid,{
+                    status:EOrderStatus.Cancelled,
+                    canceltime:new Date(),
+                    id:orderid
+                });
+            }
         });
     }
 
@@ -491,6 +572,34 @@ export default class OrderService {
                     status:EOrderStatus.Awaiting_Comment
                 }]
             }
+        }).then((data:any)=>{
+            if(!data.ucount){
+                data.setDataValue('ucount',0);
+            }
+            if(!data.stime){
+                data.setDataValue('stime',0);
+            }
+            return <{ucount:number,stime:number}>data;
+        });
+    }
+
+    public getSummeryDatas(lids:number[]) {
+        return Order.find({
+            attributes:[
+                [Sequelize.fn("COUNT",Sequelize.literal('DISTINCT `uid`')),'ucount'],
+                [Sequelize.fn("SUM",Sequelize.literal('`payservicetime`')),'stime']
+            ],
+            where:{
+                lid:{
+                    [Sequelize.Op.in]:lids
+                },
+                [Sequelize.Op.or]:[{
+                    status:EOrderStatus.Completed
+                },{
+                    status:EOrderStatus.Awaiting_Comment
+                }]
+            },
+            group:'lid'
         }).then((data:any)=>{
             if(!data.ucount){
                 data.setDataValue('ucount',0);

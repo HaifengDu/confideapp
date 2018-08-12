@@ -319,6 +319,10 @@ router.get("/recordclick",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
     query("lid").isNumeric().withMessage("倾听者id不能为空")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     generalSettingCtrl.checkGeneral(req.query.userid,req.query.lid).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
@@ -337,6 +341,10 @@ router.post("/setrecievestatus",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
     body("status").isNumeric().withMessage("状态参数非法")
 ],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
     const values:any[] = _.values(ERecieveStatus);
     const status = parseInt(req.body.status);
     if(values.indexOf(status)===-1){
@@ -355,5 +363,24 @@ router.post("/setrecievestatus",[
         res.json(new ErrorMsg(false,err.message,err));
     });
 });
+
+
+router.get('/audit',
+[query("userid").isNumeric().withMessage("用户id不能为空")],
+function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    listenCtrl.confirm(req.query.userid).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    });
+})
 
 export = router;

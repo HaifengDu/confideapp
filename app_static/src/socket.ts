@@ -4,8 +4,9 @@ import io from "socket.io-client";
 // declare var io:any;
 export default class SocketWrapper{
     private socket:SocketIOClient.Socket;
+    private orderSocket:SocketIOClient.Socket;
     private static readonly reconnectionAttempts = 10;
-    private static readonly chatUrl = "/chat";
+    private static readonly chatUrl = "http://127.0.0.1:3001/chat";
     //应该是权限
     constructor(private userid:number,events:ISocketEvent){
         this.init();
@@ -17,27 +18,32 @@ export default class SocketWrapper{
             reconnectionAttempts:SocketWrapper.reconnectionAttempts,
             reconnectionDelay:3000
         });
+        // this.orderSocket = io
     }
 
-                 private initEvent(events: ISocketEvent) {
-                   for (let key in events) {
-                     this.socket.on(key, events[key].bind(this));
-                   }
-                 }
+    private initEvent(events: ISocketEvent) {
+      for (let key in events) {
+        this.socket.on(key, events[key].bind(this));
+      }
+    }
 
-                 public on(event: string, listener: Function) {
-                   return this.socket.on(event, listener);
-                 }
+    public getOrderSocket(){
+      return this.orderSocket;
+    }
 
-                 public remove(event: string, listener?: Function) {
-                   return this.socket.removeEventListener(event, listener);
-                 }
+    public on(event: string, listener: Function) {
+      return this.socket.on(event, listener);
+    }
 
-                 public emit(event: string, args: any, cb?: any) {
-                   return this.socket.emit(event, args, cb);
-                 }
+    public remove(event: string, listener?: Function) {
+      return this.socket.removeEventListener(event, listener);
+    }
 
-                 public close() {
-                   return this.socket.close();
-                 }
-               }
+    public emit(event: string, args: any, cb?: any) {
+      return this.socket.emit(event, args, cb);
+    }
+
+    public close() {
+      return this.socket.close();
+    }
+}

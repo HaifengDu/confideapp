@@ -6,11 +6,14 @@ class ObjectHelper {
      * @param source
      * @param target
      */
-    static merge(source, target) {
+    static merge(source, target, cover = false) {
         for (const key in target) {
             if (target.hasOwnProperty(key)) {
                 const element = target[key];
-                if (!(key in source)) {
+                if (cover) {
+                    source[key] = element;
+                }
+                else if (!(key in source)) {
                     source[key] = element;
                 }
             }

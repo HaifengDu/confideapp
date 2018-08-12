@@ -281,6 +281,10 @@ router.get("/recordclick", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
     check_1.query("lid").isNumeric().withMessage("倾听者id不能为空")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     generalSettingCtrl.checkGeneral(req.query.userid, req.query.lid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
@@ -296,6 +300,10 @@ router.post("/setrecievestatus", [
     check_1.query("userid").isNumeric().withMessage("用户id不能为空"),
     check_1.body("status").isNumeric().withMessage("状态参数非法")
 ], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
     const values = _.values(ERecieveStatus_1.ERecieveStatus);
     const status = parseInt(req.body.status);
     if (values.indexOf(status) === -1) {
@@ -305,6 +313,19 @@ router.post("/setrecievestatus", [
     listenCtrl.updateListenerById(req.query.userid, {
         recievestatus: status
     }).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
+router.get('/audit', [check_1.query("userid").isNumeric().withMessage("用户id不能为空")], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    listenCtrl.confirm(req.query.userid).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));

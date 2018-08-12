@@ -18,6 +18,7 @@ var chat = require("./build/routes/chat");
 var recommend = require("./build/routes/recommend");
 var list = require("./build/routes/list");
 var order = require("./build/routes/order");
+var tencent = require("./build/routes/tencent");
 var { LogHelper } = require("./build/helper/logHelper");
 require("./build/helper/mongoHelper");
 var app = express();
@@ -75,6 +76,7 @@ app.use("/chat", chat);
 app.use("/recommend", recommend);
 app.use("/list", list);
 app.use("/order", order);
+app.use("/tencent", tencent);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

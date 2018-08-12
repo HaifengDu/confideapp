@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Sequelize = require("sequelize");
 const mysqlSeq_1 = require("../mysqlSeq");
-const User_1 = require("./User");
 const GeneralSetting = mysqlSeq_1.default.define("generalsetting", {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true, comment: "唯一id" },
     uid: { type: Sequelize.INTEGER, comment: "user外键", allowNull: false },
@@ -14,8 +13,8 @@ const GeneralSetting = mysqlSeq_1.default.define("generalsetting", {
 }, {
     freezeTableName: true
 });
-GeneralSetting.belongsTo(User_1.default, {
-    foreignKey: "uid"
-});
+// GeneralSetting.belongsTo(User,{
+//     foreignKey:"uid"
+// });
 GeneralSetting.sync({ alter: true });
 exports.default = GeneralSetting;

@@ -52,7 +52,7 @@ export interface IOrder{
     /**
      * 服务时长
      */
-    servicetime?:number,
+    servicetime?:number,//聊天为条数   通话为时长
     /**
      * 购买时长
      */

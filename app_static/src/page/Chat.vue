@@ -81,7 +81,7 @@
             </div>
         </div>
         <select-order :toUser="toUser" v-if="orderSelectShow"></select-order>
-        <net-call v-show="topChatType===2" :to-user="toUser"></net-call>
+        <net-call v-show="topChatType===2" :roomid="tencentRoomid" :to-user="toUser"></net-call>
         <select-order v-show="false" :toUser="toUser"></select-order>
     </div>
 </template>
@@ -135,6 +135,8 @@ export default class Chat extends Vue{
     private summaryData:any;
     private showDetail:boolean = true;
     private orderSelectShow:boolean = false;
+    private user:IUser;
+    private tencentRoomid="";
     follow(){
 
     }
@@ -154,12 +156,27 @@ export default class Chat extends Vue{
             this.summaryData = data.summaryData||''
             if(listener){
                 this.toUser = listener;
-                this.chatListener = this.biz.joinRoom(this,<number>listener.id);
-                this.chatListener.addEvent();
-                this.onSocketEvent();
+                this.biz.joinRoom(this,<number>listener.id).then(listener=>{
+                    this.chatListener = listener;
+                    this.tencentRoomid = this.createTencentRoomid();
+                    this.chatListener.addEvent();
+                    this.onSocketEvent();
+                });
             }
         });
     }
+
+    private createTencentRoomid(){
+        const sortArr:number[] = [<number>this.user.id,<number>this.toUser.id].sort();
+        if(sortArr[0].toString().length<16){
+            sortArr[0] = 1e16 + sortArr[0];
+        }
+        if(sortArr[1].toString().length<16){
+            sortArr[1] = 1e16 + sortArr[1];
+        }
+        return sortArr.join('');
+    }
+
     onSocketEvent(){
         this.$on(ChatEventContants.sendEvent,(data:IOnlyChatRecord)=>{
           this.msgList.push(data);

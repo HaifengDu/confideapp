@@ -15,6 +15,7 @@ export class ChatSocket{
     private static readonly notifyEvent = "notify";
     private static readonly readEvent = "read";
     private static readonly leaveEvent = "leave";
+    private static readonly compeleteOrderEvent = 'complete_order';
     private static readonly MAX_MSG_LENGTH = 100;
     private static readonly RETRY_COUNT = 5;
     private syncHelper: SyncHelper;
@@ -34,6 +35,7 @@ export class ChatSocket{
         this.socket.on(ChatSocket.joinEvent,this.joinRoom.bind(this));
         this.socket.on(ChatSocket.sendEvent,this.sendMsg.bind(this));
         this.socket.on(ChatSocket.readEvent,this.read.bind(this)); 
+        this.socket.on(ChatSocket.compeleteOrderEvent,this.completeOrder.bind(this));
         this.socket.on('disconnect',this.disconnectInsetAll.bind(this));
         this.socket.on(ChatSocket.leaveEvent,this.leaveInsertRoomRecords.bind(this));
         this.socket.on("error",()=>{
@@ -105,6 +107,18 @@ export class ChatSocket{
         if(ackFn){
             ackFn(msgObj);  
         }
+    }
+
+    /**
+     * 完成订单
+     * @param data 
+     * @param ackFn 
+     */
+    private completeOrder(data:{
+        roomid:string
+    },ackFn:(...args:any[])=>void){
+        const result = this.socket.to(data.roomid).broadcast.emit(ChatSocket.compeleteOrderEvent);
+        ackFn(result);
     }
 
     private read(data:{tokenid:string|string[],roomid:string}){

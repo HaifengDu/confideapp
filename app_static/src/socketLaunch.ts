@@ -9,3 +9,6 @@ export function launchSocket(userid:number){
 export function getSocket(){
     return socketWrapper;
 }
+export function getOrderSocket(){
+    return socketWrapper.getOrderSocket();
+}

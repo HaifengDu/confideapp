@@ -4,11 +4,13 @@ export default class ObjectHelper{
      * @param source 
      * @param target 
      */
-    static merge(source:any,target:any){
+    static merge(source:any,target:any,cover=false){
         for (const key in target) {
             if (target.hasOwnProperty(key)) {
                 const element = target[key];
-                if(!(key in source)){
+                if(cover){
+                    source[key] = element;
+                }else if(!(key in source)){
                     source[key] = element;
                 }
             }
@@ -48,7 +50,7 @@ export default class ObjectHelper{
             delete obj[element];
         }
     }
-    static parseJSON(str:string){
+    static parseJSON(str?:string){
         if(!str){
             return null;
         }

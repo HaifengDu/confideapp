@@ -25,6 +25,7 @@ class ChatSocket {
         this.socket.on(ChatSocket.joinEvent, this.joinRoom.bind(this));
         this.socket.on(ChatSocket.sendEvent, this.sendMsg.bind(this));
         this.socket.on(ChatSocket.readEvent, this.read.bind(this));
+        this.socket.on(ChatSocket.compeleteOrderEvent, this.completeOrder.bind(this));
         this.socket.on('disconnect', this.disconnectInsetAll.bind(this));
         this.socket.on(ChatSocket.leaveEvent, this.leaveInsertRoomRecords.bind(this));
         this.socket.on("error", () => {
@@ -92,6 +93,15 @@ class ChatSocket {
         if (ackFn) {
             ackFn(msgObj);
         }
+    }
+    /**
+     * 完成订单
+     * @param data
+     * @param ackFn
+     */
+    completeOrder(data, ackFn) {
+        const result = this.socket.to(data.roomid).broadcast.emit(ChatSocket.compeleteOrderEvent);
+        ackFn(result);
     }
     read(data) {
         //数组直接更新为已读
@@ -183,6 +193,7 @@ ChatSocket.sendEvent = "send";
 ChatSocket.notifyEvent = "notify";
 ChatSocket.readEvent = "read";
 ChatSocket.leaveEvent = "leave";
+ChatSocket.compeleteOrderEvent = 'complete_order';
 ChatSocket.MAX_MSG_LENGTH = 100;
 ChatSocket.RETRY_COUNT = 5;
 exports.ChatSocket = ChatSocket;

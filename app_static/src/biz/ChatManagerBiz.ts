@@ -5,7 +5,7 @@ import ErrorMsg from "../model/ErrorMsg";
 import OrderService from "../api/OrderService";
 import IUser from "../interface/model/IUser";
 import { IOrder } from "../interface/model/IOrder";
-import { getSocket } from "../socketLaunch";
+import { getSocket, getOrderSocket } from "../socketLaunch";
 import Vue from "vue";
 import EChatMsgType from "../enum/EChatMsgType";
 import { IOnlyChatRecord } from "../interface/mongomodel/IChatRecord";
@@ -44,7 +44,9 @@ export class ChatEventContants{
     public static readonly notifyEvent = "notify";
     public static readonly readEvent = "read";
     public static readonly leaveEvent = "leave";
-
+    public static readonly addCount = "add_count";
+    public static readonly commitCount = "add_count";
+    public static readonly compeleteOrderEvent = 'complete_order';
     public static readonly vueDefaultRecordEvent = "vueDefaultRecordEvent";
     public static readonly vueOrderComplete = "vueOrderComplete";
 
@@ -69,6 +71,9 @@ export class ChatListener{
 
     private isUpdating=false;
 
+    public get Roomid(){
+        return this.roomid;
+    }
     static send(obj:IOnlyChatRecord){
         if(obj.type===EChatMsgType.Audio){
             wx.downloadVoice({
@@ -170,41 +175,24 @@ export class ChatListener{
         });
     }
 
-    /**
-     * 验证是否可发送消息
-     */
-    private checkSendMsg(){
-        //TODO:根据this.order,this.chatCount,ChatEventContants.MAX_CHAT_COUNT判断是否可以发送
-        if(!this.order){
-            if(this.chatCount<ChatEventContants.MAX_CHAT_COUNT){
+    private checkOrderTimes(){
+        if(this.order){
+            if(this.order.servicetime >= this.order.payservicetime){
+                return new ErrorMsg(false,"请下单后开始聊天");
+            }
+            this.order.servicetime ++;
+            const orderSocket = getOrderSocket();
+            orderSocket.emit(ChatEventContants.addCount);
+            if(this.order.servicetime===this.order.payservicetime){
+                ChatListener._VUE.$emit(ChatEventContants.vueOrderComplete, this.order);
+            }
+            return new ErrorMsg(true);
+        }else{
+            if(this.chatCount < ChatEventContants.MAX_CHAT_COUNT){
                 this.chatCount++;
                 return new ErrorMsg(true);
             }
             return new ErrorMsg(false,"已达到最大聊天数量");
-        }
-        if(this.order.servicetime<this.order.payservicetime){
-            return new ErrorMsg(true);
-        }
-        return new ErrorMsg(false,"订单服务时长已到");
-    }
-
-    /**
-     * 轮询验证订单超时
-     */
-    private checkOrderServiceTime(){
-        if(!this.checkOrderFlag&&this.order){
-            const order = this.order;
-            order.servicetime = order.servicetime||0;
-            this.checkOrderFlag = setInterval(()=>{
-                //服务时长小于购买时长
-                if(order.servicetime<order.payservicetime){
-                    order.servicetime ++;
-                }else{
-                    ChatListener._VUE.$emit(ChatEventContants.vueOrderComplete,order);
-                    clearInterval(this.checkOrderFlag);
-                    this.checkOrderFlag = 0;
-                }
-            },1000);
         }
     }
 
@@ -226,11 +214,8 @@ export class ChatListener{
                     if(data.success){
                         Object.assign(this.order,data.data);
                         this.isUpdating = false;
-                        this.checkOrderServiceTime();
                     }
                 });
-            }else{
-                this.checkOrderServiceTime();
             }
         }
     }
@@ -241,7 +226,7 @@ export class ChatListener{
      * @param chatMsgObj
      */
     sendMsg(chatMsgObj:IOnlyChatRecord){
-        const checkResult = this.checkSendMsg();
+        const checkResult = this.checkOrderTimes();
         if(!checkResult.success){
             return Promise.reject(checkResult);
         }
@@ -269,6 +254,19 @@ export class ChatListener{
             });
         });
     }
+    
+    // completeOrder() {
+    //     const chatsocket = getSocket();
+    //     chatsocket.emit(ChatEventContants.compeleteOrderEvent,{
+    //         roomid:this.roomid
+    //     });
+    // }
+
+    // onCompleteOrder(){
+    //     if(this.order){
+    //         this.order.status = EOrderStatus.Awaiting_Comment;
+    //     }
+    // }
 
     /**
      * 离开房间
@@ -285,6 +283,7 @@ export class ChatListener{
         const socketWrapper = getSocket();
         socketWrapper.on(ChatEventContants.readEvent,ChatListener.read);
         socketWrapper.on(ChatEventContants.sendEvent,ChatListener.send);
+        // socketWrapper.on(ChatEventContants.compeleteOrderEvent,this.completeOrder.bind(this));
     }
 
     removeEvent(){
@@ -320,8 +319,9 @@ export default class ChatManagerBiz{
         this.chatListener = new ChatListener(vue,this.chatRole.Current,this.order);
         const currentUid = <number>rootStore.state.user.id;
         //NOTE:暂时没有名字
-        this.chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname);
-        return this.chatListener;
+        return this.chatListener.join(currentUid,touid,<string>rootStore.state.user.nickname).then(res=>{
+            return this.chatListener;
+        });
     }
 
     /**
@@ -337,6 +337,17 @@ export default class ChatManagerBiz{
         } //倾诉者
         if(this.chatRole.Current===ERole.Pourouter){
             return orderService.chatComplete(order.id,order.servicetime);
+        }
+        return Promise.reject(new ErrorMsg(true,"非本人单据，默认完成成功"));
+    }
+
+    public commitChatCount(order:IOrder){
+        if(!order.id){
+            return Promise.reject(new ErrorMsg(false,"订单非法"));
+        }
+        if(this.chatRole.Current===ERole.Pourouter){
+            const orderSocket = getOrderSocket();
+            return orderSocket.emit(ChatEventContants.commitCount);
         }
         return Promise.reject(new ErrorMsg(true,"非本人单据，默认完成成功"));
     }

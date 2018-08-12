@@ -41,6 +41,6 @@ Order.belongsTo(User,{
     foreignKey:"lid",
     as: "luser"
 });
-Order.sync({force:true});
+// Order.sync({force:true});
 
 export default Order;

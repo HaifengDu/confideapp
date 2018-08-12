@@ -14,8 +14,8 @@ const GeneralSetting = sequelize.define<IGeneralSetting,IGeneralSetting>("genera
 },{
     freezeTableName: true
 });
-GeneralSetting.belongsTo(User,{
-    foreignKey:"uid"
-});
+// GeneralSetting.belongsTo(User,{
+//     foreignKey:"uid"
+// });
 GeneralSetting.sync({alter:true});
 export default GeneralSetting;

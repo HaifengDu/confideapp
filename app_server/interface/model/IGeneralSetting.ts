@@ -10,6 +10,6 @@ export interface IGeneralSetting{
     limitprice?:number,//当日现在金额
     dayprice?:number,
     status?:EGeneralStatus,
-    listener?:IListener
+    // listener?:IListener
 }
 export default IGeneralSetting;

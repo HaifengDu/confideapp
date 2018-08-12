@@ -81,14 +81,13 @@ router.get("/checkHasOrder",[
  */
 router.post("/chatComplete",[
     query("userid").isNumeric().withMessage("用户id不能为空"),
-    body("orderid").isNumeric().withMessage("订单id不能为空"),
-    body("servicetime").isNumeric().withMessage("服务时长不能为空")
+    body("orderid").isNumeric().withMessage("订单id不能为空")
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
-    orderService.chatComplete(parseInt(req.query.userid),parseInt(req.body.orderid),parseFloat(req.body.servicetime))
+    orderService.chatComplete(parseInt(req.query.userid),parseInt(req.body.orderid))
     .then(data=>{
         let order:IOrder = null;
         if(data[1]&&data[1].length){

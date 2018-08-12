@@ -26,6 +26,10 @@
                 <mt-button @click="hangup" type="danger">挂断</mt-button>
             </div>
         </div>
+        <audio ref="localVideo" muted autoplay></audio>
+        <!-- 远端视频流 -->
+        <audio ref="remoteVideo" autoplay></audio>
+
     </div>
 </template>
 <script lang="ts">
@@ -36,15 +40,34 @@ import { INetCallListener } from '../interface/action/INetCallListener';
 import ENetCallStatus from "../enum/ENetCallStatus";
 import { IUser } from '../interface/model/IUser';
 import { mapGetters } from 'vuex';
+import TencentHelper from '../helper/TencentHelper';
+import TencentService from "../api/TencentService";
+import { ITencentListener } from '../interface/action/ITencentListener';
+
 class NetCallListener implements INetCallListener{
+    private tencentService:TencentService;
     constructor(private netCallVue:NetCall){
+        this.tencentService = TencentService.getInstance();
     }
 
     calling(){
         this.netCallVue.status = ENetCallStatus.BeCalling;
     }
     accept(){
-        this.netCallVue.status = ENetCallStatus.Talking;
+        this.tencentService.getUserSig().then(res=>{
+            const data = res.data;
+            if(!data.success){
+                this.netCallVue.$toast(data.message);
+                return;
+            }
+            this.netCallVue.createRoom(<string>data.data).then(res=>{
+                this.netCallVue.status = ENetCallStatus.Talking;
+            },err=>{
+                this.netCallVue.status = ENetCallStatus.WaitCall;
+            });
+        },err=>{
+            this.netCallVue.$toast(err.message);
+        });
     }
     reject(){
         this.netCallVue.status = ENetCallStatus.WaitCall;
@@ -54,11 +77,36 @@ class NetCallListener implements INetCallListener{
     }
     handup(){
         this.netCallVue.status = ENetCallStatus.WaitCall;
+        this.netCallVue.tencentHelper.quit();
     }
     waittimeout(){
         this.netCallVue.status = ENetCallStatus.WaitCall;
     }
 }
+
+class TencentListener implements ITencentListener{
+    constructor(private netCallVue:NetCall){
+
+    }
+
+    onRemoteStreamRemove(userid:string){
+        this.netCallVue.$toast("远程已关闭");
+        this.netCallVue.hangup();
+    }
+    onWebSocketClose(){
+        this.netCallVue.$toast("网络已断开");
+        this.netCallVue.hangup();
+    }
+    onRelayTimeout(){
+        this.netCallVue.$toast("网络超时");
+        this.netCallVue.hangup();
+    }
+    onKickout(){
+        this.netCallVue.$toast("当前用户已在其他地方登录");
+        this.netCallVue.hangup();
+    }
+}
+
 @Component({
     computed:{
         ...mapGetters({
@@ -69,15 +117,19 @@ class NetCallListener implements INetCallListener{
 export default class NetCall extends Vue{
     private ENetCallStatus = ENetCallStatus;
     private netCallHelper:NetCallHelper;
-    private user:IUser;
-    private timeFlag:number;
+    public user:IUser;
+    public tencentHelper:TencentHelper;
+    private tencentService:TencentService;
     public status:ENetCallStatus = ENetCallStatus.WaitCall;
 
     @Prop({
         required:true
     })
     private toUser:IUser;
-    private isMyCall=false;
+    @Prop({
+        required:true
+    })
+    public roomid:string;
 
     getIds(){
         const uid = <number>this.user.id;
@@ -91,6 +143,11 @@ export default class NetCall extends Vue{
     created(){
         this.netCallHelper = new NetCallHelper(new NetCallListener(this));
         this.netCallHelper.initCallEvent();
+        this.tencentService = TencentService.getInstance();
+    }
+
+    mounted() {
+        this.tencentHelper = new TencentHelper((<HTMLVideoElement>this.$refs.localVideo),(<HTMLVideoElement>this.$refs.localVideo));        
     }
 
     beforeDestroy() {
@@ -102,6 +159,7 @@ export default class NetCall extends Vue{
             console.log(err);
         });
         this.netCallHelper.removeListener();
+        this.tencentHelper.quit().then(()=>{},err=>{});
     }
 
     makeCall(){
@@ -115,14 +173,33 @@ export default class NetCall extends Vue{
     }
 
     accept(){
-        const {uid,touid} = this.getIds();
-        this.netCallHelper.accept(uid,touid).then(res=>{
-            this.status = ENetCallStatus.Talking;
+        this.tencentService.getUserSig().then(res=>{
+            const data = res.data;
+            if(!data.success){
+                this.$toast(data.message);
+                return;
+            }
+            this.createRoom(<string>data.data).then(res=>{
+                const {uid,touid} = this.getIds();
+                this.netCallHelper.accept(uid,touid).then(res=>{
+                    this.status = ENetCallStatus.Talking;
+                },err=>{
+                    this.status = ENetCallStatus.WaitCall;
+                });
+            });;
+            
         },err=>{
-            this.status = ENetCallStatus.WaitCall;
+            this.$toast(err.message);
         });
+        // })
     }
 
+    public createRoom(key:string){
+        return this.tencentHelper.initRtc("1400106449",(<number>this.user.id).toString(),key,"30119").then(res=>{
+            this.tencentHelper.initEvent(new TencentListener(this));
+            return this.tencentHelper.createRoom(this.roomid,key);
+        });
+    }
     reject(){
         const {uid,touid} = this.getIds();
         this.netCallHelper.reject(uid,touid).then(res=>{
@@ -133,6 +210,7 @@ export default class NetCall extends Vue{
     }
 
     hangup(){
+        this.tencentHelper.quit();
         const {uid,touid} = this.getIds();
         this.netCallHelper.handup(uid,touid).then(res=>{
             this.status = ENetCallStatus.WaitCall;

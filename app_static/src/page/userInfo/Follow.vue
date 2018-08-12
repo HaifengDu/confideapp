@@ -109,7 +109,7 @@ export default class Follow extends Vue{
 
     toUserInfo(item:any){
         if(item.id){
-            this.$router.push({name:'userInfo',params:{uid:item.id}});
+            this.$router.push({name:'UserInfo',params:{uid:item.id}});
         }
     }
 

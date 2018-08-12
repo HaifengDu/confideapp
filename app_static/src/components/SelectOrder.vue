@@ -11,22 +11,22 @@
         <div class="item" :class="{'active':curTab==2}" @click="changeTab(2)">通话</div>
         <div class="item" :class="{'active':curTab==1}" @click="changeTab(1)">文字</div>
       </div>
-      <div class="list" v-if="curTab==2">
+      <div class="list">
         <div class="name">单价</div>
-        <div class="price">{{list.phone.taxprice}}/分钟</div>
+        <div class="price">{{curTab==1?word.taxprice:phone.taxprice}}/分钟</div>
       </div>
       <div class="list">
         <div class="name">时长</div>
         <div class="price">
-          <el-input-number v-if="curTab==1" v-model="base" :step="15" size="mini" :min="min" :max="max" @change="watchChange"></el-input-number>
-          <el-input-number v-else v-model="phonebase" :step="15" size="mini" :min="15" :max="720"></el-input-number>
+          <el-input-number v-if="curTab==1" v-model="wordbase" :step="15" size="mini" :min="word.timecircle*15" :max="720"></el-input-number>
+          <el-input-number v-else v-model="phonebase" :step="15" size="mini" :min="phone.timecircle*15" :max="720"></el-input-number>
           分钟
         </div>
       </div>
       <div class="tip">该订单为{{curTab==1?'文字':'通话'}}订单，将以{{curTab==1?'文字':'通话'}}形式进行服务。</div>
     </div>
     <div class="bottom">
-      <div class="total">合计:<span class="orange">￥{{curTab==1?wordtotal:phonebase*list.phone.taxprice}}</span></div>
+      <div class="total">合计:<span class="orange">￥{{curTab==1?wordbase*word.taxprice:phonebase*phone.taxprice}}</span></div>
       <div class="button" @click="preOrder">确认下单</div>
     </div>
   </div>
@@ -61,67 +61,37 @@ export default class SelectOrder extends Vue {
   })
   private toUser:IUser;
   private curTab:EChatType = 2;
-  private list:{
-    word:IPriceSetting[],
-    phone:IPriceSetting
-  }= {word:[],phone:{}}
-  private base = 15;
-  private phonebase = 15;
-  private min = 15;
-  private max = 15;
-  private wordtotal = 0;
+  private word:IPriceSetting = {};
+  private phone:IPriceSetting = {};
+  private max = 720;
+  private wordbase = 0;
+  private phonebase = 0;
   @Watch('toUser')
   ontoUserchanged(n:any,o:any){
-    const list:{
-      word:IPriceSetting[],
-      phone:IPriceSetting
-    } = {word:[],phone:{}}
-    if(this.toUser.pricesettings){
-
-    this.toUser.pricesettings.forEach(item=>item.status=EPriceStatus.Enable)
-    this.toUser.pricesettings[2].status = EPriceStatus.Disable;
-    }
-
     this.toUser&&this.toUser.pricesettings&&this.toUser.pricesettings.forEach((item:any) => {
       if(item.status===EPriceStatus.Enable){
         if(item.type===EPriceType.EWord){
-          list.word.push(item);
+          this.word = item;
         }else if(item.type===EPriceType.ECall){
-          list.phone = item;
+          this.phone = item;
         }
       }
     });
-    if(list.word.length>1){
-      list.word.sort((a,b)=><number>a.timecircle-<number>b.timecircle)
-    }
-    if(list.word.length){
-      this.base = <number>list.word[0].timecircle*15;
-      this.min = <number>list.word[0].timecircle*15;
-      this.max = <number>list.word[list.word.length - 1].timecircle*15;
-      this.wordtotal = <number>list.word[0].price;
-    }
-    (<any>this).list = list;
+    this.wordbase = <number>this.word.timecircle*15
+    this.phonebase = <number>this.phone.timecircle*15
   }
   changeTab(tab:EChatType){
     (<any>this.curTab) = tab
   }
-  watchChange(n:number,o:number){
-    let index = 0;
-      index = this.list.word.findIndex(item=><number>item.timecircle*15>=n);
-    if(n<o&&index){
-      index--;
-    }
-    this.wordtotal = <number>this.list.word[index].price
-    this.base = <number>this.list.word[index].timecircle*15;
-  }
+
   private updatePreOrder:INoop;
   preOrder(){
-    let time = this.curTab===1?this.base:this.phonebase;
-    let price = this.curTab===1?this.wordtotal:this.phonebase*<number>this.list.phone.taxprice;
+    // let time = this.curTab===1?this.base:this.phonebase;
+    // let price = this.curTab===1?this.wordtotal:this.phonebase*<number>this.list.phone.taxprice;
     this.updatePreOrder({
       type:this.curTab,
-      time,
-      price
+      // time,
+      // price
     })
   }
   created(){

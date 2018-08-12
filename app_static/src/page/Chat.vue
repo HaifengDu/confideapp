@@ -81,8 +81,7 @@
             </div>
         </div>
         <select-order :toUser="toUser" v-if="orderSelectShow"></select-order>
-        <net-call v-show="topChatType===2" :to-user="toUser"></net-call>
-        <select-order v-show="false" :toUser="toUser"></select-order>
+        <!-- <net-call v-show="topChatType===2" :to-user="toUser"></net-call> -->
     </div>
 </template>
 <script lang="ts">

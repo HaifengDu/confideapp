@@ -39,7 +39,7 @@ import {EPriceType} from "@/enum/EPriceType";
 import {EOrderSource} from "@/enum/EOrderSource";
 import OrderService from "@/api/OrderService.ts";
 import CalucateService from "@/helper/CalucateService.ts";
-import { mapGetters } from 'vuex';
+import { mapGetters,mapActions } from 'vuex';
 import { MessageBox } from 'mint-ui';
 import { Indicator } from 'mint-ui';
 const orderService = OrderService.getInstance();
@@ -47,6 +47,11 @@ const calculate = CalucateService.Factory();
 declare var WeixinJSBridge:any;
 declare var wx:any;
 @Component({
+    methods:{
+        ...mapActions({
+            setOrder:'setOrder'
+        })
+    },
     computed:{
         ...mapGetters({
             user:'user'
@@ -188,6 +193,7 @@ export default class PlaceOrder extends Vue{
     }
 
     private toOrderDetail(id:number){
+        (<any>this).setOrder(this.order);
         this.$router.push({path:'/orderDetail',query:{orderid:String(id)}});
     }
 }

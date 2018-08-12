@@ -22,7 +22,7 @@
     "@types/socket.io-client": "^1.4.32",
     "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
-    "better-scroll": "^1.12.5",
+    "better-scroll": "^1.12.6",
     "element-ui": "^2.4.4",
     "howler": "^2.0.14",
     "less": "^2.7.3",

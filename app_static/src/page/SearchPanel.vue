@@ -7,7 +7,7 @@
                     <option value="2">话题</option>
                 </select>
                 <i class="fa fa-chevron-down"></i>
-                <input autofocus v-model="filterModel.text" @keyup.enter="search" type="text" :placeholder="textPlace" name="text"/>
+                <input autofocus v-model="filterModel.text" @keyup.enter="search()" type="text" :placeholder="textPlace" name="text"/>
             </div>
             <span class="cancel-text" @click="cancel">取消</span>
         </div>
@@ -27,7 +27,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import {Component} from "vue-property-decorator";
-
 @Component
 export default class SearchPanel extends Vue{
     private filterModel={
@@ -40,14 +39,19 @@ export default class SearchPanel extends Vue{
         this.textPlace = this.filterModel.type=="1"?"搜索倾听者":"搜索话题";
     }
     search(item?:string){
-        if(item){
-            this.filterModel.text = item;
+      if(item){
+          this.filterModel.text = item;
+      }
+      if(!this.filterModel.text){
+          this.$toast("请输入文字");
+          return;
+      }
+      this.$router.push({
+        path:'/searchResult',
+        query:{
+          name:this.filterModel.text
         }
-        if(!this.filterModel.text){
-            this.$toast("请输入文字");
-            return;
-        }
-        //去搜索
+      })
     }
     cancel(){
         this.$router.back();

@@ -8,7 +8,7 @@
       <div :class="['sex',{'female':listener.user.sex===esex.Famale}]">
         <span v-if="listener.user.sex === esex.Famale">
           男
-        </span>  
+        </span>
         <span v-if="listener.user.sex === esex.Male">
           女
         </span>&nbsp;&nbsp;<span>{{listener.user.birthday|agefilter}}</span>
@@ -21,13 +21,13 @@
         <div v-if="listener.authstatus==1" class="auth"></div>
       </div>
       <div class="item times">
-        <div class="time">月售12345小时</div>
+        <div class="time">月售{{listener.stime}}小时</div>
         <div class="comment">收到评价4321条>></div>
       </div>
       <div class="info">
-        <div class="items job">{{listener.jobname}}</div>
-        <div class="items family">{{listener.familyname}}</div>
-        <div class="items edu">{{listener.eduname}}</div>
+        <div class="items job">{{listener.jobname||'无'}}</div>
+        <div class="items family">{{listener.familyname||'无'}}</div>
+        <div class="items edu">{{listener.eduname||'无'}}</div>
         <div class="items star">{{listener.user.birthday|astrofilter}}</div>
       </div>
       <div class="tags">
@@ -40,7 +40,7 @@
     <div class="content">个人简介：
       {{listener.user.resume}}
     </div>
-    <div class="switch" v-if="!summaryOpen">展开</div>
+    <div class="switch fa fa-angle-down" v-if="!summaryOpen"></div>
   </div>
 </div>
 </template>

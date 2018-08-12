@@ -1,14 +1,17 @@
 <template>
-  <div class="lists-container">
-    <div class="search">
+  <div class="lists-container"
+  v-infinite-scroll="loadMore"
+  infinite-scroll-disabled="loading"
+  infinite-scroll-distance="10">
+    <!-- <div class="search">
       <mt-search
         v-model="value"
         cancel-text="取消"
         placeholder="倾听者"></mt-search>
-    </div>
-    <div class="lists">
+    </div> -->
+    <!-- <div class="lists" > -->
       <list-item v-for="(item,i) in lists" :key="i" :user="item"></list-item>
-    </div>
+    <!-- </div> -->
   </div>
 </template>
 
@@ -25,26 +28,33 @@ const listService = ListService.getInstance();
     ListItem
   },
   computed:{
-      ...mapGetters({"searchConds":"list/searchConds"})
+
   }
 })
 export default class SearchResult extends Vue{
   private lists = []
-  private limit = 30
+  private limit = 20
   private start = 0
-  created() {
-      const searchConds = (<any>this).searchConds;
-      if(searchConds){
-          const conds = Object.assign({},searchConds);
-          for(let key in conds){
-              if(conds[key]===-1){
-                  delete conds[key];
-              }
-          }
-          listService.getSearchResult(conds).then(res => {
-            (<any>this).lists = res.data.data
-          });
+  private name = ''
+  private loadMore(){
+    if(this.start===0){
+      return
+    }
+  }
+  private getSearchResult(){
+    listService.searchList(this.name,this.start,this.limit).then(res => {
+      if(res.data.success){
+        if(this.start===0){
+          this.lists = []
+        }
+        this.lists = this.lists.concat(res.data.data)
+        this.start = this.lists.length
       }
+    })
+  }
+  created() {
+    this.name = this.$route.query.name
+    this.getSearchResult()
   }
 }
 </script>

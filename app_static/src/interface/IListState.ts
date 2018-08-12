@@ -8,7 +8,10 @@ export interface IListState{
         edu?:number,
         job?:number,
         age?:number|[number,number],
-        area?:number|string
+        area?:number|string,
+        labelid?:any,
+        start?:number,
+        limit?:number
     }
 }
 export default IListState;

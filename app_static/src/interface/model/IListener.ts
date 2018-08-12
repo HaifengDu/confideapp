@@ -23,5 +23,6 @@ export interface IListener{
     exps?:IListenLabel[],
     jobName?:string,
     user?:IUser,
+    [index:string]:any
 }
 export default IListener;

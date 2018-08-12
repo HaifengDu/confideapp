@@ -1,4 +1,3 @@
-export interface IHomeState{
-
+export interface IHomeState {
 }
 export default IHomeState;

@@ -53,7 +53,7 @@
                             <div class="btn-box">
                                 <mt-button v-if="item.status==1" style="margin-right:10px;" size="normal" type="default" @click.native="cancelOrder(item.id)">取消订单</mt-button>
                                 <mt-button v-if="item.status==1" style="margin-right:10px;" size="normal" type="primary" @click.native="toOrderDetail(item)">支付订单</mt-button>
-                                <mt-button v-if="item.status==4" style="margin-right:10px;" size="normal" type="primary" @click.native="evaluate(item.id)">去评价</mt-button>
+                                <mt-button v-if="item.status==4" style="margin-right:10px;" size="normal" type="primary" @click.native.stop="evaluate(item.id)">去评价</mt-button>
                                 <mt-button v-if="item.status==2" style="margin-right:10px;" size="normal" type="default" @click.native="refound(item.id)">去退款</mt-button>                                
                                 <mt-button v-if="item.status==2" style="margin-right:10px;" size="normal" type="primary" @click.native="talk(item.id)">去倾诉</mt-button>
                             </div>
@@ -181,9 +181,12 @@ export default class OrderList extends Vue{
     }
 
     loadMore(){
-        //TODO:获取数据
         if(this.pager.getPage().page===1)return;
         this.loadData();
+    }
+
+    evaluate(id:string){
+        this.$router.push({name:'AddEvaluation',params:{id:id}});
     }
 
 }

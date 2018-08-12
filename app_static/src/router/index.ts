@@ -30,6 +30,7 @@ import PlaceOrder from "@/page/PlaceOrder.vue";
 import OrderDetail from "@/page/order/OrderDetail.vue";
 import OrderList from "@/page/order/OrderList.vue";
 import EvaluationList from "@/page/evaluation/EvaluationList.vue";
+import AddEvaluation from "@/page/evaluation/AddEvaluation.vue";
 
 Vue.use(Router)
 
@@ -167,6 +168,10 @@ const router = new Router({
       path:'/evaluationList',
       name:'EvaluationList',
       component:EvaluationList
+    },{
+      path:'/addEvaluation/:id',
+      name:'AddEvaluation',
+      component:AddEvaluation
     }
   ]
 });

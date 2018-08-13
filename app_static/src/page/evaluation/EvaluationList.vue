@@ -3,9 +3,9 @@
         <div class="header">
             <div class="evaluation">
                 <div class="rate-box">
-                    <rate :value="rate.timely" :disabled="true" label="及时服务"></rate>
-                    <rate :value="rate.attitude" :disabled="true" label="服务态度"></rate>
-                    <rate :value="rate.ability" :disabled="true" label="服务能力"></rate>
+                    <rate v-model="rate.timely" :disabled="true" label="及时服务"></rate>
+                    <rate v-model="rate.attitude" :disabled="true" label="服务态度"></rate>
+                    <rate v-model="rate.ability" :disabled="true" label="服务能力"></rate>
                 </div>
             </div>
             <div class="good-eva">

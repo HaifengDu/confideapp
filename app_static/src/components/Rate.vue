@@ -3,7 +3,8 @@
         <div class="text" v-if="label">{{label}}</div>
         <div class="rate">
             <el-rate
-                v-model="value"
+                @change="rateChange"
+                v-model="curValue"
                 :disabled="disabled"
                 :show-score="showScore"
                 text-color="#00D1CF"
@@ -16,17 +17,16 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import {Component} from 'vue-property-decorator';
+import {Component, Watch} from 'vue-property-decorator';
 import {Prop,Model} from "vue-property-decorator"; 
 
 @Component
 export default class Rate extends Vue{
-    
-    @Prop({
-        type:Number,
-        default:{}
+    private curValue = 0;
+    @Model("change",{
+        default:0
     })
-    value:any
+    value:0;
 
     @Prop({
         type:Boolean,
@@ -45,6 +45,20 @@ export default class Rate extends Vue{
         default:true
     })
     showScore:boolean
+
+    created(){
+        this.curValue = this.value;
+    }
+
+    @Watch('value')
+    valueWatch(newValue:number,oldValue:number){
+        this.curValue = newValue;
+    }
+
+    rateChange(score:number){
+        console.log(score);
+        this.$emit('change',score);
+    }
 }
 </script>
 

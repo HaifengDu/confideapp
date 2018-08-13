@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const Bluebird = require("bluebird");
-const sequelize_1 = require("sequelize");
+const Sequelize = require("sequelize");
 const Listener_1 = require("../model/Listener");
 const User_1 = require("../model/User");
 const objectHelper_1 = require("../helper/objectHelper");
@@ -19,6 +19,7 @@ const ListenerPriceMediator_1 = require("./ListenerPriceMediator");
 const ERole_1 = require("../enum/ERole");
 const baseDataHelper_1 = require("../helper/baseDataHelper");
 const ELabelType_1 = require("../enum/ELabelType");
+const Op = Sequelize.Op;
 class ListenerService {
     constructor() {
         this.PAGE_SIZE = 20;
@@ -211,7 +212,7 @@ class ListenerService {
             include: [{
                     model: User_1.default,
                     as: 'user',
-                    where: { id: { [sequelize_1.Op.in]: ids } },
+                    where: { id: { [Op.in]: ids } },
                     include: [{
                             model: PriceSetting_1.default
                         }],
@@ -240,15 +241,15 @@ class ListenerService {
             limit: page.limit,
             include: [{
                     model: User_1.default,
-                    as: 'user',
-                    where: {
-                        [sequelize_1.Op.or]: [
-                            { nickname: { [sequelize_1.Op.like]: name } },
-                            { labeldesc: { [sequelize_1.Op.like]: name } },
-                            { expdesc: { [sequelize_1.Op.like]: name } }
-                        ]
-                    }
-                }]
+                    as: 'user'
+                }],
+            where: {
+                [Op.or]: [
+                    Sequelize.literal('`user`.`nickname` LIKE \'%' + name + '%\''),
+                    { labeldesc: { [Op.like]: `%${name}%` } },
+                    { expdesc: { [Op.like]: `%${name}%` } }
+                ]
+            }
         }).then(res => {
             const listeners = objectHelper_1.default.serialize(res);
             listeners.forEach(item => {

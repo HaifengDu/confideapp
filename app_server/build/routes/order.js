@@ -157,6 +157,29 @@ router.get("/getSummaryData", [
         res.json(new ErrorMsg_1.default(false, err.message, err));
     });
 });
+router.get("/getSummeryDatas", [
+    check_1.query("lids").not().isEmpty().withMessage("倾听者id不能为空"),
+    check_1.query("lids").custom(value => {
+        const arr = value.split(",");
+        if (!arr || !arr.length) {
+            throw new Error("参数不正确");
+        }
+        return value;
+    })
+], function (req, res) {
+    const errors = check_1.validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+    }
+    const orderService = Order_1.default.getInstance();
+    orderService.getSummeryDatas(req.query.lids.split(",").map(item => parseInt(item))).then(data => {
+        res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
+    }, err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    }).catch(err => {
+        res.json(new ErrorMsg_1.default(false, err.message, err));
+    });
+});
 /**
  * 退款
  */

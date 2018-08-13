@@ -12,19 +12,26 @@ export default class MongoSyncBiz {
     }
 
     public create(res:IListener){
-        return MongoSortFilterModel.create({
-            uid:res.uid,
-            generalprice:res.minprice,
-            auth:res.authstatus,
-            praisepercent:0,
-            sex:res.user.sex,
-            family:res.family,
-            address:res.user.address,
-            birthday:res.user.birthday,
-            edu:res.edu,
-            sealtimes:0,
-            receivestatus:res.recievestatus,
-            labelids:ObjectHelper.parseJSON(<string>res.labelids)||[]
+        return MongoSortFilterModel.findOne({
+            uid:res.uid
+        }).then(listener=>{
+            if(listener){
+                return Promise.resolve(listener);
+            }
+            return MongoSortFilterModel.create({
+                uid:res.uid,
+                generalprice:res.minprice,
+                auth:res.authstatus,
+                praisepercent:0,
+                sex:res.user.sex,
+                family:res.family,
+                address:res.user.address,
+                birthday:res.user.birthday,
+                edu:res.edu,
+                sealtimes:0,
+                receivestatus:res.recievestatus,
+                labelids:ObjectHelper.parseJSON(<string>res.labelids)||[]
+            });
         });
     }
 

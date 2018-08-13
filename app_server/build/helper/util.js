@@ -26,3 +26,14 @@ function createNonceStr() {
 }
 exports.createNonceStr = createNonceStr;
 ;
+function sortByArray(source, sort, cb) {
+    const temp = [];
+    for (let index = 0; index < sort.length; index++) {
+        const current = source.find(item => cb(item, sort[index]));
+        if (current) {
+            temp[index] = current;
+        }
+    }
+    return temp;
+}
+exports.sortByArray = sortByArray;

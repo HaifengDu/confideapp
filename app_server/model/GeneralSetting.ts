@@ -1,7 +1,6 @@
 import * as Sequelize from "sequelize";
 import sequelize from "../mysqlSeq";
 import { IGeneralSetting } from "../interface/model/IGeneralSetting";
-import User from "./User";
 
 const GeneralSetting = sequelize.define<IGeneralSetting,IGeneralSetting>("generalsetting",{
     id: {type:Sequelize.INTEGER, primaryKey: true,autoIncrement:true,comment:"唯一id"},

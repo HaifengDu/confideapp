@@ -13,7 +13,7 @@ const MongoSortFilterModelSchema = new Mongoose.Schema({
     edu: Number,
     sealtimes: Number,
     receivestatus: Number,
-    labelids: Mongoose.SchemaTypes.Array //标签
+    labelids: Array //标签
 });
 const MongoSortFilterModel = Mongoose.model('sortfiltermodel', MongoSortFilterModelSchema);
 exports.default = MongoSortFilterModel;

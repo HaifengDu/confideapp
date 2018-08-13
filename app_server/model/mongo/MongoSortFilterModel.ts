@@ -12,7 +12,7 @@ const MongoSortFilterModelSchema = new Mongoose.Schema({
     edu:Number,
     sealtimes:Number,//已售时长
     receivestatus:Number,//接受状态
-    labelids:Mongoose.SchemaTypes.Array//标签
+    labelids:Array//标签
 });
 const MongoSortFilterModel = Mongoose.model<IMongoSortFilterModel>('sortfiltermodel', MongoSortFilterModelSchema);
 export default MongoSortFilterModel;

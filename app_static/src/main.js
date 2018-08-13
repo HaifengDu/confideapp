@@ -7,10 +7,12 @@ import VeeValidate, { Validator } from 'vee-validate';
 import zh_CN from 'vee-validate/dist/locale/zh_CN';
 import MintUI from "mint-ui";
 import ElInputNumber from "element-ui/lib/input-number";
+import ElInput from "element-ui/lib/input";
 import Rate from "element-ui/lib/rate";
 import "mint-ui/lib/style.css";
 import "./assets/style.less";
 import "element-ui/lib/theme-chalk/input-number.css";
+import "element-ui/lib/theme-chalk/input.css";
 import "element-ui/lib/theme-chalk/rate.css";
 import './main.ts';
 import App from './App';
@@ -25,6 +27,7 @@ Vue.use(VeeValidate, {
 });
 Vue.use(MintUI);
 Vue.use(ElInputNumber);
+Vue.use(ElInput);
 Vue.use(Rate);
 Vue.prototype.$toast = MintUI.Toast;
 /* eslint-disable no-new */

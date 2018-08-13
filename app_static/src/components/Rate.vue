@@ -5,7 +5,7 @@
             <el-rate
                 v-model="value"
                 :disabled="disabled"
-                show-score
+                :show-score="showScore"
                 text-color="#00D1CF"
                 :colors="['#00D1CF', '#00D1CF', '#00D1CF']"
                 score-template="{value}">
@@ -17,7 +17,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
-import {Prop} from "vue-property-decorator"; 
+import {Prop,Model} from "vue-property-decorator"; 
 
 @Component
 export default class Rate extends Vue{
@@ -39,6 +39,12 @@ export default class Rate extends Vue{
         default:''
     })
     label:string
+
+    @Prop({
+        type:Boolean,
+        default:true
+    })
+    showScore:boolean
 }
 </script>
 

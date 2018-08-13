@@ -103,6 +103,32 @@ export default class EvaluateService {
         });
     }
 
+    public reply(eid:number,lid:number,replymessage:string){
+        if(!replymessage){
+            return Bluebird.reject(new ErrorMsg(false,"回复数据不能为空"));
+        }
+        if(replymessage.length>500){
+            return Bluebird.reject(new ErrorMsg(false,"回复的消息太常"));
+        }
+        Evaluate.findOne({
+            where:{
+                id:eid,
+                lid:lid,
+            }
+        }).then(evaluate=>{
+            if(!evaluate){
+                return Bluebird.reject(new ErrorMsg(false,'未找到对应数据'))
+            }
+            return Evaluate.update({
+                replymessage:replymessage
+            },{
+                where:{
+                    id:eid
+                }
+            });
+        })
+    }
+
     static createInstance() {
         EvaluateService.getInstance();
     }

@@ -60,4 +60,24 @@ router.get("/getaggregate",[
     })
 });
 
+router.post("/reply",[
+    query("userid").isNumeric().withMessage("用户id不能为空"),
+    body("eid").isNumeric().withMessage("评论id不能为空"),
+    body("message").not().isEmpty().withMessage("回复信息不能为空")
+],function(req:express.Request,res:express.Response){
+    const errors:Result<{msg:string}> = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json(new ErrorMsg(false,errors.array()[0].msg ));
+    }
+    service.reply(parseInt(req.query.userid),parseInt(req.body.eid),req.body.message).then(data=>{
+        res.json({
+            data,...new ErrorMsg(true)
+        });
+    },err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    }).catch(err=>{
+        res.json(new ErrorMsg(false,err.message,err));
+    })
+});
+
 export = router;

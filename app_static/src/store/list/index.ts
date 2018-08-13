@@ -6,18 +6,21 @@ import IRootState from '../../interface/IRootState';
 export const store:Module<IListState,IRootState> = {
     namespaced:true,
     state:{
-        searchConds:{}
+      searchConds:{}
     },
     getters:{
-        searchConds:state=>state.searchConds
+      searchConds:state=>state.searchConds
     },
     actions:{
-        ...actions
+      ...actions
     },
     mutations:{
-        [Mtype.SET_FILTER_CONDS](state,payload){
-            state.searchConds = payload
-        }
+      [Mtype.SET_FILTER_CONDS](state,payload){
+          state.searchConds = payload
+      },
+      [Mtype.UPDATE_LABEL_ID](state,labelId){
+      state.searchConds.labelid = labelId;
+      }
     }
 };
 

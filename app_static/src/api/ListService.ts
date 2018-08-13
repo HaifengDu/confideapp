@@ -13,7 +13,10 @@ export default class ListService {
      * getSearchResult
      */
     public getSearchResult(filter:IFilterField) :AxiosPromise<IResponse<IListener[]>>{
-        return Axios.get("/list",{params:filter});
+        return Axios.post("/list",{data:JSON.stringify(filter)});
+    }
+    public searchList(name:string,start:number,limit:number):AxiosPromise<any>{
+      return Axios.get('/list/search',{params:{name,start,limit}})
     }
 
     static createInstance() {

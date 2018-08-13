@@ -10,3 +10,6 @@ export const test:Action<IListState,IRootState> = ({dispatch,commit},payload)=>{
 export const setFilterConds:Action<IListState,IRootState> = ({dispatch,commit},payload) =>{
     commit(Mtype.SET_FILTER_CONDS,payload);
 }
+export const updateLableId: Action<IListState, IRootState> = ({ dispatch, commit }, labelId) => {
+  commit(Mtype.UPDATE_LABEL_ID, labelId);
+};

@@ -169,10 +169,6 @@ export default class UserInfo extends Vue{
         // },3000);
     }
 
-    mounted() {
-        
-    }
-
     initData(data:any){
         this.isListener = data.role === ERole.Listener;
         this.curUser = data;

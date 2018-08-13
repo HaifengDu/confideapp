@@ -26,7 +26,7 @@
   <div class="content">
     <div class="subject">
       <div class="lists" v-for="(item1,i) in subjects" :key="i">
-        <div class="list" v-for="(item,j) in item1.list" :key="j">
+        <div class="list" v-for="(item,j) in item1.list" :key="j" @click="toList(item)">
           <div class="icon"></div>
           <div class="text">{{item.text}}</div>
         </div>
@@ -52,9 +52,12 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator';
 import ListItem from '@/components/ListItem'
 import HomeService from "../api/HomeService";
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import { ESex } from '../enum/ESex';
 import { IListener } from '../interface/model/IListener';
+import RecommendService from '../api/RecommendService'
+import { IRecommend } from '../interface/IRecommend';
+import { INoop } from '../util/methods';
 
 @Component({
   components:{
@@ -64,10 +67,17 @@ import { IListener } from '../interface/model/IListener';
     ...mapGetters({
       user:'user'
     })
+  },
+  methods:{
+    ...mapActions({
+      updateLableId:'list/updateLableId'
+    })
   }
 })
 export default class Home extends Vue{
   private homeService = HomeService.getInstance();
+  private RecommendService = RecommendService.getInstance()
+  private updateLableId:INoop
   toSearchFilter(){
     this.$router.push({
       path:"/searchFilter"
@@ -84,46 +94,83 @@ export default class Home extends Vue{
   private subjects = [{
     list:[{
       text:'情感挽回',
-      icon:'redeem'
+      icon:'redeem',
+      labelid:1
     },{
       text:'催眠',
-      icon:'hypnosis'
+      icon:'hypnosis',
+      labelid:3
     },{
       text:'抑郁',
-      icon:'depressed'
+      icon:'depressed',
+      labelid:5
     },{
       text:'婚姻关系',
-      icon:'marriage'
+      icon:'marriage',
+      labelid:7
     },{
       text:'心理咨询',
-      icon:'psychological'
+      icon:'psychological',
+      labelid:76
     }]
   },{list:[{
     text:'两性关系',
-    icon:'sexual'
+    icon:'sexual',
+    labelid:2
   },{
     text:'人际关系',
-    icon:'interpersonal'
+    icon:'interpersonal',
+    labelid:4
   },{
     text:'同性恋情',
-    icon:'homosexuality'
+    icon:'homosexuality',
+    labelid:6
   },{
     text:'个人成长',
-    icon:'growth'
+    icon:'growth',
+    labelid:8
   },{
     text:'情绪疏导',
-    icon:'emotional-guidance'
+    icon:'emotional-guidance',
+    labelid:75
   }]
   }]
   summarySwitch(){
     this.summaryOpen = !this.summaryOpen
   }
-  
+  getSummeryDatas(lids:number[]){
+    this.RecommendService.getSummeryDatas(lids).then(res => {
+      if(res.data.success){
+        this.assignData(this.list,res.data.data)
+      }
+    })
+  }
+  assignData(listeners:IListener[],summarys:IRecommend[]){
+    listeners.forEach(item => {
+      let idx = summarys.findIndex(sum => sum.lid == item.uid)
+      if(idx>-1){
+        item.ucount = summarys[idx].ucount
+        item.stime = summarys[idx].stime
+      }
+    });
+  }
+  toList(item:any){
+    (<any>this).updateLableId(item.labelid)
+    this.$router.push({
+      path:'/list'
+    })
+  }
   created() {
     this.homeService.getRecommendList().then(res=>{
       const data = res.data;
       if(data.success){
+        data.data.forEach(item => {
+          item.ucount = 0
+          item.stime = 0
+        })
         this.list = data.data;
+        const lids = data.data.map(item=>item.uid as number)
+        this.getSummeryDatas(lids)
       }
     })
   }

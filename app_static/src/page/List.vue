@@ -6,11 +6,13 @@
       <div :class="['item','comments',{'active':tab=='praisepercent'}]" @click="setSorter('praisepercent')">好评率</div>
       <div class="item filter" :class="{'active':filter=='active'}" @click="showSlide"></div>
     </div>
-    <div class="lists">
-      <list-item v-for="(item,i) in lists" :key="i" :user="item"></list-item>
+    <div class="lists" v-infinite-scroll="loadMore"
+  infinite-scroll-disabled="loading"
+  infinite-scroll-distance="10">
+      <list-item v-for="(item,i) in lists" :key="i" :listener="item"></list-item>
     </div>
     <slide-page ref="slidePage">
-      <search-filter from="list" @filter="closeSlide"></search-filter>
+      <search-filter from="list" :labelid="searchConds.labelid" @filter="closeSlide"></search-filter>
     </slide-page>
   </div>
 </template>
@@ -23,6 +25,7 @@ import ListItem from '@/components/ListItem';
 import SlidePage from '@/components/SlidePage';
 import SearchFilter from '@/page/SearchFilter';
 import ListService from "../api/ListService";
+import { IListener } from '../interface/model/IListener';
 const listService = ListService.getInstance();
 
 @Component({
@@ -32,14 +35,19 @@ const listService = ListService.getInstance();
     SearchFilter
   },
   computed:{
-      ...mapGetters({"searchConds":"list/searchConds"})
+      ...mapGetters({
+        "searchConds":"list/searchConds",
+      })
   }
 })
 export default class List extends Vue{
-  private lists = []
+  private lists:IListener[] = []
   private tab = ''
   private filter = 's'
   private sorter = ''
+  private limit = 5
+  private start = 0
+  private loadMoreFlag = true
   created() {
     this.getLists()
   }
@@ -56,7 +64,12 @@ export default class List extends Vue{
     this.sorter = item
     this.getLists()
   }
-  getLists(){
+  loadMore(){
+    if(this.loadMoreFlag){
+      this.getLists(this.start)
+    }
+  }
+  getLists(start?:number){
     const searchConds = (<any>this).searchConds;
     if(searchConds){
         const conds = Object.assign({},searchConds);
@@ -68,8 +81,19 @@ export default class List extends Vue{
         if(this.sorter){
           conds.sort = this.sorter;
         }
+        conds.start = start||0
+        conds.limit = this.limit;
+        if(conds.start===0){
+          this.lists = [];
+        }
         listService.getSearchResult(conds).then(res => {
-          (<any>this).lists = res.data.data
+          if(res.data.data.length<this.limit){
+            this.loadMoreFlag = false
+          }else{
+            this.loadMoreFlag = true
+          }
+          this.lists=this.lists.concat(res.data.data)
+          this.start = this.lists.length||0
         });
     }
   }

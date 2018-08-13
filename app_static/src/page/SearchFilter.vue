@@ -1,7 +1,7 @@
 <template>
 <div class="filter-b-container">
     <div class="filter-title">精准筛选</div>
-    <section class="filter-container">
+    <section class="filter-container" v-if="!labelid">
         <div>话题分类</div>
         <div :class="{'collose':!toggleModel.topic}">
             <radio-button v-model="filterModel.labelid" :list="topicList">
@@ -126,9 +126,10 @@ const labelService = LabelService.getInstance();
 export default class SearchFilter extends Vue{
   @Prop()
   private from:string
-
+  @Prop()
+  private labelid:number
     private filterModel = {
-        labelid:-1,
+        labelid:this.labelid||-1,
         price:-1,
         sex:-1,
         family:-1,
@@ -206,7 +207,7 @@ export default class SearchFilter extends Vue{
         name:"已认证"
     }];
     created(){
-        const temp:any = {};
+        const temp:any = {topic:false};
         Object.keys(this.filterModel).forEach(item=>{
             temp[item] = false;
         });

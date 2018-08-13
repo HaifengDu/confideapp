@@ -3,8 +3,8 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-    // const proxyUrl = 'http://192.168.1.3:3001'//
-const proxyUrl = "http://127.0.0.1:3001/";
+    const proxyUrl = 'http://192.168.1.3:3001'//
+// const proxyUrl = "http://127.0.0.1:3001/";
 
 module.exports = {
     dev: {

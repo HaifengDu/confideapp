@@ -71,7 +71,7 @@ export default class AddEvaluation extends Vue{
 
     created(){
         this.orderId = this.$route.params.id;
-
+        
     }
 
     evaChange(eva:any){
@@ -85,12 +85,12 @@ export default class AddEvaluation extends Vue{
         this.isShowTags = true;
         //TODO:获取不满意、一般、满意对应的评价标签
         this.tags = [
-            {text:'很懂得安抚',active:false},
-            {text:'受益匪浅',active:false},
-            {text:'知己',active:false},
-            {text:'很懂得安抚',active:false},
-            {text:'受益匪浅',active:false},
-            {text:'知己',active:false},
+            {text:'很懂得安抚',checked:false},
+            {text:'受益匪浅',checked:false},
+            {text:'知己',checked:false},
+            {text:'很懂得安抚',checked:false},
+            {text:'受益匪浅',checked:false},
+            {text:'知己',checked:false},
         ];
         console.log(this.rate);
     }
@@ -109,6 +109,7 @@ export default class AddEvaluation extends Vue{
 <style lang="less" scoped>
     @import '../../assets/style.less';
     .container{
+        padding-bottom:65px;
         .title{
             .v-middle(40px);
             background:rgb(247,247,247);

@@ -1,65 +1,87 @@
 <template>
     <div>
-        <div class="header">
-            <div class="evaluation">
-                <div class="rate-box">
-                    <rate v-model="rate.timely" :disabled="true" label="及时服务"></rate>
-                    <rate v-model="rate.attitude" :disabled="true" label="服务态度"></rate>
-                    <rate v-model="rate.ability" :disabled="true" label="服务能力"></rate>
+        <div v-if="isListener">
+            <div class="header">
+                <div class="evaluation">
+                    <div class="rate-box">
+                        <rate v-model="evaDatas.timerate" :disabled="true" label="及时服务"></rate>
+                        <rate v-model="evaDatas.serviceattitude" :disabled="true" label="服务态度"></rate>
+                        <rate v-model="evaDatas.servicepower" :disabled="true" label="服务能力"></rate>
+                    </div>
+                </div>
+                <div class="good-eva">
+                    <div class="eva-box">
+                        <p class="rate">{{evaDatas.applauserate*100}}%</p>
+                        <p class="text">好评率</p>
+                    </div>
                 </div>
             </div>
-            <div class="good-eva">
-                <div class="eva-box">
-                    <p class="rate">100%</p>
-                    <p class="text">好评率</p>
+            <div class="tags" v-if="tags&&tags.length>0">
+                <span 
+                v-for="(tag,index) in tags" 
+                :key="index" 
+                class="tag">{{tag.text}}({{tag.num}})</span>
+            </div>
+            <div class="divider"></div>
+            <div class="tabs">
+                <div class="tab" 
+                    v-for="(tab,index) in tabs" 
+                    :key="index">
+                    <div class="con" @click="tabChange(tab)" :class="{'active':tab.active}">
+                        <p class="text">{{tab.text}}</p>
+                        <p class="text">{{tab.num}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="eva-title">
+                最新评论
+            </div>
+            <div class="body"
+                v-infinite-scroll="loadMore"
+                infinite-scroll-disabled="loading"
+                infinite-scroll-distance="10"
+                >
+                <div class="eva-list" v-for="(eva,index) in evaList" :key="index">
+                    <div class="head-img">
+                        <img width="40px" :src="eva.headImg" alt="">
+                    </div>
+                    <div class="content">
+                        <p class="name">{{eva.name}}</p>
+                        <p class="info">
+                            <span class="time">{{eva.time}}</span>
+                            <span class="type">购买了{{eva.type=='2'?'通话':'文字'}}服务</span>
+                        </p>
+                        <p class="comment" v-if="eva.comment">{{eva.comment}}</p>
+                        <p class="comment" v-if="!eva.comment"><span class="default">默认</span>太棒了，服务很赞，倾诉体验超好。</p>
+                        <p class="tags" v-if="eva.tags&&eva.tags.length>0">
+                            <span 
+                            v-for="(tag,index) in eva.tags" 
+                            :key="index" 
+                            class="tag">{{tag.text}}</span>
+                        </p>
+                        <p v-if="!eva.reply" class="reply-box">
+                            <el-input v-if="eva.isReply" class="reply-input" v-model="replyMsg" placeholder="请输入回复内容"></el-input>
+                            <mt-button class="button" size="small" @click.native="reply(eva)">{{eva.isReply?'发送':'回复'}}</mt-button>
+                        </p>
+                        <p v-if="eva.reply"><span class="reply" >倾听者回复：</span>{{eva.reply}}</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="tags">
-            <span 
-            v-for="(tag,index) in tags" 
-            :key="index" 
-            class="tag">{{tag.text}}({{tag.num}})</span>
-        </div>
-        <div class="divider"></div>
-        <div class="tabs">
-            <div class="tab" 
-                v-for="(tab,index) in tabs" 
-                :key="index">
-                <div class="con" @click="tabChange(tab)" :class="{'active':tab.active}">
-                    <p class="text">{{tab.text}}</p>
-                    <p class="text">{{tab.num}}</p>
-                </div>
-            </div>
-        </div>
-        <div class="eva-title">
-            最新评论
-        </div>
-        <div class="body"
+        <div v-if="!isListener" class="container" 
             v-infinite-scroll="loadMore"
             infinite-scroll-disabled="loading"
-            infinite-scroll-distance="10"
-            >
-            <div class="eva-list" v-for="(eva,index) in evaList" :key="index">
-                <div class="head-img">
-                    <img width="40px" :src="eva.headImg" alt="">
+            infinite-scroll-distance="10">
+            <div class="list-container" v-for="(item,index) in evaList" :key="index" @click="toUserInfo(item)">
+                <div class="list">
+                    <img class="head-img" :src="item.headImg"/>
+                    <div class="content">
+                        <p class="name">{{item.name}}</p>
+                        <p class="date">{{item.time}}</p>
+                    </div>
+                    <div class="button" @click.stop="followMe(item)">找TA倾诉</div>
                 </div>
-                <div class="content">
-                    <p class="name">{{eva.name}}</p>
-                    <p class="info">
-                        <span class="time">{{eva.time}}</span>
-                        <span class="type">购买了{{eva.type=='2'?'通话':'文字'}}服务</span>
-                    </p>
-                    <p class="comment" v-if="eva.comment">{{eva.comment}}</p>
-                    <p class="comment" v-if="!eva.comment"><span class="default">默认</span>太棒了，服务很赞，倾诉体验超好。</p>
-                    <p class="tags" v-if="eva.tags&&eva.tags.length>0">
-                        <span 
-                        v-for="(tag,index) in tags" 
-                        :key="index" 
-                        class="tag">{{tag.text}}</span>
-                    </p>
-                    <p class="reply" v-if="eva.reply">倾听者回复：</p>
-                </div>
+                <div class="comment">{{item.comment}}</div>
             </div>
         </div>
     </div>
@@ -68,21 +90,33 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator'; 
+import { mapGetters } from 'vuex';
+import { ERole } from '../../enum/ERole';
 import Rate from "@/components/Rate.vue";
 import Pager from "@/helper/Pager.ts"; 
+import EvaluateService from "@/api/EvaluateService.ts";
+const evaluateService = EvaluateService.getInstance();
 
 @Component({
     components:{
         'rate':Rate
+    },
+    computed:{
+        ...mapGetters({
+            user:'user'
+        })
     }
 })
 export default class EvaluationList extends Vue {
     private pager = new Pager().setLimit(20);
+    private isListener:boolean = true;
     private curStatus:number = 1;
-    private rate:any = {
-        timely:5,
-        attitude:5,
-        ability:5
+    private replyMsg:string = '';
+    private evaDatas:any = {
+        timerate:5,
+        serviceattitude:5,
+        servicepower:5,
+        applauserate:1
     }
 
     private tags:any = [
@@ -103,7 +137,11 @@ export default class EvaluationList extends Vue {
     private evaList:any = [];
 
     created(){
+        if((<any>this).user&&(<any>this).user.role){
+            this.isListener = (<any>this).user.role === ERole.Listener;
+        }
         this.loadData();
+        // this.getEvaDatas();
     }
 
     tabChange(tab:any){
@@ -111,34 +149,73 @@ export default class EvaluationList extends Vue {
         this.tabs.forEach((item:any)=>{
             item.active = item.id === tab.id;
         });
-        //TODO:根据tab的状态获取对应的评论列表
-        console.log(tab.id);
         this.curStatus = tab.id;
         this.pager.clear().setLimit(20);
         this.loadData();
     }
 
     loadData(){
-        //TODO:从store中获取订单数据
+        //TODO:获取评价列表数，注意倾听者和倾诉者列表数据的区别
         let params = {
-            status:this.curStatus
+            status:this.curStatus,
+            lid:(<any>this).user.id||3
         }
         Object.assign(params,this.pager);
         let evaList =[
-            {id:1,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
-            {id:2,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'}
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'}
         ];
-        if(this.pager.getPage().page === 1){
-            this.evaList = evaList;
-        }else{
-            this.evaList = this.evaList.concat(evaList);
-        }
-        this.pager.setNext();
+        this.evaList = evaList;
+        // evaluateService.getEvaList(params).then((res:any)=>{
+        //     if(res.data.success){
+        //         this.evaList = res.data.data;
+        //         if(this.pager.getPage().page === 1){
+        //             this.evaList = evaList;
+        //         }else{
+        //             this.evaList = this.evaList.concat(evaList);0
+        //         }
+        //         this.pager.setNext();
+        //     }else{
+        //         this.$toast(res.data.message);
+        //     }
+        // });
     }
 
     loadMore(){
         if(this.pager.getPage().page===1)return;
         this.loadData();
+    }
+
+    reply(eva:any){
+        if(eva.isReply){
+            if(!this.replyMsg){
+                this.$toast('回复内容不能为空');
+                return;
+            }
+            //TODO:向后台发送回复数据，成功后清空replyMsg
+            console.log(this.replyMsg);
+            eva.reply = this.replyMsg;
+        }else{
+            this.evaList.forEach((item:any)=>{
+                if(item.id===eva.id){
+                    item.isReply = true;
+                }else{
+                    item.isReply = false;
+                }
+            });
+        }
+        
+    }
+
+    private getEvaDatas(){
+        evaluateService.getEvaDatas((<any>this).user.id||3).then((res:any)=>{
+            if(res.data.success){
+                Object.assign(this.evaDatas,res.data.data);
+                this.tags = res.data.data.labels;
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 }
 </script>
@@ -151,6 +228,50 @@ export default class EvaluationList extends Vue {
     }
     .container{
         .p-rl;
+        .list-container{
+            border-bottom:1px solid #eee;
+            .list{
+                text-align:left;
+                padding:10px 20px;
+                display:flex;
+                .p-rl;
+                .head-img{
+                    width:50px;
+                    height:50px;
+                    vertical-align: middle;
+                    border-radius: 6px;
+                }
+                .content{
+                    display:flex;
+                    flex-direction:column;
+                    justify-content:center;
+                    padding-left:20px;
+                    .date,.name{
+                        padding:3px;
+                    }
+                    .date{
+                        color:rgb(171,171,171);
+                    }
+                }
+                .button{
+                    height: 30px;
+                    line-height: 30px;
+                    padding: 2px 15px;
+                    border-radius: 17px;
+                    justify-content: center;
+                    color:#fff;
+                    background:#f3a843;
+                    .p-ab;
+                    right: 20px;
+                    top: 17px;
+                }
+            }
+            .comment{
+                padding:10px 20px;
+                text-align:left;
+            }
+        }
+        
     }
     .custom-title{
         .p-rl;
@@ -277,9 +398,19 @@ export default class EvaluationList extends Vue {
             .reply{
                 color:@mainColor;
                 padding-top:5px;
-                margin-right: -30px;
                 border-top:1px solid #d7d7d7;
             }
+        }
+    }
+    .reply-box{
+        display:flex;
+        .reply-input{
+            margin-right:10px;
+        }
+        .button{
+            padding:0 10px;
+            height:24px;
+            width:60px;
         }
     }
 </style>

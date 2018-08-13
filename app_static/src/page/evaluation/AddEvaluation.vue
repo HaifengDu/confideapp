@@ -50,9 +50,6 @@ import Rate from "@/components/Rate.vue";
 @Component({
     components:{
         'rate':Rate
-    },
-    filters:{
-        
     }
 })
 export default class AddEvaluation extends Vue{

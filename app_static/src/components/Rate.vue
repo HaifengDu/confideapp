@@ -3,6 +3,7 @@
         <div class="text" v-if="label">{{label}}</div>
         <div class="rate">
             <el-rate
+                class="cus-rate"
                 @change="rateChange"
                 v-model="curValue"
                 :disabled="disabled"
@@ -56,7 +57,6 @@ export default class Rate extends Vue{
     }
 
     rateChange(score:number){
-        console.log(score);
         this.$emit('change',score);
     }
 }

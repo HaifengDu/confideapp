@@ -32,6 +32,13 @@ export default class EvaluteService {
         return Axios.put("/evaluate",params);
     }
 
+    /**
+    * 回复评论
+    */
+    public replyEva(params:any):AxiosPromise<any>{
+        return Axios.post("/evaluate/reply",params);
+    }
+
     private constructor() {}
 
     public static getInstance() {

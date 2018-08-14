@@ -168,11 +168,11 @@ export default class EvaluationList extends Vue {
         this.evaList = evaList;
         // evaluateService.getEvaList(params).then((res:any)=>{
         //     if(res.data.success){
-        //         this.evaList = res.data.data;
+        //         const evaList = res.data.data;
         //         if(this.pager.getPage().page === 1){
         //             this.evaList = evaList;
         //         }else{
-        //             this.evaList = this.evaList.concat(evaList);0
+        //             this.evaList = this.evaList.concat(evaList);
         //         }
         //         this.pager.setNext();
         //     }else{
@@ -192,9 +192,11 @@ export default class EvaluationList extends Vue {
                 this.$toast('回复内容不能为空');
                 return;
             }
-            //TODO:向后台发送回复数据，成功后清空replyMsg
-            console.log(this.replyMsg);
-            eva.reply = this.replyMsg;
+            evaluateService.replyEva({eid:eva.id,message:this.replyMsg}).then((res:any)=>{
+                if(res.data.success){
+                    eva.reply = this.replyMsg;
+                }
+            });
         }else{
             this.evaList.forEach((item:any)=>{
                 if(item.id===eva.id){

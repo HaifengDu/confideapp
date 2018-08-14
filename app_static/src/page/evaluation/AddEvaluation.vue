@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="add-container">
         <div class="title">本次服务是否满意</div>
         <div class="evaluation">
             <div class="eva" 
@@ -23,9 +23,9 @@
         <div class="improve">
             <div class="info">您的评分有助于我们为您提供更好的服务（该项评分仅平台可见）</div>
             <div class="rate-box">
-                <rate v-model="rate.timely" :show-score="false" label="及时服务"></rate>
-                <rate v-model="rate.attitude" :show-score="false" label="服务态度"></rate>
-                <rate v-model="rate.ability" :show-score="false" label="服务能力"></rate>
+                <rate v-model="rate.timerate" :show-score="false" label="及时服务"></rate>
+                <rate v-model="rate.serviceattitude" :show-score="false" label="服务态度"></rate>
+                <rate v-model="rate.servicepower" :show-score="false" label="服务能力"></rate>
             </div>
         </div>
         <div class="suggest">
@@ -46,6 +46,8 @@
 import Vue from 'vue';
 import {Component} from 'vue-property-decorator'; 
 import Rate from "@/components/Rate.vue";
+import EvaluateService from "@/api/EvaluateService.ts";
+const evaluateService = EvaluateService.getInstance();
 
 @Component({
     components:{
@@ -57,15 +59,33 @@ export default class AddEvaluation extends Vue{
     private suggest:string = '';
     private isShowTags:boolean = false;
     private rate:any = {
-        timely:0,
-        attitude:0,
-        ability:0
+        timerate:0,
+        serviceattitude:0,
+        servicepower:0
     }
     private evas:any = [
         {id:1,text:'不满意',active:false,src:'/static/images/evaluation/bad'},
         {id:2,text:'一般',active:false,src:'/static/images/evaluation/normal'},
         {id:3,text:'满意',active:false,src:'/static/images/evaluation/good'},
     ];
+
+    private tagObj:any = {
+        'tag_1':[
+                {text:'没有效果',checked:false},
+                {text:'服务较差',checked:false},
+                {text:'回复太慢',checked:false}
+            ],
+        'tag_2':[
+                {text:'普普通通',checked:false},
+                {text:'一般',checked:false},
+                {text:'正常',checked:false}
+            ],
+        'tag_3':[
+                {text:'很懂得安抚',checked:false},
+                {text:'受益匪浅',checked:false},
+                {text:'知己',checked:false}
+            ]
+    }
 
     private tags:any = [];
 
@@ -84,14 +104,7 @@ export default class AddEvaluation extends Vue{
         });
         this.isShowTags = true;
         //TODO:获取不满意、一般、满意对应的评价标签
-        this.tags = [
-            {text:'很懂得安抚',checked:false},
-            {text:'受益匪浅',checked:false},
-            {text:'知己',checked:false},
-            {text:'很懂得安抚',checked:false},
-            {text:'受益匪浅',checked:false},
-            {text:'知己',checked:false},
-        ];
+        this.tags = this.tagObj['tag_'+eva.id];
         console.log(this.rate);
     }
 
@@ -100,15 +113,38 @@ export default class AddEvaluation extends Vue{
     }
 
     submit(){
-        //TODO:提交评价
-        console.log('submit');
+        if(this.suggest.length>150){
+            this.$toast('评论字数不能大于150字');
+            return;
+        }
+        const labels = this.tags.filter((item:any)=>item.checked);
+        const satisfied = this.evas.find((item:any)=>item.active);
+        let params:any = {
+            orderid:this.orderId,
+            timerate:this.rate.timerate||5,
+            serviceattitude:this.rate.serviceattitude||5,
+            servicepower:this.rate.servicepower||5,
+            leavemessage:this.suggest,
+            satisfaction:satisfied&&satisfied.id||3
+        }
+        if(labels&&labels.length>0){
+            params.labels = labels;
+        }
+        evaluateService.addEva(params).then((res:any)=>{
+            if(res.data.success){
+                this.$toast('评论成功！');
+                this.$router.push('/orderlist');
+            }else{
+                this.$toast(res.data.message);
+            }
+        });
     }
 }
 </script>
 
 <style lang="less" scoped>
     @import '../../assets/style.less';
-    .container{
+    .add-container{
         padding-bottom:65px;
         .title{
             .v-middle(40px);

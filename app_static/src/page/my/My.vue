@@ -21,7 +21,7 @@
       </div>
       <div class="entrance">
         <div class="ul" v-bind:key="index" v-for="(ele,index) in entranceArr">
-          <div class="li" v-bind:key="index" v-for="(item,index) in ele.children">
+          <div class="li" v-bind:key="index" v-for="(item,index) in ele.children" @click="toPage(item.id)">
             <div class="icon"><img :src="item.imgUrl" alt=""></div>
             <div class="text">{{item.text}}</div>
           </div>
@@ -184,6 +184,14 @@ export default class My extends Vue{
     //     this.$toast(data.message);
     //   }
     // });
+  }
+
+  toPage(id:string){
+    if(id === 'encourage'){
+      this.$router.push({path:'/evaluationList',query:{isMine:'true'}});
+    }else if(id === 'order'){
+      this.$router.push('/orderList');
+    }
   }
 
   private getUserInfo:INoopPromise;

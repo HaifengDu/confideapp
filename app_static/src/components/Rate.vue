@@ -3,7 +3,6 @@
         <div class="text" v-if="label">{{label}}</div>
         <div class="rate">
             <el-rate
-                class="cus-rate"
                 @change="rateChange"
                 v-model="curValue"
                 :disabled="disabled"

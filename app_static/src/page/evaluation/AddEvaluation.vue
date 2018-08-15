@@ -22,7 +22,7 @@
         <div class="title">服务改进计划</div>
         <div class="improve">
             <div class="info">您的评分有助于我们为您提供更好的服务（该项评分仅平台可见）</div>
-            <div class="rate-box">
+            <div class="rate-box cus-rate">
                 <rate v-model="rate.timerate" :show-score="false" label="及时服务"></rate>
                 <rate v-model="rate.serviceattitude" :show-score="false" label="服务态度"></rate>
                 <rate v-model="rate.servicepower" :show-score="false" label="服务能力"></rate>

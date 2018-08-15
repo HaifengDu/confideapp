@@ -19,12 +19,14 @@
                             <p class="text">费用</p>
                         </div>
                     </div>
-                    <mt-cell title="倾听者" class="cell-con cell-prev">重新的开始</mt-cell>
+                    <mt-cell title="倾诉者" class="cell-con cell-prev">重新的开始</mt-cell>
                     <mt-cell v-if="serviceType==2" title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
-                    <mt-cell v-if="serviceType==2" title="服务时长" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell v-if="serviceType==2" title="服务时长" class="cell-con cell-prev">15分钟</mt-cell>
                     <mt-cell v-if="serviceType==1" title="购买数量" class="cell-con cell-prev">15条</mt-cell>
-                    <mt-cell v-if="serviceType==1" title="服务数量" class="cell-con cell-prev">15分钟</mt-cell>
-                    <mt-cell title="付款时间" class="cell-con cell-prev">2018-06-26 21:15</mt-cell>
+                    <mt-cell v-if="serviceType==1" title="服务数量" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell title="服务时间" class="cell-con cell-prev">2018-06-26 21:19</mt-cell>
+                    <mt-cell title="单价" class="cell-con cell-prev">￥0.00/分钟</mt-cell>
+                    <mt-cell title="余额支付" class="cell-con cell-prev">-￥0.00</mt-cell>
                     <mt-cell title="订单号" class="cell-con cell-prev">1509006</mt-cell>
                     <mt-cell style="border-bottom:none;" title="有效期至" class="cell-con cell-prev">2018年06月29日 21:19</mt-cell>
                 </div>
@@ -80,7 +82,7 @@ declare var wx:any;
 @Component({
     computed:{
         ...mapGetters({
-            order:'order'
+            order:'order/order'
         })
     }
 })

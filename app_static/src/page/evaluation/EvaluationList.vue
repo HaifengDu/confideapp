@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="isListener">
+        <div v-if="!isMine">
             <div class="header">
                 <div class="evaluation">
                     <div class="rate-box">
@@ -11,7 +11,7 @@
                 </div>
                 <div class="good-eva">
                     <div class="eva-box">
-                        <p class="rate">{{evaDatas.applauserate*100}}%</p>
+                        <p class="rate">{{evaDatas.applauserate*100 | fixed}}%</p>
                         <p class="text">好评率</p>
                     </div>
                 </div>
@@ -23,65 +23,49 @@
                 class="tag">{{tag.text}}({{tag.num}})</span>
             </div>
             <div class="divider"></div>
-            <div class="tabs">
-                <div class="tab" 
-                    v-for="(tab,index) in tabs" 
-                    :key="index">
-                    <div class="con" @click="tabChange(tab)" :class="{'active':tab.active}">
-                        <p class="text">{{tab.text}}</p>
-                        <p class="text">{{tab.num}}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="eva-title">
-                最新评论
-            </div>
-            <div class="body"
-                v-infinite-scroll="loadMore"
-                infinite-scroll-disabled="loading"
-                infinite-scroll-distance="10"
-                >
-                <div class="eva-list" v-for="(eva,index) in evaList" :key="index">
-                    <div class="head-img">
-                        <img width="40px" :src="eva.headImg" alt="">
-                    </div>
-                    <div class="content">
-                        <p class="name">{{eva.name}}</p>
-                        <p class="info">
-                            <span class="time">{{eva.time}}</span>
-                            <span class="type">购买了{{eva.type=='2'?'通话':'文字'}}服务</span>
-                        </p>
-                        <p class="comment" v-if="eva.comment">{{eva.comment}}</p>
-                        <p class="comment" v-if="!eva.comment"><span class="default">默认</span>太棒了，服务很赞，倾诉体验超好。</p>
-                        <p class="tags" v-if="eva.tags&&eva.tags.length>0">
-                            <span 
-                            v-for="(tag,index) in eva.tags" 
-                            :key="index" 
-                            class="tag">{{tag.text}}</span>
-                        </p>
-                        <p v-if="!eva.reply" class="reply-box">
-                            <el-input v-if="eva.isReply" class="reply-input" v-model="replyMsg" placeholder="请输入回复内容"></el-input>
-                            <mt-button class="button" size="small" @click.native="reply(eva)">{{eva.isReply?'发送':'回复'}}</mt-button>
-                        </p>
-                        <p v-if="eva.reply"><span class="reply" >倾听者回复：</span>{{eva.reply}}</p>
-                    </div>
+        </div>
+        <div class="tabs">
+            <div class="tab" 
+                v-for="(tab,index) in tabs" 
+                :key="index">
+                <div class="con" @click="tabChange(tab)" :class="{'active':tab.active}">
+                    <p class="text">{{tab.text}}</p>
+                    <p class="text">{{tab.num}}</p>
                 </div>
             </div>
         </div>
-        <div v-if="!isListener" class="container" 
+        <div class="eva-title">
+            最新评论
+        </div>
+        <div class="body"
             v-infinite-scroll="loadMore"
             infinite-scroll-disabled="loading"
-            infinite-scroll-distance="10">
-            <div class="list-container" v-for="(item,index) in evaList" :key="index" @click="toUserInfo(item)">
-                <div class="list">
-                    <img class="head-img" :src="item.headImg"/>
-                    <div class="content">
-                        <p class="name">{{item.name}}</p>
-                        <p class="date">{{item.time}}</p>
-                    </div>
-                    <div class="button" @click.stop="followMe(item)">找TA倾诉</div>
+            infinite-scroll-distance="10"
+            >
+            <div class="eva-list" v-for="(eva,index) in evaList" :key="index">
+                <div class="head-img">
+                    <img width="40px" :src="user.headimgurl" alt="">
                 </div>
-                <div class="comment">{{item.comment}}</div>
+                <div class="content">
+                    <p class="name">{{user.nickname}}</p>
+                    <p class="info">
+                        <span class="time">{{eva.time}}</span>
+                        <span class="type">购买了{{eva.type=='2'?'通话':'文字'}}服务</span>
+                    </p>
+                    <p class="comment" v-if="eva.comment">{{eva.comment}}</p>
+                    <p class="comment" v-if="!eva.comment"><span class="default">默认</span>太棒了，服务很赞，倾诉体验超好。</p>
+                    <p class="tags" v-if="eva.tags&&eva.tags.length>0">
+                        <span 
+                        v-for="(tag,index) in eva.tags" 
+                        :key="index" 
+                        class="tag">{{tag.text}}</span>
+                    </p>
+                    <!-- <p v-if="!eva.reply" class="reply-box">
+                        <el-input v-if="eva.isReply" class="reply-input" v-model="replyMsg" placeholder="请输入回复内容"></el-input>
+                        <mt-button class="button" size="small" @click.native="reply(eva)">{{eva.isReply?'发送':'回复'}}</mt-button>
+                    </p>
+                    <p v-if="eva.reply"><span class="reply" >倾听者回复：</span>{{eva.reply}}</p> -->
+                </div>
             </div>
         </div>
     </div>
@@ -92,6 +76,7 @@ import Vue from 'vue';
 import {Component} from 'vue-property-decorator'; 
 import { mapGetters } from 'vuex';
 import { ERole } from '../../enum/ERole';
+import {EEvaluateTabs} from '../../enum/EEvaluateTabs.ts';
 import Rate from "@/components/Rate.vue";
 import Pager from "@/helper/Pager.ts"; 
 import EvaluateService from "@/api/EvaluateService.ts";
@@ -105,6 +90,11 @@ const evaluateService = EvaluateService.getInstance();
         ...mapGetters({
             user:'user'
         })
+    },
+    filters:{
+        fixed:(value:string)=>{
+            return String(value).indexOf('.') > -1 ? parseFloat(value).toFixed(2) : value;
+        }
     }
 })
 export default class EvaluationList extends Vue {
@@ -112,6 +102,7 @@ export default class EvaluationList extends Vue {
     private isListener:boolean = true;
     private curStatus:number = 1;
     private replyMsg:string = '';
+    private isMine:boolean = false;
     private evaDatas:any = {
         timerate:5,
         serviceattitude:5,
@@ -129,9 +120,9 @@ export default class EvaluationList extends Vue {
     ];
 
     private tabs:any = [
-        {id:1,text:'满意',num:2,active:true},
-        {id:2,text:'一般',num:0,active:false},
-        {id:3,text:'不满意',num:0,active:false},
+        {id:1,text:'满意',num:2,active:true,status:EEvaluateTabs.Satisfied},
+        {id:2,text:'一般',num:0,active:false,status:EEvaluateTabs.Normal},
+        {id:3,text:'不满意',num:0,active:false,status:EEvaluateTabs.NotStaisfied},
     ];
 
     private evaList:any = [];
@@ -140,6 +131,7 @@ export default class EvaluationList extends Vue {
         if((<any>this).user&&(<any>this).user.role){
             this.isListener = (<any>this).user.role === ERole.Listener;
         }
+        this.isMine = (<any>this).$route.query.isMine === 'true';
         this.loadData();
         // this.getEvaDatas();
     }
@@ -149,16 +141,20 @@ export default class EvaluationList extends Vue {
         this.tabs.forEach((item:any)=>{
             item.active = item.id === tab.id;
         });
-        this.curStatus = tab.id;
+        this.curStatus = tab.status;
         this.pager.clear().setLimit(20);
         this.loadData();
     }
 
     loadData(){
         //TODO:获取评价列表数，注意倾听者和倾诉者列表数据的区别
-        let params = {
-            status:this.curStatus,
-            lid:(<any>this).user.id||3
+        let params:any = {
+            status:this.curStatus
+        }
+        if(this.isMine){
+            params.uid = (<any>this).user.id||3;
+        }else{
+            params.lid = (<any>this).user.id||3;
         }
         Object.assign(params,this.pager);
         let evaList =[

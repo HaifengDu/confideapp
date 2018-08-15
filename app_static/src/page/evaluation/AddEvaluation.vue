@@ -35,6 +35,7 @@
                 placeholder="您的评价能够帮助其他倾诉者哦"
                 v-model="suggest">
             </el-input>
+            <div class="count">{{suggest.length}}/150</div>
         </div>
         <div class="button-box">
             <mt-button size="normal" type="primary" @click.native="submit">提交</mt-button>
@@ -44,7 +45,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import {Component} from 'vue-property-decorator'; 
+import {Component,Watch} from 'vue-property-decorator'; 
 import Rate from "@/components/Rate.vue";
 import EvaluateService from "@/api/EvaluateService.ts";
 const evaluateService = EvaluateService.getInstance();
@@ -110,6 +111,13 @@ export default class AddEvaluation extends Vue{
 
     tagChange(tag:any){
         tag.checked = !tag.checked;
+    }
+
+    @Watch('suggest')
+    textChange(){
+        if(this.suggest.length > 150){
+            this.suggest = this.suggest.slice(0,150);
+        }
     }
 
     submit(){
@@ -192,6 +200,13 @@ export default class AddEvaluation extends Vue{
         }
         .suggest{
             padding:10px 20px;
+            .p-rl;
+            .count{
+                .p-ab;
+                right:25px;
+                bottom:15px;
+                color:#adadad;
+            }
         }
         .tags{
             padding:15px 20px;

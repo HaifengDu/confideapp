@@ -30,6 +30,18 @@
                     <mt-cell title="订单号" class="cell-con cell-prev">1509006</mt-cell>
                     <mt-cell style="border-bottom:none;" title="有效期至" class="cell-con cell-prev">2018年06月29日 21:19</mt-cell>
                 </div>
+                <div v-if="order.status==6" class="main">
+                    <div class="evaluate">
+                        评价：非常满意，受益匪浅
+                    </div>
+                    <div class="reply">
+                        <p v-if="!curOrder.reply" class="reply-box">
+                            <el-input v-if="isReply" class="reply-input" v-model="replyMsg" placeholder="请输入回复内容"></el-input>
+                            <mt-button class="button" size="small" @click.native="reply()">{{isReply?'发送':'回复'}}</mt-button>
+                        </p>
+                        <p v-if="curOrder.reply" class="cur-reply"><span class="reply" >倾听者回复：</span>{{curOrder.reply}}</p>
+                    </div>
+                </div>
             </div>
         </div>
         <div v-if="isToBePaid" class="container">
@@ -76,7 +88,10 @@ import {mapGetters} from "vuex";
 import OrderService from "../../api/OrderService.ts";
 import { MessageBox } from 'mint-ui';
 import { Indicator } from 'mint-ui';
+import EvaluateService from "@/api/EvaluateService.ts";
+
 const orderService = OrderService.getInstance();
+const evaluateService = EvaluateService.getInstance();
 declare var WeixinJSBridge:any;
 declare var wx:any;
 @Component({
@@ -92,11 +107,15 @@ export default class OrderDetail extends Vue{
     private serviceType = 1;
     private statuNamesDic = ['待支付','已付款','服务中','待评论','已取消','已完成','已退款'];
     private isToBePaid = true;
+    private isReply = false;
+    private replyMsg = '';
+    private curOrder:any = {reply:''};
 
     mounted() {
         if((<any>this).order){
             this.isToBePaid = (<any>this).order.status === EOrderStatus.Awaiting_Payment;        
             this.serviceType = (<any>this).order.serviceType;
+            Object.assign(this.curOrder,(<any>this).order||{});
         }
     }
 
@@ -172,6 +191,24 @@ export default class OrderDetail extends Vue{
                 console.log(arguments);
             }
         });
+    }
+
+    reply(){
+        if(this.isReply){
+            if(!this.replyMsg){
+                this.$toast('回复内容不能为空');
+                return;
+            }
+            // evaluateService.replyEva({eid:this.curOrder.id,message:this.replyMsg}).then((res:any)=>{
+            //     if(res.data.success){
+            //         this.curOrder.reply = this.replyMsg;
+            //     }
+            // });
+            this.curOrder.reply = this.replyMsg;
+            console.log(this.curOrder);
+        }else{
+            this.isReply = true;
+        }
     }
 
 }
@@ -311,5 +348,33 @@ export default class OrderDetail extends Vue{
                 color:#888;
             }
         }
+        .evaluate{
+            text-align:left;
+            margin-bottom:10px;
+            .t-ellipsis(3);
+        }
+        .reply{
+            .reply-box{
+                display:flex;
+                justify-content: flex-end;
+                .reply-input{
+                    margin-right:10px;
+                }
+                
+                .button{
+                    padding:0 10px;
+                    height:24px;
+                    width:60px;
+                }
+            }
+            .cur-reply{
+                text-align: left;
+                .t-ellipsis(3);
+                .reply{
+                    color:@mainColor;
+                }
+            }
+        }
+        
     }
 </style>

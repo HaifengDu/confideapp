@@ -1,6 +1,6 @@
 <template>
     <div style="height:100%;">
-        <div v-if="!isToBePaid" class="container con-bg">
+        <div v-if="!isToBePaid" class="container">
             <div class="body">
                 <div class="type">{{serviceType==1?'文字服务':'通话服务'}}</div>
                 <div class="main">
@@ -30,15 +30,24 @@
                     <mt-cell title="订单号" class="cell-con cell-prev">1509006</mt-cell>
                     <mt-cell style="border-bottom:none;" title="有效期至" class="cell-con cell-prev">2018年06月29日 21:19</mt-cell>
                 </div>
-                <div v-if="order.status==6" class="main">
+                <div v-if="order.status==6" class="main" style="margin-top:20px;">
                     <div class="evaluate">
                         评价：非常满意，受益匪浅
                     </div>
                     <div class="reply">
-                        <p v-if="!curOrder.reply" class="reply-box">
-                            <el-input v-if="isReply" class="reply-input" v-model="replyMsg" placeholder="请输入回复内容"></el-input>
-                            <mt-button class="button" size="small" @click.native="reply()">{{isReply?'发送':'回复'}}</mt-button>
-                        </p>
+                        <div v-if="!curOrder.reply" class="reply-box">
+                            <div v-if="isReply"  class="reply-content">
+                                <el-input
+                                    class="reply-input" 
+                                    v-model="replyMsg" 
+                                    type="textarea"
+                                    @input="textChange"
+                                    :rows="4"
+                                    placeholder="请输入回复内容"></el-input>
+                                <div class="count">{{replyMsg.length}}/150</div>
+                            </div>
+                            <mt-button type="primary" class="button" size="small" @click.native="reply()">{{isReply?'发送':'回复'}}</mt-button>
+                        </div>
                         <p v-if="curOrder.reply" class="cur-reply"><span class="reply" >倾听者回复：</span>{{curOrder.reply}}</p>
                     </div>
                 </div>
@@ -121,6 +130,14 @@ export default class OrderDetail extends Vue{
 
     getServiceTypeIcon(){
         return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
+    }
+
+    textChange(){
+        if(this.replyMsg.length > 150){
+            this.$nextTick(()=>{
+                this.replyMsg = this.replyMsg.slice(0,150);
+            });
+        }
     }
 
     cancelOrder(){
@@ -218,9 +235,6 @@ export default class OrderDetail extends Vue{
     @import '../../assets/style.less';
     @orange:rgb(239,146,55);
     @bgColor:rgb(238,238,238);
-    .con-bg{
-        background:@bgColor;
-    }
     *{
         .f-nm;
     }
@@ -229,6 +243,7 @@ export default class OrderDetail extends Vue{
         .p-rl;
     }
     .body{
+        background:@bgColor;
         .type{
             padding:20px 20px 40px 20px;
             color:rgb(115,115,115);
@@ -355,16 +370,18 @@ export default class OrderDetail extends Vue{
         }
         .reply{
             .reply-box{
-                display:flex;
-                justify-content: flex-end;
-                .reply-input{
-                    margin-right:10px;
+                .reply-content{
+                    .p-rl;
+                    .count{
+                        .p-ab;
+                        right:10px;
+                        bottom:5px;
+                        color:#adadad;
+                    }
                 }
-                
                 .button{
-                    padding:0 10px;
-                    height:24px;
-                    width:60px;
+                    margin-top:10px;
+                    padding:0 20px;
                 }
             }
             .cur-reply{

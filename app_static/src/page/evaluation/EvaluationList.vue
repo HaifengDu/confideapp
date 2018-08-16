@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :class="{'fixed-top':isMine}">
         <div v-if="!isMine">
             <div class="header">
                 <div class="evaluation">
@@ -24,7 +24,7 @@
             </div>
             <div class="divider"></div>
         </div>
-        <div class="tabs">
+        <div class="tabs" :class="{'fixed-tab':isFixed||isMine}">
             <div class="tab" 
                 v-for="(tab,index) in tabs" 
                 :key="index">
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="eva-title">
+        <div class="eva-title" ref="evaTitle">
             最新评论
         </div>
         <div class="body"
@@ -103,6 +103,7 @@ export default class EvaluationList extends Vue {
     private curStatus:number = 1;
     private replyMsg:string = '';
     private isMine:boolean = false;
+    private isFixed:boolean = false;
     private evaDatas:any = {
         timerate:5,
         serviceattitude:5,
@@ -127,6 +128,11 @@ export default class EvaluationList extends Vue {
 
     private evaList:any = [];
 
+    scroll(){
+        
+        console.log(666);
+    }
+
     created(){
         if((<any>this).user&&(<any>this).user.role){
             this.isListener = (<any>this).user.role === ERole.Listener;
@@ -134,6 +140,43 @@ export default class EvaluationList extends Vue {
         this.isMine = (<any>this).$route.query.isMine === 'true';
         this.loadData();
         // this.getEvaDatas();
+    }
+
+    mounted(){
+        if(!this.isMine){
+            window.addEventListener('scroll', this.throttle(this.handleScroll,100,100));
+        }
+    }
+
+    private throttle(func:Function, wait:number, mustRun:number) {
+        let timeout:any,
+            startTime:any = new Date();
+
+        return function(){
+            var context = this,
+                args = arguments,
+                curTime:any = new Date();
+
+            clearTimeout(timeout);
+            // 如果达到了规定的触发时间间隔，触发 handler
+            if(curTime - startTime >= mustRun){
+                func.apply(context,args);
+                startTime = curTime;
+            // 没达到触发间隔，重新设定定时器
+            }else{
+                timeout = setTimeout(func, wait);
+            }
+        };
+    };
+
+    handleScroll () {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+        if(scrollTop >= 258){
+            this.isFixed = true;
+        }else{
+            this.isFixed = false;
+        }
+        var evaTitle = this.$refs.evaTitle;
     }
 
     tabChange(tab:any){
@@ -158,6 +201,16 @@ export default class EvaluationList extends Vue {
         }
         Object.assign(params,this.pager);
         let evaList =[
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
+            {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
             {id:1,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'},
             {id:2,isReply:false,name:'正直的嘉熙',time:'18-06-28',type:2,comment:'非常满意，受益匪浅',tags:[{text:'很懂得安抚',num:1},{text:'受益匪浅',num:1},{text:'知己',num:1}],reply:'',headImg:'/static/images/tab/my-active.png'}
         ];
@@ -223,6 +276,9 @@ export default class EvaluationList extends Vue {
     @orange:rgb(239,146,55);
     *{
         .f-nm;
+    }
+    .fixed-top{
+        padding-top: 46px;
     }
     .container{
         .p-rl;
@@ -410,6 +466,12 @@ export default class EvaluationList extends Vue {
             height:24px;
             width:60px;
         }
+    }
+    .fixed-tab{
+        position: fixed;
+        width: 100%;
+        top: 0;
+        background: #fff;
     }
 </style>
 

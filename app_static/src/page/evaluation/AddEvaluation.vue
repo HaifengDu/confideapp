@@ -33,6 +33,7 @@
                 type="textarea"
                 :rows="6"
                 placeholder="您的评价能够帮助其他倾诉者哦"
+                @input="textChange"
                 v-model="suggest">
             </el-input>
             <div class="count">{{suggest.length}}/150</div>
@@ -45,7 +46,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import {Component,Watch} from 'vue-property-decorator'; 
+import {Component} from 'vue-property-decorator'; 
 import Rate from "@/components/Rate.vue";
 import EvaluateService from "@/api/EvaluateService.ts";
 const evaluateService = EvaluateService.getInstance();
@@ -104,19 +105,18 @@ export default class AddEvaluation extends Vue{
             }
         });
         this.isShowTags = true;
-        //TODO:获取不满意、一般、满意对应的评价标签
         this.tags = this.tagObj['tag_'+eva.id];
-        console.log(this.rate);
     }
 
     tagChange(tag:any){
         tag.checked = !tag.checked;
     }
 
-    @Watch('suggest')
     textChange(){
         if(this.suggest.length > 150){
-            this.suggest = this.suggest.slice(0,150);
+            this.$nextTick(()=>{
+                this.suggest = this.suggest.slice(0,150);
+            });
         }
     }
 

@@ -1,6 +1,6 @@
 import _ = require("lodash");
 import * as Bluebird from "bluebird";
-import { Op } from "sequelize";
+import * as Sequelize from "sequelize";
 import ListenerModel from "../model/Listener";
 import { IListener } from "../interface/model/IListener";
 import User from "../model/User";
@@ -23,7 +23,7 @@ import BaseDataHelper from "../helper/baseDataHelper";
 import { ITreeData } from "../interface/ITreeData";
 import { IBaseData } from "../interface/IBaseData";
 import { ELabelSType } from "../enum/ELabelType";
-
+const Op = Sequelize.Op;
 export default class ListenerService {
 
     private static _instance: ListenerService;
@@ -266,15 +266,15 @@ export default class ListenerService {
             limit:page.limit,
             include: [{
                 model: User,
-                as: 'user',
-                where: {
-                    [Op.or]:[
-                        { nickname:{[Op.like] :name} },
-                        { labeldesc:{[Op.like]:name} },
-                        { expdesc:{[Op.like]:name} }
-                    ]
-                }
-            }]
+                as: 'user'
+            }],
+            where:{
+                [Op.or]:[
+                    Sequelize.literal('`user`.`nickname` LIKE \'%'+name+'%\''),
+                    { labeldesc:{[Op.like]:`%${name}%`} },
+                    { expdesc:{[Op.like]:`%${name}%`} }
+                ]
+            }
         }).then(res=>{
             const listeners = <IListener[]>ObjectHelper.serialize(res);
             listeners.forEach(item=>{

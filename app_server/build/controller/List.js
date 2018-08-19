@@ -8,6 +8,7 @@ const Listener_1 = require("./Listener");
 const ERecieveStatus_1 = require("../enum/ERecieveStatus");
 const objectHelper_1 = require("../helper/objectHelper");
 const _ = require("lodash");
+const util_1 = require("../helper/util");
 class ListService {
     constructor() {
         this.pageSize = 20;
@@ -21,13 +22,14 @@ class ListService {
         if (!filter) {
             return Bluebird.reject(new ErrorMsg_1.default(false, "筛选参数不能为空！"));
         }
-        // if(!filter.labelid){
-        //     return Bluebird.reject(new ErrorMsg(false,"标签id不能为空！"));
-        // }
-        const whereOption = {
-        // labelids:filter.labelid
-        };
-        ["labelid", "edu", "auth", "sex", "family"].forEach(item => {
+        if (!filter.labelid) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "标签id不能为空！"));
+        }
+        const whereOption = {};
+        if (filter.labelid) {
+            whereOption.labelids = filter.labelid;
+        }
+        ["edu", "auth", "sex", "family"].forEach(item => {
             if (filter[item]) {
                 whereOption[item] = filter[item];
             }
@@ -71,7 +73,13 @@ class ListService {
             pageSize = this.pageSize;
         }
         return query.skip(start).limit(pageSize).then(res => {
-            return this.listenerService.findInUserids(res.map(item => item.uid));
+            const userids = res.map(item => item.uid);
+            return this.listenerService.findInUserids(userids).then(listeners => {
+                const arr = util_1.sortByArray(listeners, userids, (listener, userid) => {
+                    return listener.uid === userid;
+                });
+                return [...arr, ...arr, ...arr, ...arr, ...arr, ...arr, ...arr, ...arr];
+            });
         });
     }
     getListNotinIds(uids, count) {

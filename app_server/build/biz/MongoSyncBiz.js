@@ -7,19 +7,26 @@ class MongoSyncBiz {
     constructor() {
     }
     create(res) {
-        return MongoSortFilterModel_1.default.create({
-            uid: res.uid,
-            generalprice: res.minprice,
-            auth: res.authstatus,
-            praisepercent: 0,
-            sex: res.user.sex,
-            family: res.family,
-            address: res.user.address,
-            birthday: res.user.birthday,
-            edu: res.edu,
-            sealtimes: 0,
-            receivestatus: res.recievestatus,
-            labelids: objectHelper_1.default.parseJSON(res.labelids) || []
+        return MongoSortFilterModel_1.default.findOne({
+            uid: res.uid
+        }).then(listener => {
+            if (listener) {
+                return Promise.resolve(listener);
+            }
+            return MongoSortFilterModel_1.default.create({
+                uid: res.uid,
+                generalprice: res.minprice,
+                auth: res.authstatus,
+                praisepercent: 0,
+                sex: res.user.sex,
+                family: res.family,
+                address: res.user.address,
+                birthday: res.user.birthday,
+                edu: res.edu,
+                sealtimes: 0,
+                receivestatus: res.recievestatus,
+                labelids: objectHelper_1.default.parseJSON(res.labelids) || []
+            });
         });
     }
     updateByUser(user) {

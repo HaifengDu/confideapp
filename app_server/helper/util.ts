@@ -24,3 +24,15 @@ export function getClientIp(req:express.Request){
 export function createNonceStr() {
     return Math.random().toString(36).substr(2, 15);
 };
+
+export function sortByArray<S,T>(source:S[],sort:T[],cb:(item:S,arr:T)=>boolean){
+    const temp:S[] = [];
+    for (let index = 0; index < sort.length; index++) {
+        const current = source.find(item=>cb(item,sort[index]));
+        if(current) {
+            temp[index] = current;
+        }
+    }
+
+    return temp;
+}

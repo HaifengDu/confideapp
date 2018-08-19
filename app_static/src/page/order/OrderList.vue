@@ -79,7 +79,7 @@ const orderService = OrderService.getInstance();
 @Component({
     methods:{
         ...mapActions({
-            setOrder:'setOrder'
+            setOrder:'order/setOrder'
         })
     },
     computed:{
@@ -105,13 +105,10 @@ export default class OrderList extends Vue{
     private currentStatus:number = 1;
     private list:any = [];
 
-    create(){
+    mounted() {
         if((<any>this).user&&(<any>this).user.role){
             this.isListener = (<any>this).user.role === ERole.Listener;
         }
-    }
-
-    mounted() {
         this.$nextTick(() => {
             new BScroll((<any>this).$refs.wrapper, {
                 scrollX: true,

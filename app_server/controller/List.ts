@@ -9,6 +9,7 @@ import { ERecieveStatus } from "../enum/ERecieveStatus";
 import { IPager } from "../interface/IPager";
 import ObjectHelper from "../helper/objectHelper";
 import _ = require("lodash");
+import { sortByArray } from "../helper/util";
 
 export default class ListService {
 
@@ -29,14 +30,17 @@ export default class ListService {
         if(!filter){
             return Bluebird.reject(new ErrorMsg(false,"筛选参数不能为空！"));
         }
-        // if(!filter.labelid){
-        //     return Bluebird.reject(new ErrorMsg(false,"标签id不能为空！"));
-        // }
+        if(!filter.labelid){
+            return Bluebird.reject(new ErrorMsg(false,"标签id不能为空！"));
+        }
         const whereOption:any = {
-            // labelids:filter.labelid
+            
         };
+        if(filter.labelid){
+            whereOption.labelids = filter.labelid;
+        }
 
-        ["labelid","edu","auth","sex","family"].forEach(item=>{
+        ["edu","auth","sex","family"].forEach(item=>{
             if(filter[item]){
                 whereOption[item] = filter[item];
             }
@@ -80,7 +84,13 @@ export default class ListService {
             pageSize = this.pageSize;
         }
         return <any>query.skip(start).limit(pageSize).then(res=>{
-            return this.listenerService.findInUserids(res.map(item=>item.uid));
+            const userids = res.map(item=>item.uid);
+            return this.listenerService.findInUserids(userids).then(listeners=>{
+                const arr = sortByArray(listeners,userids,(listener,userid)=>{
+                    return listener.uid===userid;
+                });
+                return [...arr,...arr,...arr,...arr,...arr,...arr,...arr,...arr];
+            });
         }) as Bluebird<IListener[]>;
     }
 

@@ -50,13 +50,13 @@ export default class ObjectHelper{
             delete obj[element];
         }
     }
-    static parseJSON(str?:string){
+    static parseJSON<T extends any>(str?:string|any){
         if(!str){
             return null;
         }
         //非字符串直接返回
         if(typeof str!=="string"||Object.prototype.toString.call(str)!=='[object String]'){
-            return str;
+            return str as any;
         }
         let result = null;
         try{
@@ -64,6 +64,6 @@ export default class ObjectHelper{
         }catch(e){
             //
         }
-        return result;
+        return result as T;
     }
 }

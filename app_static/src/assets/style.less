@@ -425,12 +425,14 @@ a:focus,input:focus,select:focus{
   display:inline-block;
 }
 .t-ellipsis(@lines){
-  overflow:hidden;
-  tex-overflow: ellipsis;
-  display: box;
-  display: -webkit-box;
-  -webkit-line-clamp: @lines;
-  -webkit-box-orient: vertical;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    display: box;
+    display: -webkit-box;
+    -webkit-line-clamp: @lines;
+    /*! autoprefixer: off */
+    -webkit-box-orient: vertical;
+    /* autoprefixer: on */
 }
 .v-middle(@height){
   height:@height;
@@ -491,4 +493,13 @@ a:focus,input:focus,select:focus{
 
 .mint-toast{
   z-index:9999;
+}
+
+.reply-input .el-input__inner{
+    height:26px;
+    line-height:26px;
+}
+
+.cus-rate .el-rate__icon{
+    margin-right:20px;
 }

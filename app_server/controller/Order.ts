@@ -584,8 +584,9 @@ export default class OrderService {
     }
 
     public getSummeryDatas(lids:number[]) {
-        return Order.find({
+        return Order.findAll({
             attributes:[
+                'lid',
                 [Sequelize.fn("COUNT",Sequelize.literal('DISTINCT `uid`')),'ucount'],
                 [Sequelize.fn("SUM",Sequelize.literal('`payservicetime`')),'stime']
             ],

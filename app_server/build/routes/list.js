@@ -3,14 +3,18 @@ const express = require("express");
 const check_1 = require("express-validator/check");
 const List_1 = require("../controller/List");
 const ErrorMsg_1 = require("../model/ErrorMsg");
+const objectHelper_1 = require("../helper/objectHelper");
+// import ObjectHelper from "../helper/objectHelper";
+// import OrderService from "../controller/Order";
 const router = express.Router();
 const listCtl = List_1.default.getInstance();
-router.get("/", function (req, res) {
-    const errors = check_1.validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
+router.post("/", function (req, res) {
+    const data = req.body.data;
+    if (!data) {
+        res.json(new ErrorMsg_1.default(false, "参数错误"));
+        return;
     }
-    listCtl.getList(req.query).then(data => {
+    listCtl.getList(objectHelper_1.default.parseJSON(data)).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {
         res.json(new ErrorMsg_1.default(false, err.message, err));
@@ -28,8 +32,8 @@ router.get("/search", [
         return res.json(new ErrorMsg_1.default(false, errors.array()[0].msg));
     }
     listCtl.getSearch(req.query.name, {
-        start: req.query.start,
-        limit: req.query.limit
+        start: parseInt(req.query.start),
+        limit: parseInt(req.query.limit)
     }).then(data => {
         res.json(Object.assign({ data }, new ErrorMsg_1.default(true)));
     }, err => {

@@ -6,6 +6,8 @@ import Index from "@/page/Index.vue";
 import Home from "@/page/Home.vue";
 import My from "@/page/my/My.vue";
 import List from "@/page/List.vue";
+import Help from "@/page/help/SeekHelp.vue";
+import HelpDetail from "@/page/help/HelpDetail.vue";
 import ApplyListener from "@/page/ApplyListener.vue";
 import BindPhone from "@/page/my/BindPhone.vue";
 import BaseInfo from "@/page/my/BaseInfo.vue";
@@ -105,73 +107,99 @@ const router = new Router({
       component: ListenerSettings
     },
     {
-      path:"/myTags",
-      name:"MyTags",
-      component:MyTags
-    },{
-      path:"/otherInfo",
-      name:"OtherInfo",
-      component:OtherInfo
-    },{
-      path:"/textService",
-      name:"TextService",
-      component:TextService
-    },{
-      path:"/callService",
-      name:"CallService",
-      component:CallService
-    },{
-      path:"/personalInfo",
-      name:"PersonalInfo",
-      component:PersonalInfo
-    },{
-      path:"/list",
-      name:"List",
-      component:List
-    },{
-      path:'/follow',
-      name:'Follow',
-      component:Follow
-    },{
-      path:"/searchPanel",
-      name:"SearchPanel",
-      component:SearchPanel
-    },{
-      path:"/chat/:uid",
-      name:"Chat",
-      component:Chat
-    },{
-      path:"/myAdvert",
-      name:"MyAdvert",
-      component:MyAdvert
-    },{
-      path:"/advertSetting",
-      name:"AdvertSetting",
-      component:AdvertSetting
-    },{
-      path:'/advertRecord',
-      name:'AdvertRecord',
-      component:AdvertRecord
-    },{
-      path:'/placeOrder',
-      name:'PlaceOrder',
-      component:PlaceOrder
-    },{
-      path:'/orderDetail',
-      name:'OrderDetail',
-      component:OrderDetail
-    },{
-      path:'/orderList',
-      name:'OrderList',
-      component:OrderList
-    },{
-      path:'/evaluationList',
-      name:'EvaluationList',
-      component:EvaluationList
-    },{
-      path:'/addEvaluation/:id',
-      name:'AddEvaluation',
-      component:AddEvaluation
+      path: "/myTags",
+      name: "MyTags",
+      component: MyTags
+    },
+    {
+      path: "/otherInfo",
+      name: "OtherInfo",
+      component: OtherInfo
+    },
+    {
+      path: "/textService",
+      name: "TextService",
+      component: TextService
+    },
+    {
+      path: "/callService",
+      name: "CallService",
+      component: CallService
+    },
+    {
+      path: "/personalInfo",
+      name: "PersonalInfo",
+      component: PersonalInfo
+    },
+    {
+      path: "/list",
+      name: "List",
+      component: List
+    },
+    {
+      path: "/follow",
+      name: "Follow",
+      component: Follow
+    },
+    {
+      path: "/searchPanel",
+      name: "SearchPanel",
+      component: SearchPanel
+    },
+    {
+      path: "/chat/:uid",
+      name: "Chat",
+      component: Chat
+    },
+    {
+      path: "/myAdvert",
+      name: "MyAdvert",
+      component: MyAdvert
+    },
+    {
+      path: "/advertSetting",
+      name: "AdvertSetting",
+      component: AdvertSetting
+    },
+    {
+      path: "/advertRecord",
+      name: "AdvertRecord",
+      component: AdvertRecord
+    },
+    {
+      path: "/placeOrder",
+      name: "PlaceOrder",
+      component: PlaceOrder
+    },
+    {
+      path: "/orderDetail",
+      name: "OrderDetail",
+      component: OrderDetail
+    },
+    {
+      path: "/orderList",
+      name: "OrderList",
+      component: OrderList
+    },
+    {
+      path: "/evaluationList",
+      name: "EvaluationList",
+      component: EvaluationList
+    },
+    {
+      path: "/addEvaluation/:id",
+      name: "AddEvaluation",
+      component: AddEvaluation
+    },
+    {
+      path: "/help",
+      name: "Help",
+      component: Help
+    },
+    {
+      path: "/helpDetail",
+      name: "HelpDetail",
+      component: HelpDetail
     }
   ]
 });

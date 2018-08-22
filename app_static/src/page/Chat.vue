@@ -273,8 +273,8 @@ export default class Chat extends Vue{
     scrollToBottom(){
       setTimeout(() => {
         let scrollContainer = <HTMLDivElement>this.$refs.scrollContainer
-        scrollContainer.scrollTop = scrollContainer.offsetHeight
-      }, 100);
+        scrollContainer.scrollTop = scrollContainer.offsetHeight+500
+      }, 200);
     }
     orderRightNow(){
       this.orderSelectShow = true

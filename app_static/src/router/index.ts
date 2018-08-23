@@ -33,6 +33,7 @@ import OrderDetail from "@/page/order/OrderDetail.vue";
 import OrderList from "@/page/order/OrderList.vue";
 import EvaluationList from "@/page/evaluation/EvaluationList.vue";
 import AddEvaluation from "@/page/evaluation/AddEvaluation.vue";
+import Recharge from "@/page/Recharge.vue";
 
 Vue.use(Router)
 
@@ -200,6 +201,10 @@ const router = new Router({
       path: "/helpDetail",
       name: "HelpDetail",
       component: HelpDetail
+    },{
+      path:"/recharge",
+      name:"Recharge",
+      component:Recharge
     }
   ]
 });

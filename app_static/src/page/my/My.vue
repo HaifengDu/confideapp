@@ -21,7 +21,7 @@
       </div>
       <div class="entrance">
         <div class="ul" v-bind:key="index" v-for="(ele,index) in entranceArr">
-          <div class="li" v-bind:key="index" v-for="(item,index) in ele.children" @click="toPage(item.id)">
+          <div class="li" v-bind:key="index" v-for="(item,index) in ele.children" @click="toPage(item)">
             <div class="icon"><img :src="item.imgUrl" alt=""></div>
             <div class="text">{{item.text}}</div>
           </div>
@@ -115,7 +115,8 @@ export default class My extends Vue{
           {
             imgUrl:'static/images/my/encourage.png',
             text:'评价',
-            id:'encourage'
+            id:'encourage',
+            path:'/evaluationList'
           }
           // {
           //   imgUrl:'static/images/my/activity.png',
@@ -134,12 +135,14 @@ export default class My extends Vue{
         {
           imgUrl:'static/images/my/charge.png',
           text:'充值',
-          id:'charge'
+          id:'recharge',
+          path:'/recharge'
         },
         {
           imgUrl:'static/images/my/order.png',
           text:'订单',
-          id:'order'
+          id:'order',
+          path:'/orderList'
         }
         // {
         //   imgUrl:'static/images/my/card.png',
@@ -186,11 +189,11 @@ export default class My extends Vue{
     // });
   }
 
-  toPage(id:string){
-    if(id === 'encourage'){
+  toPage(module:any){
+    if(module.id === 'encourage'){
       this.$router.push({path:'/evaluationList',query:{isMine:'true'}});
-    }else if(id === 'order'){
-      this.$router.push('/orderList');
+    }else{
+      this.$router.push(module.path);
     }
   }
 

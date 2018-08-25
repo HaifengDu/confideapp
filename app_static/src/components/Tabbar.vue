@@ -20,7 +20,9 @@
 <script lang="ts">
 import Vue from 'vue';
 import {Component, Prop, Model, Watch, Emit} from 'vue-property-decorator';
-@Component
+@Component({
+
+})
 export default class Home extends Vue{
   private selected="listen";
   @Prop({
@@ -28,7 +30,6 @@ export default class Home extends Vue{
     default:""
   })
   private name:string;
-
   @Model("change",{
     type:Boolean
   })
@@ -36,9 +37,12 @@ export default class Home extends Vue{
 
   @Watch("selected")
   private watchSelected(newValue:string,oldValue:string){
-    // this.$emit("testtest",111);
+    // this.$emit("changeTab",newValue);
+    let path = newValue!=='listen'?`/${newValue}`:'/'
+    this.$router.replace({
+      path
+    })
   }
-
   created(){
 
   }

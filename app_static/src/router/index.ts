@@ -52,157 +52,247 @@ const router = new Router({
         {
           path: "/",
           name: "Home",
-          component: Home
+          component: Home,
+          meta: {
+            title: "千寻倾听"
+          }
         },
         {
           path: "my",
           name: "My",
-          component: My
+          component: My,
+          meta: {
+            title: "我的"
+          }
+        },
+        {
+          path: "/help",
+          name: "Help",
+          component: Help,
+          meta: {
+            title: "求助"
+          }
         }
       ]
     },
     {
       path: "/apply",
       name: "Apply",
-      component: ApplyListener
+      component: ApplyListener,
+      meta: {
+        title: "千寻倾听者"
+      }
     },
     {
       path: "/bindPhone",
       name: "BindPhone",
-      component: BindPhone
+      component: BindPhone,
+      meta: {
+        title: "绑定手机"
+      }
     },
     {
       path: "/baseInfo",
       name: "BaseInfo",
-      component: BaseInfo
+      component: BaseInfo,
+      meta: {
+        title: "基本信息"
+      }
     },
     {
       path: "/exprience",
       name: "Exprience",
-      component: Exprience
+      component: Exprience,
+      meta: {
+        title: "个人经历"
+      }
     },
     {
       path: "/searchFilter",
       name: "SearchFilter",
-      component: SearchFilter
+      component: SearchFilter,
+      meta: {
+        title: "千寻倾听"
+      }
     },
     {
       path: "/searchResult",
       name: "SearchResult",
-      component: SearchResult
+      component: SearchResult,
+      meta: {
+        title: "千寻倾听"
+      }
     },
     {
       path: "/tag",
       name: "Tag",
-      component: Tags
+      component: Tags,
+      meta: {
+        title: "我的标签"
+      }
     },
     {
       path: "/userInfo/:uid",
       name: "UserInfo",
-      component: UserInfo
+      component: UserInfo,
+      meta: {
+        title: "千寻倾听者"
+      }
     },
     {
       path: "/listenerSettings",
       name: "ListenerSettings",
-      component: ListenerSettings
+      component: ListenerSettings,
+      meta: {
+        title: "倾听者设置"
+      }
     },
     {
       path: "/myTags",
       name: "MyTags",
-      component: MyTags
+      component: MyTags,
+      meta: {
+        title: "我的标签"
+      }
     },
     {
       path: "/otherInfo",
       name: "OtherInfo",
-      component: OtherInfo
+      component: OtherInfo,
+      meta: {
+        title: "基本信息"
+      }
     },
     {
       path: "/textService",
       name: "TextService",
-      component: TextService
+      component: TextService,
+      meta: {
+        title: "文字服务"
+      }
     },
     {
       path: "/callService",
       name: "CallService",
-      component: CallService
+      component: CallService,
+      meta: {
+        title: "通话服务"
+      }
     },
     {
       path: "/personalInfo",
       name: "PersonalInfo",
-      component: PersonalInfo
+      component: PersonalInfo,
+      meta: {
+        title: "个人信息"
+      }
     },
     {
       path: "/list",
       name: "List",
-      component: List
+      component: List,
+      meta: {
+        title: "千寻倾听"
+      }
     },
     {
       path: "/follow",
       name: "Follow",
-      component: Follow
+      component: Follow,
+      meta: {
+        title: "关注"
+      }
     },
     {
       path: "/searchPanel",
       name: "SearchPanel",
-      component: SearchPanel
+      component: SearchPanel,
+      meta: {
+        title: "千寻倾听"
+      }
     },
     {
       path: "/chat/:uid",
       name: "Chat",
-      component: Chat
+      component: Chat,
+      meta: {
+        title: "千寻倾听"
+      }
     },
     {
       path: "/myAdvert",
       name: "MyAdvert",
-      component: MyAdvert
+      component: MyAdvert,
+      meta: {
+        title: "推广"
+      }
     },
     {
       path: "/advertSetting",
       name: "AdvertSetting",
-      component: AdvertSetting
+      component: AdvertSetting,
+      meta: {
+        title: "推广设置"
+      }
     },
     {
       path: "/advertRecord",
       name: "AdvertRecord",
-      component: AdvertRecord
+      component: AdvertRecord,
+      meta: {
+        title: "推广"
+      }
     },
     {
       path: "/placeOrder",
       name: "PlaceOrder",
-      component: PlaceOrder
+      component: PlaceOrder,
+      meta: {
+        title: "订单"
+      }
     },
     {
       path: "/orderDetail",
       name: "OrderDetail",
-      component: OrderDetail
+      component: OrderDetail,
+      meta: {
+        title: "订单详情"
+      }
     },
     {
       path: "/orderList",
       name: "OrderList",
-      component: OrderList
+      component: OrderList,
+      meta: {
+        title: "订单"
+      }
     },
     {
       path: "/evaluationList",
       name: "EvaluationList",
-      component: EvaluationList
+      component: EvaluationList,
+      meta: {
+        title: "评论"
+      }
     },
     {
       path: "/addEvaluation/:id",
       name: "AddEvaluation",
-      component: AddEvaluation
-    },
-    {
-      path: "/help",
-      name: "Help",
-      component: Help
+      component: AddEvaluation,
+      meta: {
+        title: "评论"
+      }
     },
     {
       path: "/helpDetail",
       name: "HelpDetail",
-      component: HelpDetail
+      component: HelpDetail,
+      meta: {
+        title: "求助详情"
+      }
     }
   ]
 });
 
-// interceptRouter(router);
+interceptRouter(router);
 export default router;

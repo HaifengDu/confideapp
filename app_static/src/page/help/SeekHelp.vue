@@ -32,6 +32,15 @@ import ListItem from '../../components/HelpItem.vue'
 @Component({
   components:{
     ListItem
+  },
+  methods:{
+    getMore:_.debounce(()=>{
+      this.btnShow = false
+      var btnTimer = setTimeout(() => {
+        clearTimeout(<any>btnTimer)
+        this.btnShow = true
+      }, 2000);
+    },1000)
   }
 })
 export default class SeekHelp extends Vue{
@@ -84,13 +93,6 @@ export default class SeekHelp extends Vue{
   changeTab(item:any){
     this.curTab = item.labelid
   }
-  getMore=_.debounce(()=>{
-    this.btnShow = false
-    var btnTimer = setTimeout(() => {
-      clearTimeout(<any>btnTimer)
-      this.btnShow = true
-    }, 2000);
-  },1000)
 }
 </script>
 
@@ -156,11 +158,11 @@ export default class SeekHelp extends Vue{
     flex-direction: column;
     &.hide{
       right:-4rem;
-      animation:moveRight 2s 0s ease;
+      animation:moveRight 1.5s 0s ease;
     }
     &.show{
       right:1rem;
-      animation:moveLeft 2s 0s ease;
+      animation:moveLeft 1.5s 0s ease;
     }
     .item{
       height:4rem;

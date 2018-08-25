@@ -33,6 +33,9 @@ import OrderDetail from "@/page/order/OrderDetail.vue";
 import OrderList from "@/page/order/OrderList.vue";
 import EvaluationList from "@/page/evaluation/EvaluationList.vue";
 import AddEvaluation from "@/page/evaluation/AddEvaluation.vue";
+import Recharge from "@/page/Recharge.vue";
+import Feedback from "@/page/Feedback.vue";
+import Wallet from "@/page/wallet/Wallet.vue";
 
 Vue.use(Router)
 
@@ -289,6 +292,30 @@ const router = new Router({
       component: HelpDetail,
       meta: {
         title: "求助详情"
+      }
+    },
+    {
+      path: "/recharge",
+      name: "Recharge",
+      component: Recharge,
+      meta: {
+        title: "余额充值"
+      }
+    },
+    {
+      path: "/feedback",
+      name: "Feedback",
+      component: Feedback,
+      meta: {
+        title: "意见反馈"
+      }
+    },
+    {
+      path: "/wallet",
+      name: "Wallet",
+      component: Wallet,
+      meta: {
+        title: "钱包"
       }
     }
   ]

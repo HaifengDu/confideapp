@@ -67,7 +67,7 @@
           </mt-cell>
         </div>
         <div class="list">
-          <mt-cell title="意见反馈">
+          <mt-cell title="意见反馈" @click.native="toPage({path:'/feedback'})">
             <i class="mint-cell-allow-right"></i>
             <img slot="icon" src="static/images/my/advice.png" width="24" height="24">
           </mt-cell>
@@ -130,7 +130,8 @@ export default class My extends Vue{
         {
           imgUrl:'static/images/my/purse.png',
           text:'钱包',
-          id:'purse'
+          id:'purse',
+          path:'/wallet'
         },
         {
           imgUrl:'static/images/my/charge.png',

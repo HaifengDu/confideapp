@@ -34,6 +34,8 @@ import OrderList from "@/page/order/OrderList.vue";
 import EvaluationList from "@/page/evaluation/EvaluationList.vue";
 import AddEvaluation from "@/page/evaluation/AddEvaluation.vue";
 import Recharge from "@/page/Recharge.vue";
+import Feedback from "@/page/Feedback.vue";
+import Wallet from "@/page/wallet/Wallet.vue";
 
 Vue.use(Router)
 
@@ -205,6 +207,14 @@ const router = new Router({
       path:"/recharge",
       name:"Recharge",
       component:Recharge
+    },{
+      path:"/feedback",
+      name:"Feedback",
+      component:Feedback
+    },{
+      path:"/wallet",
+      name:"Wallet",
+      component:Wallet
     }
   ]
 });

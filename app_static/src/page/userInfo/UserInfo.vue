@@ -16,7 +16,7 @@
             <div v-if="!isSelf" class="option">
                 <div class="action">
                     <div class="icon">
-                        <img src="static/images/userInfo/share.png">
+                        <img src="/static/images/userInfo/share.png">
                     </div>
                     <div class="text">分享</div>
                 </div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div v-if="!isSelf&&isListener" class="order" @click="order">
-                <img src="static/images/userInfo/order.png">
+                <img src="/static/images/userInfo/order.png">
             </div>
             <div class="register">
                 {{curUser.createdAt&&curUser.createdAt.split('T')[0]}}注册

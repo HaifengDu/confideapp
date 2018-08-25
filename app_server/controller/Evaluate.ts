@@ -4,10 +4,12 @@ import * as Bluebird from "bluebird";
 import * as Sequelize from "sequelize";
 import Evaluate from "../model/Evaluate";
 import { EEvaluateStatus } from "../enum/EEvaluateStatus";
-import CalucateService from "../helper/CalucateService";
 import { IEvaluateModel } from "../model/viewmodel/IEvaluateModel";
 import ObjectHelper from "../helper/objectHelper";
 import sequelize from "../mysqlSeq";
+import { IPager } from "../interface/IPager";
+import EEvaluateSatisfyStatus from "../enum/EEvaluateSatisfyStatus";
+import UserService from "./User";
 
 export default class EvaluateService {
 
@@ -16,8 +18,10 @@ export default class EvaluateService {
      */
     private static GOOD_PRAISE_FLOOR = 10;
     private static _instance: EvaluateService;
+    private userService:UserService;
 
     private constructor() {
+        this.userService = UserService.getInstance();
     }
 
     public create(model:IEvaluate){
@@ -40,13 +44,45 @@ export default class EvaluateService {
      * 
      * @param lid 倾听者id
      */
-    public getList(lid:number){
+    public getList(lid:number,status:EEvaluateSatisfyStatus,page:IPager){
         return Evaluate.findAll({
+            offset:page.start,
+            limit:page.limit,
             where:{
                 lid:lid,
+                satisfaction:status,
                 status:EEvaluateStatus.正常
             }
+        }).then(res=>{
+           return this.addUser(res);
         });
+    }
+
+    public getListByUid(uid:number,status:EEvaluateSatisfyStatus,page:IPager){
+        return Evaluate.findAll({
+            offset:page.start,
+            limit:page.limit,
+            where:{
+                uid:uid,
+                satisfaction:status,
+                status:EEvaluateStatus.正常
+            }
+        }).then(res=>{
+            return this.addUser(res);
+         });
+    }
+
+    private addUser(datas:IEvaluate[]){
+        const tempDatas = ObjectHelper.serialize<IEvaluate[]>(datas)
+        if(datas&&datas.length){
+            return this.userService.findInIds(datas.map(item=>item.uid)).then(res=>{
+                tempDatas.forEach(item=>{
+                    item.user = res.find(model=>model.id===item.uid);
+                });
+                return tempDatas;
+            });
+        }
+        return Bluebird.resolve(tempDatas);
     }
 
     public getAggregate(lid:number){
@@ -93,9 +129,9 @@ export default class EvaluateService {
         });
         return Promise.all([findPromise,totalPromise,labelsPromise]).then(res=>{
             const model:IEvaluateModel = {
-                timerate:parseInt(res[0].timerate as string||"0"),
-                serviceattitude:parseInt(res[0].serviceattitude as string||"0"),
-                servicepower:parseInt(res[0].servicepower as string||"0"),
+                timerate:parseInt(res[0].timerate as string||"5"),
+                serviceattitude:parseInt(res[0].serviceattitude as string||"5"),
+                servicepower:parseInt(res[0].servicepower as string||"5"),
                 applauserate:res[1]||1, 
                 labels:res[2]
             };

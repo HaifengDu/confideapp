@@ -1,5 +1,7 @@
 import { EEvaluateStatus } from "../../enum/EEvaluateStatus";
 import EEvaluateType from "../../enum/EEvaluateType";
+import { IUser } from "./IUser";
+import { EEvaluateSatisfyStatus } from "../../enum/EEvaluateSatisfyStatus";
 
 export interface IEvaluate{
     id?:number;
@@ -10,11 +12,12 @@ export interface IEvaluate{
     timerate?:number|string;
     serviceattitude?:number|string;
     servicepower?:number|string;
-    satisfaction?:number;
+    satisfaction?:EEvaluateSatisfyStatus;
     labels?:string|string[];
     totalrate?:number;
     status:EEvaluateStatus
     leavemessage?:string;
     replymessage?:string;
+    user?:IUser
 }
 export default IEvaluate;

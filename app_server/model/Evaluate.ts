@@ -19,6 +19,6 @@ const Evaluate = sequelize.define<IEvaluate,IEvaluate>("evaluate",{
 },{
     freezeTableName: true
 });
-Evaluate.sync({force:true})
+Evaluate.sync({alter:true})
 
 export default Evaluate;

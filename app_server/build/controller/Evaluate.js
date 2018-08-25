@@ -7,8 +7,10 @@ const Evaluate_1 = require("../model/Evaluate");
 const EEvaluateStatus_1 = require("../enum/EEvaluateStatus");
 const objectHelper_1 = require("../helper/objectHelper");
 const mysqlSeq_1 = require("../mysqlSeq");
+const User_1 = require("./User");
 class EvaluateService {
     constructor() {
+        this.userService = User_1.default.getInstance();
     }
     create(model) {
         if (!model) {
@@ -29,13 +31,43 @@ class EvaluateService {
      *
      * @param lid 倾听者id
      */
-    getList(lid) {
+    getList(lid, status, page) {
         return Evaluate_1.default.findAll({
+            offset: page.start,
+            limit: page.limit,
             where: {
                 lid: lid,
+                satisfaction: status,
                 status: EEvaluateStatus_1.EEvaluateStatus.正常
             }
+        }).then(res => {
+            return this.addUser(res);
         });
+    }
+    getListByUid(uid, status, page) {
+        return Evaluate_1.default.findAll({
+            offset: page.start,
+            limit: page.limit,
+            where: {
+                uid: uid,
+                satisfaction: status,
+                status: EEvaluateStatus_1.EEvaluateStatus.正常
+            }
+        }).then(res => {
+            return this.addUser(res);
+        });
+    }
+    addUser(datas) {
+        const tempDatas = objectHelper_1.default.serialize(datas);
+        if (datas && datas.length) {
+            return this.userService.findInIds(datas.map(item => item.uid)).then(res => {
+                tempDatas.forEach(item => {
+                    item.user = res.find(model => model.id === item.uid);
+                });
+                return tempDatas;
+            });
+        }
+        return Bluebird.resolve(tempDatas);
     }
     getAggregate(lid) {
         const whereOp = {
@@ -82,13 +114,38 @@ class EvaluateService {
         });
         return Promise.all([findPromise, totalPromise, labelsPromise]).then(res => {
             const model = {
-                timerate: parseInt(res[0].timerate || "0"),
-                serviceattitude: parseInt(res[0].serviceattitude || "0"),
-                servicepower: parseInt(res[0].servicepower || "0"),
+                timerate: parseInt(res[0].timerate || "5"),
+                serviceattitude: parseInt(res[0].serviceattitude || "5"),
+                servicepower: parseInt(res[0].servicepower || "5"),
                 applauserate: res[1] || 1,
                 labels: res[2]
             };
             return model;
+        });
+    }
+    reply(eid, lid, replymessage) {
+        if (!replymessage) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "回复数据不能为空"));
+        }
+        if (replymessage.length > 500) {
+            return Bluebird.reject(new ErrorMsg_1.default(false, "回复的消息太常"));
+        }
+        Evaluate_1.default.findOne({
+            where: {
+                id: eid,
+                lid: lid,
+            }
+        }).then(evaluate => {
+            if (!evaluate) {
+                return Bluebird.reject(new ErrorMsg_1.default(false, '未找到对应数据'));
+            }
+            return Evaluate_1.default.update({
+                replymessage: replymessage
+            }, {
+                where: {
+                    id: eid
+                }
+            });
         });
     }
     static createInstance() {

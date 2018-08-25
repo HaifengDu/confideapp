@@ -25,15 +25,34 @@ router.put("/",[
     })
 });
 router.get("/list",[
-    query("lid").isNumeric().withMessage("倾听者id非法")
+    query("start").isNumeric().withMessage("start必须是数字"),
+    query("limit").isNumeric().withMessage("limit必须是数字"),
+    query("status").isNumeric().withMessage("满意度不能为空")
 ],function(req:express.Request,res:express.Response){
     const errors:Result<{msg:string}> = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
-    service.getList(parseInt(req.query.lid)).then(data=>{
+    const lid = parseInt(req.query.lid);
+    const uid = parseInt(req.query.uid);
+    if(isNaN(lid)&&isNaN(uid)){
+        res.json(new ErrorMsg(false,"倾听者和倾诉者不能同时为空"))
+    }
+    let promise:any;
+    if(lid){
+        promise = service.getList(lid,parseInt(req.query.status),{
+            start:parseInt(req.query.start),
+            limit:parseInt(req.query.limit)
+        });
+    }else{
+        promise = service.getListByUid(uid,parseInt(req.query.status),{
+            start:parseInt(req.query.start),
+            limit:parseInt(req.query.limit)
+        });
+    }
+    promise.then(data=>{
         res.json({
-            data,...new ErrorMsg(true)
+            ...data,...new ErrorMsg(true)
         });
     },err=>{
         res.json(new ErrorMsg(false,err.message,err));
@@ -69,7 +88,7 @@ router.post("/reply",[
     if (!errors.isEmpty()) {
         return res.json(new ErrorMsg(false,errors.array()[0].msg ));
     }
-    service.reply(parseInt(req.query.userid),parseInt(req.body.eid),req.body.message).then(data=>{
+    service.reply(parseInt(req.query.eid),parseInt(req.body.userid),req.body.message).then(data=>{
         res.json({
             data,...new ErrorMsg(true)
         });

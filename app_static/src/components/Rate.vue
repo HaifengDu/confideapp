@@ -56,7 +56,6 @@ export default class Rate extends Vue{
     }
 
     rateChange(score:number){
-        console.log(score);
         this.$emit('change',score);
     }
 }

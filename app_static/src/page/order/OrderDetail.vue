@@ -1,6 +1,6 @@
 <template>
     <div style="height:100%;">
-        <div v-if="!isToBePaid" class="container con-bg">
+        <div v-if="!isToBePaid" class="container">
             <div class="body">
                 <div class="type">{{serviceType==1?'文字服务':'通话服务'}}</div>
                 <div class="main">
@@ -19,14 +19,37 @@
                             <p class="text">费用</p>
                         </div>
                     </div>
-                    <mt-cell title="倾听者" class="cell-con cell-prev">重新的开始</mt-cell>
+                    <mt-cell title="倾诉者" class="cell-con cell-prev">重新的开始</mt-cell>
                     <mt-cell v-if="serviceType==2" title="购买时长" class="cell-con cell-prev">15分钟</mt-cell>
-                    <mt-cell v-if="serviceType==2" title="服务时长" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell v-if="serviceType==2" title="服务时长" class="cell-con cell-prev">15分钟</mt-cell>
                     <mt-cell v-if="serviceType==1" title="购买数量" class="cell-con cell-prev">15条</mt-cell>
-                    <mt-cell v-if="serviceType==1" title="服务数量" class="cell-con cell-prev">15分钟</mt-cell>
-                    <mt-cell title="付款时间" class="cell-con cell-prev">2018-06-26 21:15</mt-cell>
+                    <mt-cell v-if="serviceType==1" title="服务数量" class="cell-con cell-prev">15条</mt-cell>
+                    <mt-cell title="服务时间" class="cell-con cell-prev">2018-06-26 21:19</mt-cell>
+                    <mt-cell title="单价" class="cell-con cell-prev">￥0.00/分钟</mt-cell>
+                    <mt-cell title="余额支付" class="cell-con cell-prev">-￥0.00</mt-cell>
                     <mt-cell title="订单号" class="cell-con cell-prev">1509006</mt-cell>
                     <mt-cell style="border-bottom:none;" title="有效期至" class="cell-con cell-prev">2018年06月29日 21:19</mt-cell>
+                </div>
+                <div v-if="order.status==6" class="main" style="margin-top:20px;">
+                    <div class="evaluate">
+                        评价：非常满意，受益匪浅
+                    </div>
+                    <div class="reply">
+                        <div v-if="!curOrder.reply" class="reply-box">
+                            <div v-if="isReply"  class="reply-content">
+                                <el-input
+                                    class="reply-input" 
+                                    v-model="replyMsg" 
+                                    type="textarea"
+                                    @input="textChange"
+                                    :rows="4"
+                                    placeholder="请输入回复内容"></el-input>
+                                <div class="count">{{replyMsg.length}}/150</div>
+                            </div>
+                            <mt-button type="primary" class="button" size="small" @click.native="reply()">{{isReply?'发送':'回复'}}</mt-button>
+                        </div>
+                        <p v-if="curOrder.reply" class="cur-reply"><span class="reply" >倾听者回复：</span>{{curOrder.reply}}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,13 +97,16 @@ import {mapGetters} from "vuex";
 import OrderService from "../../api/OrderService.ts";
 import { MessageBox } from 'mint-ui';
 import { Indicator } from 'mint-ui';
+import EvaluateService from "@/api/EvaluateService.ts";
+
 const orderService = OrderService.getInstance();
+const evaluateService = EvaluateService.getInstance();
 declare var WeixinJSBridge:any;
 declare var wx:any;
 @Component({
     computed:{
         ...mapGetters({
-            order:'order'
+            order:'order/order'
         })
     }
 })
@@ -90,16 +116,28 @@ export default class OrderDetail extends Vue{
     private serviceType = 1;
     private statuNamesDic = ['待支付','已付款','服务中','待评论','已取消','已完成','已退款'];
     private isToBePaid = true;
+    private isReply = false;
+    private replyMsg = '';
+    private curOrder:any = {reply:''};
 
     mounted() {
         if((<any>this).order){
             this.isToBePaid = (<any>this).order.status === EOrderStatus.Awaiting_Payment;        
             this.serviceType = (<any>this).order.serviceType;
+            Object.assign(this.curOrder,(<any>this).order||{});
         }
     }
 
     getServiceTypeIcon(){
         return this.serviceType==EPriceType.EWord?'/static/images/pay/chat.png':'/static/images/pay/microphone.png'
+    }
+
+    textChange(){
+        if(this.replyMsg.length > 150){
+            this.$nextTick(()=>{
+                this.replyMsg = this.replyMsg.slice(0,150);
+            });
+        }
     }
 
     cancelOrder(){
@@ -172,6 +210,24 @@ export default class OrderDetail extends Vue{
         });
     }
 
+    reply(){
+        if(this.isReply){
+            if(!this.replyMsg){
+                this.$toast('回复内容不能为空');
+                return;
+            }
+            // evaluateService.replyEva({eid:this.curOrder.id,message:this.replyMsg}).then((res:any)=>{
+            //     if(res.data.success){
+            //         this.curOrder.reply = this.replyMsg;
+            //     }
+            // });
+            this.curOrder.reply = this.replyMsg;
+            console.log(this.curOrder);
+        }else{
+            this.isReply = true;
+        }
+    }
+
 }
 </script>
 
@@ -179,9 +235,6 @@ export default class OrderDetail extends Vue{
     @import '../../assets/style.less';
     @orange:rgb(239,146,55);
     @bgColor:rgb(238,238,238);
-    .con-bg{
-        background:@bgColor;
-    }
     *{
         .f-nm;
     }
@@ -190,6 +243,7 @@ export default class OrderDetail extends Vue{
         .p-rl;
     }
     .body{
+        background:@bgColor;
         .type{
             padding:20px 20px 40px 20px;
             color:rgb(115,115,115);
@@ -309,5 +363,35 @@ export default class OrderDetail extends Vue{
                 color:#888;
             }
         }
+        .evaluate{
+            text-align:left;
+            margin-bottom:10px;
+            .t-ellipsis(3);
+        }
+        .reply{
+            .reply-box{
+                .reply-content{
+                    .p-rl;
+                    .count{
+                        .p-ab;
+                        right:10px;
+                        bottom:5px;
+                        color:#adadad;
+                    }
+                }
+                .button{
+                    margin-top:10px;
+                    padding:0 20px;
+                }
+            }
+            .cur-reply{
+                text-align: left;
+                .t-ellipsis(3);
+                .reply{
+                    color:@mainColor;
+                }
+            }
+        }
+        
     }
 </style>

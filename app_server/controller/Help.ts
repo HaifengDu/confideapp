@@ -1,4 +1,5 @@
 import { IHelp } from "../interface/model/IHelp";
+import {Op} from "Sequelize";
 import ErrorMsg from "../model/ErrorMsg";
 import UserService from "./User";
 import * as Bluebird from "bluebird";
@@ -66,6 +67,9 @@ export default class HelpService {
             limit:page.limit,
             where:{
                 labelid,
+                status:{
+                    [Op.ne]:EHelpStatus.删除
+                }
             },
             include:[
                 {

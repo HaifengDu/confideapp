@@ -17,5 +17,5 @@ const Help = mysqlSeq_1.default.define("help", {
 Help.belongsTo(User_1.default, {
     foreignKey: "uid"
 });
-Help.sync({ force: true });
+Help.sync({ alter: true });
 exports.default = Help;

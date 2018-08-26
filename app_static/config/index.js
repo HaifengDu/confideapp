@@ -26,7 +26,9 @@ module.exports = {
             "/chat/*": proxyUrl,
             "/wx/*": proxyUrl,
             "/tencent/*": proxyUrl,
-            "/recommend/*": proxyUrl
+            "/recommend/*": proxyUrl,
+            "/help*": proxyUrl,
+            "/help/*":proxyUrl
         },
 
         // Various Dev Server settings

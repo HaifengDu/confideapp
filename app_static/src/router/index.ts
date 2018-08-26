@@ -8,6 +8,7 @@ import My from "@/page/my/My.vue";
 import List from "@/page/List.vue";
 import Help from "@/page/help/SeekHelp.vue";
 import HelpDetail from "@/page/help/HelpDetail.vue";
+import HelpCreate from "@/page/help/HelpCreate.vue";
 import ApplyListener from "@/page/ApplyListener.vue";
 import BindPhone from "@/page/my/BindPhone.vue";
 import BaseInfo from "@/page/my/BaseInfo.vue";
@@ -203,6 +204,10 @@ const router = new Router({
       path: "/helpDetail",
       name: "HelpDetail",
       component: HelpDetail
+    },{
+      path:"/helpCreate",
+      name:"HelpCreate",
+      component:HelpCreate
     },{
       path:"/recharge",
       name:"Recharge",

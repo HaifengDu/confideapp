@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Sequelize_1 = require("Sequelize");
 const ErrorMsg_1 = require("../model/ErrorMsg");
 const User_1 = require("./User");
 const Bluebird = require("bluebird");
@@ -59,6 +60,9 @@ class HelpService {
             limit: page.limit,
             where: {
                 labelid,
+                status: {
+                    [Sequelize_1.Op.ne]: EHelpStatus_1.EHelpStatus.删除
+                }
             },
             include: [
                 {

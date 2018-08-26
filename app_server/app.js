@@ -20,6 +20,7 @@ var list = require("./build/routes/list");
 var order = require("./build/routes/order");
 var tencent = require("./build/routes/tencent");
 var evaluate = require("./build/routes/evaluate");
+var help = require("./build/routes/help");
 var { LogHelper } = require("./build/helper/logHelper");
 require("./build/helper/mongoHelper");
 var app = express();
@@ -79,6 +80,7 @@ app.use("/list", list);
 app.use("/order", order);
 app.use("/tencent", tencent);
 app.use("/evaluate",evaluate);
+app.use("/help",help);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

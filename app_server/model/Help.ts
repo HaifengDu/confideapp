@@ -16,6 +16,6 @@ const Help = sequelize.define<IHelp,IHelp>("help",{
 Help.belongsTo(User,{
     foreignKey:"uid"
 });
-Help.sync({force:true});
+Help.sync({alter:true});
 
 export default Help;
